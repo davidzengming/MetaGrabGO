@@ -97,38 +97,39 @@ class BlockHiddenDataStore: ObservableObject {
         }.resume()
     }
     
-    func blockUser(access: String, userId: Int, targetBlockUserId: Int) {
-        let json: [String: Any] = ["blacklist_user_id": targetBlockUserId]
+    func blockUser(access: String, targetBlockUser: User, taskGroup: DispatchGroup? = nil) {
+        let json: [String: Any] = ["blacklist_user_id": targetBlockUser.id]
         let url = API.generateURL(resource: Resource.usersProfile, endPoint: EndPoint.blockUser)
         let request = API.generateRequest(url: url!, method: .POST, json: json)
         let session = API.generateSession(access: access)
         
-        session.dataTask(with: request) { (data, response, error) in
+        session.dataTask(with: request) {(data, response, error) in
             if error != nil {
                 return
             }
             
             DispatchQueue.main.async {
-                self.blacklistedUserIdArr.append(targetBlockUserId)
+                self.blacklistedUsersById[targetBlockUser.id] = targetBlockUser
+                self.blacklistedUserIdArr.append(targetBlockUser.id)
             }
         }.resume()
     }
     
-    func unblockUser(access: String, userId: Int, targetUnblockUserId: Int) {
-        let json: [String: Any] = ["unblacklist_user_id": targetUnblockUserId]
+    func unblockUser(access: String, targetUnblockUser: User, taskGroup: DispatchGroup? = nil) {
+        let json: [String: Any] = ["unblacklist_user_id": targetUnblockUser.id]
         let url = API.generateURL(resource: Resource.usersProfile, endPoint: EndPoint.unblockUser)
         let request = API.generateRequest(url: url!, method: .POST, json: json)
         let session = API.generateSession(access: access)
         
-        session.dataTask(with: request) { (data, response, error) in
+        session.dataTask(with: request) {(data, response, error) in
             if error != nil {
                 return
             }
             
             DispatchQueue.main.async {
-                let indexToBeRemoved = self.blacklistedUserIdArr.firstIndex(of: targetUnblockUserId)
+                let indexToBeRemoved = self.blacklistedUserIdArr.firstIndex(of: targetUnblockUser.id)
                 self.blacklistedUserIdArr.remove(at: indexToBeRemoved!)
-                self.blacklistedUsersById.removeValue(forKey: targetUnblockUserId)
+                self.blacklistedUsersById.removeValue(forKey: targetUnblockUser.id)
             }
         }.resume()
     }

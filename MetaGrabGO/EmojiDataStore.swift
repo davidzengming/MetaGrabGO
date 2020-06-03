@@ -54,8 +54,9 @@ class EmojiDataStore: ObservableObject {
         if emojiReactionCount[0] != nil {
             arr[0].append(0)
         }
+        
         if emojiReactionCount[1] != nil {
-            arr[1].append(1)
+            arr[0].append(1)
         }
         
         for emojiId in emojiArr {

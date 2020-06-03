@@ -11,14 +11,13 @@ import SwiftUI
 struct UserProfileView: View {
     @EnvironmentObject var userDataStore: UserDataStore
     @EnvironmentObject var assetsDataStore: AssetsDataStore
-    
     @ObservedObject var blockHiddenDataStore: BlockHiddenDataStore
     @State private var loadedBlacklist = false
     @State private var loadedHiddenThreads = false
     @State private var loadedHiddenComments = false
 
-    private func unblockUser(unblockUserId: Int) {
-        self.blockHiddenDataStore.unblockUser(access: self.userDataStore.token!.access, userId: self.userDataStore.token!.userId, targetUnblockUserId: unblockUserId)
+    private func unblockUser(unblockUser: User) {
+        self.blockHiddenDataStore.unblockUser(access: self.userDataStore.token!.access, targetUnblockUser: unblockUser)
     }
     
     private func unhideThread(threadId: Int) {
@@ -92,14 +91,14 @@ struct UserProfileView: View {
                                 
                                 ForEach(self.blockHiddenDataStore.blacklistedUserIdArr, id: \.self) { blacklistedUserId in
                                     HStack {
-                                        Text(String(blacklistedUserId))
+                                        Text(String(self.blockHiddenDataStore.blacklistedUsersById[blacklistedUserId]!.username))
                                         HStack(alignment: .center) {
                                             Image(systemName: "multiply")
                                                 .resizable()
                                                 .frame(width: a.size.height * 0.025, height: a.size.height * 0.025)
                                                 .foregroundColor(.red)
                                                 .onTapGesture {
-                                                    self.unblockUser(unblockUserId: blacklistedUserId)
+                                                    self.unblockUser(unblockUser: self.blockHiddenDataStore.blacklistedUsersById[blacklistedUserId]!)
                                             }
                                         }
                                         

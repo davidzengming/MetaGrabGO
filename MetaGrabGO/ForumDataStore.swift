@@ -259,6 +259,11 @@ class ThreadDataStore: ObservableObject {
     @Published var imageLoaders: [Int: ImageLoader] = [:]
     @Published var imageArr: [Int] = []
     @Published var didLoadImages = false
+    @Published var isHidden: Bool = false
+    
+    @Published var threadNextPageStartIndex: Int?
+    
+    private var childCommentSubs = [Int: AnyCancellable]()
     
     @ObservedObject var emojis: EmojiDataStore
     
@@ -325,7 +330,9 @@ class ThreadDataStore: ObservableObject {
         }
     }
     
-    func upvoteByExistingVoteId(access: String, user: User) {
+    func upvoteByExistingVoteId(access: String, user: User, taskGroup: DispatchGroup? = nil) {
+        taskGroup?.enter()
+        
         DispatchQueue.main.async {
             if self.emojis.isLoading == true {
                 print("Already operating an emoji, abort.")
@@ -345,12 +352,17 @@ class ThreadDataStore: ObservableObject {
                     self.vote!.direction = 1
                     self.emojis.addEmojiToStore(emojiId: 0, user: user, newEmojiCount: self.thread.upvotes)
                     self.emojis.isLoading = false
+                    taskGroup?.leave()
                 }
+            } else {
+                taskGroup?.leave()
             }
         }.resume()
     }
     
-    func downvoteByExistingVoteId(access: String, user: User) {
+    func downvoteByExistingVoteId(access: String, user: User, taskGroup: DispatchGroup? = nil) {
+        taskGroup?.enter()
+        
         DispatchQueue.main.async {
             if self.emojis.isLoading == true {
                 print("Already operating an emoji, abort.")
@@ -370,12 +382,16 @@ class ThreadDataStore: ObservableObject {
                     self.vote!.direction = -1
                     self.emojis.addEmojiToStore(emojiId: 1, user: user, newEmojiCount: self.thread.downvotes)
                     self.emojis.isLoading = false
+                    taskGroup?.leave()
                 }
+            } else {
+                taskGroup?.leave()
             }
         }.resume()
     }
     
-    func addNewUpvote(access: String, user: User) {
+    func addNewUpvote(access: String, user: User, taskGroup: DispatchGroup? = nil) {
+        taskGroup?.enter()
         DispatchQueue.main.async {
             if self.emojis.isLoading == true {
                 print("Already operating an emoji, abort.")
@@ -397,13 +413,17 @@ class ThreadDataStore: ObservableObject {
                         self.thread.upvotes += 1
                         self.emojis.addEmojiToStore(emojiId: 0, user: user, newEmojiCount: self.thread.upvotes)
                         self.emojis.isLoading = false
+                        taskGroup?.leave()
                     }
                 }
+            } else {
+                taskGroup?.leave()
             }
         }.resume()
     }
     
-    func switchUpvote(access: String, user: User) {
+    func switchUpvote(access: String, user: User, taskGroup: DispatchGroup? = nil) {
+        taskGroup?.enter()
         DispatchQueue.main.async {
             if self.emojis.isLoading == true {
                 print("Already operating an emoji, abort.")
@@ -426,13 +446,17 @@ class ThreadDataStore: ObservableObject {
                     self.emojis.removeEmojiFromStore(emojiId: 1, user: user, newEmojiCount: self.thread.downvotes)
                     self.emojis.addEmojiToStore(emojiId: 0, user: user, newEmojiCount: self.thread.upvotes)
                     self.emojis.isLoading = false
+                    taskGroup?.leave()
                 }
+            } else {
+                taskGroup?.leave()
             }
         }.resume()
     }
     
     
-    func addNewDownvote(access: String, user: User) {
+    func addNewDownvote(access: String, user: User, taskGroup: DispatchGroup? = nil) {
+        taskGroup?.enter()
         DispatchQueue.main.async {
             if self.emojis.isLoading == true {
                 print("Already operating an emoji, abort.")
@@ -453,13 +477,17 @@ class ThreadDataStore: ObservableObject {
                         self.thread.downvotes += 1
                         self.emojis.addEmojiToStore(emojiId: 1, user: user, newEmojiCount: self.thread.downvotes)
                         self.emojis.isLoading = false
+                        taskGroup?.leave()
                     }
                 }
+            } else {
+                taskGroup?.leave()
             }
         }.resume()
     }
     
-    func switchDownvote(access: String, user: User) {
+    func switchDownvote(access: String, user: User, taskGroup: DispatchGroup? = nil) {
+        taskGroup?.enter()
         DispatchQueue.main.async {
             if self.emojis.isLoading == true {
                 print("Already operating an emoji, abort.")
@@ -481,12 +509,16 @@ class ThreadDataStore: ObservableObject {
                     self.emojis.removeEmojiFromStore(emojiId: 0, user: user, newEmojiCount: self.thread.upvotes)
                     self.emojis.addEmojiToStore(emojiId: 1, user: user, newEmojiCount: self.thread.downvotes)
                     self.emojis.isLoading = false
+                    taskGroup?.leave()
                 }
+            } else {
+                taskGroup?.leave()
             }
         }.resume()
     }
     
-    func addEmojiByThreadId(access: String, emojiId: Int, user: User) {
+    func addEmojiByThreadId(access: String, emojiId: Int, user: User, taskGroup: DispatchGroup? = nil) {
+        taskGroup?.enter()
         DispatchQueue.main.async {
             if self.emojis.isLoading == true {
                 print("Already operating an emoji, abort.")
@@ -511,12 +543,16 @@ class ThreadDataStore: ObservableObject {
                     
                     self.emojis.addEmojiToStore(emojiId: emojiId, user: user, newEmojiCount: emojiResponse.newEmojiCount)
                     self.emojis.isLoading = false
+                    taskGroup?.leave()
                 }
+            } else {
+                taskGroup?.leave()
             }
         }.resume()
     }
     
-    func removeEmojiByThreadId(access: String, emojiId: Int, user: User) {
+    func removeEmojiByThreadId(access: String, emojiId: Int, user: User, taskGroup: DispatchGroup? = nil) {
+        taskGroup?.enter()
         DispatchQueue.main.async {
             if self.emojis.isLoading == true {
                 print("Already operating an emoji, abort.")
@@ -540,12 +576,16 @@ class ThreadDataStore: ObservableObject {
                     
                     self.emojis.removeEmojiFromStore(emojiId: emojiId, user: user, newEmojiCount: emojiResponse.newEmojiCount)
                     self.emojis.isLoading = false
+                    taskGroup?.leave()
                 }
+            } else {
+                taskGroup?.leave()
             }
         }.resume()
     }
     
-    func deleteVote(access: String, user: User) {
+    func deleteVote(access: String, user: User, taskGroup: DispatchGroup? = nil) {
+        taskGroup?.enter()
         DispatchQueue.main.async {
             if self.emojis.isLoading == true {
                 print("Already operating an emoji, abort.")
@@ -560,7 +600,7 @@ class ThreadDataStore: ObservableObject {
         session.dataTask(with: request) { (data, response, error) in
             if error == nil {
                 DispatchQueue.main.async {
-
+                    
                     if self.vote!.direction == 1 {
                         self.thread.upvotes -= 1
                     } else {
@@ -572,6 +612,214 @@ class ThreadDataStore: ObservableObject {
                     
                     self.emojis.removeEmojiFromStore(emojiId: originalVoteDirection == 1 ? 0 : 1, user: user, newEmojiCount: self.vote!.direction == 1 ? self.thread.upvotes : self.thread.downvotes)
                     self.emojis.isLoading = false
+                    taskGroup?.leave()
+                }
+            } else {
+                taskGroup?.leave()
+            }
+        }.resume()
+    }
+    
+    func sendReportByThreadId(access: String, reason: String, taskGroup: DispatchGroup? = nil) {
+        taskGroup?.enter()
+        let url = self.API.generateURL(resource: Resource.reports, endPoint: EndPoint.addReportByThreadId)
+        let json: [String: Any] = ["thread_id": self.thread.id, "report_reason": reason]
+        let request = self.API.generateRequest(url: url!, method: .POST, json: json)
+        let session = self.API.generateSession(access: access)
+        
+        session.dataTask(with: request) { (data, response, error) in
+            if error != nil {
+                print("Report has been sent for thread: ", self.thread.id)
+                taskGroup?.leave()
+                return
+            }
+        }.resume()
+    }
+    
+    func hideThread(access: String, threadId: Int) {
+        let json: [String: Any] = ["hide_thread_id": threadId]
+        let url = API.generateURL(resource: Resource.usersProfile, endPoint: EndPoint.hideThreadByUserId)
+        let request = API.generateRequest(url: url!, method: .POST, json: json)
+        let session = API.generateSession(access: access)
+        
+        session.dataTask(with: request) { (data, response, error) in
+            if error != nil {
+                return
+            }
+            
+            DispatchQueue.main.async {
+                self.isHidden = true
+            }
+        }.resume()
+    }
+    
+    func unhideThread(access: String, threadId: Int) {
+        let json: [String: Any] = ["unhide_thread_id": threadId]
+        let url = API.generateURL(resource: Resource.usersProfile, endPoint: EndPoint.unhideThreadByUserId)
+        let request = API.generateRequest(url: url!, method: .POST, json: json)
+        let session = API.generateSession(access: access)
+        
+        session.dataTask(with: request) { (data, response, error) in
+            if error != nil {
+                return
+            }
+            
+            DispatchQueue.main.async {
+                self.isHidden = false
+            }
+        }.resume()
+    }
+    
+//    func postMainComment(access: String, threadId: Int, content: NSTextStorage) {
+//        let params = ["thread_id": String(threadId)]
+//        let url = API.generateURL(resource: Resource.comments, endPoint: EndPoint.postCommentByThreadId, params: params)
+//                let json: [String: Any] = ["content_string": content.string, "content_attributes": ["attributes": TextViewHelper.parseTextStorageAttributesAsBitRep(content: content)]]
+//        let request = API.generateRequest(url: url!, method: .POST, json: json)
+//        let session = API.generateSession(access: access)
+//
+//        session.dataTask(with: request) { (data, response, error) in
+//            if let data = data {
+//                if let jsonString = String(data: data, encoding: .utf8) {
+//                    let tempNewCommentResponse: NewCommentResponse = load(jsonData: jsonString.data(using: .utf8)!)
+//                    let tempMainComment = tempNewCommentResponse.commentResponse
+//                    let tempVote = tempNewCommentResponse.voteResponse
+//                    let user = tempNewCommentResponse.userResponse
+//
+//                    DispatchQueue.main.async {
+//                        self.childComments[tempMainComment.id] = CommentDataStore(tempMainComment)
+//                        self.commentsTextStorage[tempMainComment.id] = generateTextStorageFromJson(contentString: tempMain, contentAttributes: <#T##Attributes#>)
+//
+//
+//                        self.commentsDesiredHeight[tempMainComment.id] = 0
+//                        self.threadsNextPageStartIndex[tempMainComment.parentThread!]! += 1
+//                        self.commentNextPageStartIndex[tempMainComment.id] = 0
+//                        self.childCommentListByParentCommentId[tempMainComment.id] = []
+//                        self.incrementTreeNodes(node: tempMainComment)
+//                        self.votes[tempVote.id] = tempVote
+//                        self.voteCommentMapping[tempMainComment.id] = tempVote.id
+//                        self.relativeDateStringByCommentId[tempMainComment.id] = RelativeDateTimeFormatter().localizedString(for: tempMainComment.created, relativeTo: Date())
+//
+//                        self.visibleChildCommentsNum[tempMainComment.id] = 0
+//                        self.voteCountStringByCommentId[tempMainComment.id] = self.transformVotesString(points: 1)
+//                        self.isCommentHiddenByCommentId[tempMainComment.id] = false
+//
+//                        self.mainCommentListByThreadId[tempMainComment.parentThread!]!.insert(tempMainComment.id, at: 0)
+//                    }
+//                }
+//            }
+//        }.resume()
+//    }
+    
+    func fetchCommentTreeByThreadId(access: String, start:Int = 0, count:Int = 10, size:Int = 50, refresh: Bool = false, userId: Int) {
+        
+        if refresh == true {
+            self.childCommentSubs = [:]
+            
+            DispatchQueue.main.async {
+                self.childCommentList = []
+                self.childComments = [:]
+            }
+        }
+        
+        let params = ["parent_thread_id": String(self.thread.id), "start": String(start), "count": String(count), "size": String(size)]
+        let url = API.generateURL(resource: Resource.comments, endPoint: EndPoint.getCommentTreeByThreadId, params: params)
+        let request = API.generateRequest(url: url!, method: .GET)
+        let session = API.generateSession(access: access)
+        
+        session.dataTask(with: request) { (data, response, error) in
+            if let data = data {
+                if let jsonString = String(data: data, encoding: .utf8) {
+                    let serializedComments: CommentsResponse = load(jsonData: jsonString.data(using: .utf8)!)
+                    
+                    DispatchQueue.main.async {
+                        if serializedComments.commentsResponse.count == 0 {
+                            self.threadNextPageStartIndex = -1
+                            return
+                        }
+                        
+                        var levelArr = [Int]()
+                        var levelStore = [Int: CommentDataStore]()
+                        
+                        var nextLevelArr = [Int]()
+                        var nextLevelStore = [Int: CommentDataStore]()
+                        
+                        var levelCount = 0
+                        var i = 0
+                        var j = 0
+                        
+                        var x = 0 // level pointer
+                        
+                        var firstLevelArr = [Int]()
+                        var firstLevelStore = [Int: CommentDataStore]()
+                        
+                        while i < serializedComments.commentsResponse.count {
+                            // end of level
+                            while j < serializedComments.commentBreaksArr.count && serializedComments.commentBreaksArr[j] < i {
+                                if levelCount == 0 {
+                                    firstLevelArr = nextLevelArr
+                                    firstLevelStore = nextLevelStore
+                                    
+                                    levelArr = nextLevelArr
+                                    levelStore = nextLevelStore
+                                    
+                                    nextLevelArr = []
+                                    nextLevelStore = [:]
+                                    
+                                    levelCount += 1
+                                } else {
+                                    x += 1
+                                    if x > levelArr.count {
+                                        levelArr = nextLevelArr
+                                        levelStore = nextLevelStore
+                                        
+                                        nextLevelArr = []
+                                        nextLevelStore = [:]
+                                        
+                                        x = 0
+                                        levelCount += 1
+                                    }
+                                }
+                                j += 1
+                            }
+                            
+                            let commentId = serializedComments.commentsResponse[i].id
+                            nextLevelArr.append(commentId)
+                            
+                            var vote: Vote?
+                            if serializedComments.commentsResponse[i].votes.count > 0 {
+                                vote = serializedComments.commentsResponse[i].votes[0]
+                            }
+                            
+                            nextLevelStore[commentId] = CommentDataStore(ancestorThreadId: self.thread.id, gameId: self.gameId, comment:  serializedComments.commentsResponse[i], vote: vote, author: serializedComments.commentsResponse[i].users[0])
+                            
+                            if levelCount > 0 {
+                                print(levelCount, levelArr, x)
+                                let parentCommentId = levelArr[x]
+                                
+                                levelStore[parentCommentId]!.childCommentList.append(commentId)
+                                levelStore[parentCommentId]!.childComments[commentId] = nextLevelStore[commentId]
+                                
+                                levelStore[parentCommentId]!.childCommentSubs[commentId] = nextLevelStore[commentId]!.objectWillChange.receive(on: DispatchQueue.main).sink(receiveValue: {[weak self] _ in self?.objectWillChange.send()
+                                })
+                            }
+
+                            i += 1
+                        }
+                        
+                        if levelCount == 0 {
+                            firstLevelArr = nextLevelArr
+                            firstLevelStore = nextLevelStore
+                        }
+                        
+                        for commentId in firstLevelArr {
+                            self.childCommentSubs[commentId] = firstLevelStore[commentId]!.objectWillChange.receive(on: DispatchQueue.main).sink(receiveValue: {[weak self] _ in self?.objectWillChange.send()
+                            })
+                                
+                            self.childComments[commentId] = firstLevelStore[commentId]!
+                        }
+                        
+                        self.childCommentList += firstLevelArr
+                    }
                 }
             }
         }.resume()
@@ -579,14 +827,35 @@ class ThreadDataStore: ObservableObject {
 }
 
 class CommentDataStore: ObservableObject {
-    //    @Published var childCommentList: [Int]
-    //    @Published var childComments: [Int: CommentDataStore]
-    //
-    //    var ancestorThreadId: Int
-    //    var gameId: Int
-    //
-    //    init() {
-    //
-    //    }
+    @Published var childCommentList: [Int]
+    @Published var childComments: [Int: CommentDataStore]
+    @Published var relativeDateString: String?
+    @Published var textStorage: NSTextStorage
+    @Published var isHidden: Bool = false
+    var childCommentSubs = [Int: AnyCancellable]()
+    
+    var ancestorThreadId: Int
+    var gameId: Int
+    var comment: Comment
+    var vote: Vote?
+    var author: User
+    
+    @Published var desiredHeight: CGFloat
+
+    init(ancestorThreadId: Int, gameId: Int, comment: Comment, vote: Vote?, author: User) {
+        self.desiredHeight = 0
+        self.ancestorThreadId = ancestorThreadId
+        self.gameId = gameId
+        self.comment = comment
+        self.vote = vote
+        self.author = author
+        
+        self.relativeDateString = RelativeDateTimeFormatter().localizedString(for: comment.created, relativeTo: Date())
+        self.textStorage = generateTextStorageFromJson(contentString: comment.contentString, contentAttributes: comment.contentAttributes)
+        
+        self.childCommentList = []
+        self.childComments = [:]
+    }
+    
     
 }

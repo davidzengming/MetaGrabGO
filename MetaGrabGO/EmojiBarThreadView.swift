@@ -12,12 +12,17 @@ struct EmojiBarThreadView: View {
     @EnvironmentObject var userDataStore: UserDataStore
     @EnvironmentObject var assetsDataStore: AssetsDataStore
     @ObservedObject var threadDataStore: ThreadDataStore
-    @ObservedObject var bottomBarStateDataStore: BottomBarStateDataStore
+    
+    var turnBottomPopup: () -> Void
+//    var toggleBottomBarState: (_ state: BottomBarState) -> Void
+//    var togglePickedThreadId: (_ threadId: Int) -> Void
+//    var togglePickedUser: (_ user: User) -> Void
     
     func onClickAddEmojiBubble() {
-        self.bottomBarStateDataStore.toggleBottomBarState(state: .addEmoji)
-        self.bottomBarStateDataStore.togglePickedThreadId(threadId: self.threadDataStore.thread.id)
-        self.bottomBarStateDataStore.turnBottomPopup(state: true)
+        self.turnBottomPopup()
+//        self.toggleBottomBarState(.addEmoji)
+//        self.togglePickedThreadId(self.threadDataStore.thread.id)
+//        self.turnBottomPopup(true)
     }
     
     func onClickEmoji(emojiId: Int) {
@@ -72,45 +77,46 @@ struct EmojiBarThreadView: View {
     var body: some View {
         HStack(spacing: 5) {
             VStack(alignment: .leading) {
-                ForEach(self.threadDataStore.emojis.emojiArr.indices, id: \.self) { row in
-                    HStack {
-                        ForEach(self.threadDataStore.emojis.emojiArr[row], id: \.self) { emojiId in
-                            VStack(alignment: .leading) {
-                                if emojiId == 999 {
-                                    HStack {
-                                        Image(systemName: "plus.bubble.fill")
-                                            .resizable()
-                                            .foregroundColor(Color(.darkGray))
-                                            .frame(width: 20, height: 20)
-                                            .buttonStyle(PlainButtonStyle())
-                                            .cornerRadius(5)
-                                            .onTapGesture {
-                                                self.onClickAddEmojiBubble()
-                                        }
-                                    }
-                                    .frame(alignment: .leading)
-                                } else {
-                                    HStack {
-                                        Image(uiImage: self.assetsDataStore.emojis[emojiId]!)
-                                            .resizable()
-                                            .frame(width: 15, height: 15)
-                                        
-                                        Text(String(self.threadDataStore.emojis.emojiCount[emojiId]!))
-                                        .bold()
-                                            .foregroundColor(Color(.darkGray))
-                                    }
-                                    .frame(width: 40, height: 15)
-                                    .padding(5)
-                                    .background(self.threadDataStore.emojis.didReactToEmoji[emojiId]! == true ? Color.gray : Color(.lightGray))
-                                    .cornerRadius(5)
-                                    .onTapGesture {
-                                        self.onClickEmoji(emojiId: emojiId)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                Text("whatever")
+//                ForEach(self.threadDataStore.emojis.emojiArr.indices, id: \.self) { row in
+//                    HStack {
+//                        ForEach(self.threadDataStore.emojis.emojiArr[row], id: \.self) { emojiId in
+//                            VStack(alignment: .leading) {
+//                                if emojiId == 999 {
+//                                    HStack {
+//                                        Image(systemName: "plus.bubble.fill")
+//                                            .resizable()
+//                                            .foregroundColor(Color(.darkGray))
+//                                            .frame(width: 20, height: 20)
+//                                            .buttonStyle(PlainButtonStyle())
+//                                            .cornerRadius(5)
+//                                            .onTapGesture {
+//                                                self.onClickAddEmojiBubble()
+//                                        }
+//                                    }
+//                                    .frame(alignment: .leading)
+//                                } else {
+//                                    HStack {
+//                                        Image(uiImage: self.assetsDataStore.emojis[emojiId]!)
+//                                            .resizable()
+//                                            .frame(width: 15, height: 15)
+//
+//                                        Text(String(self.threadDataStore.emojis.emojiCount[emojiId]!))
+//                                        .bold()
+//                                            .foregroundColor(Color(.darkGray))
+//                                    }
+//                                    .frame(width: 40, height: 15)
+//                                    .padding(5)
+//                                    .background(self.threadDataStore.emojis.didReactToEmoji[emojiId]! == true ? Color.gray : Color(.lightGray))
+//                                    .cornerRadius(5)
+//                                    .onTapGesture {
+//                                        self.onClickEmoji(emojiId: emojiId)
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
             }
             
             if self.threadDataStore.emojis.emojiArr.count == 1 && self.threadDataStore.emojis.emojiArr[0][0] == 999 {

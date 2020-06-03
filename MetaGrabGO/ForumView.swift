@@ -25,28 +25,39 @@ struct RoundedCorner: Shape {
 }
 
 enum BottomBarState {
-    case addEmoji, reportThread, blockUser, inActive
+    case addEmoji, reportThread, blockUser, inActive, fancyBar
 }
 
-class BottomBarStateDataStore: ObservableObject {
-    @Published var isBottomPopupOn = false
-    @Published var bottomBarState: BottomBarState = .inActive
-    @Published var pickedThreadId: Int = -1
-    @Published var pickedUser: User = User(id: -1, username: "placeholder")
+struct ForumView : View {
+    @EnvironmentObject var blockHiddenDataStore: BlockHiddenDataStore
+    @EnvironmentObject var userDataStore: UserDataStore
+    @EnvironmentObject var assetsDataStore: AssetsDataStore
     
+    @ObservedObject var forumDataStore: ForumDataStore
+    @ObservedObject var gameIconLoader: ImageLoader
+
+    @State var isBottomPopupOn = false
+    @State var bottomBarState: BottomBarState = .addEmoji
+    @State var pickedThreadId: Int = -1
+    @State var pickedUser: User = User(id: -1, username: "placeholder")
     
-    func turnBottomPopup(state: Bool) {
-        if self.isBottomPopupOn == state {
-            return
-        }
-        self.isBottomPopupOn = state
+    func turnBottomPopup() {
+//        let state = true
+//        if self.isBottomPopupOn == state {
+//            return
+//        }
+        
+//            self.bottomBarState = .addEmoji
+            self.isBottomPopupOn.toggle()
     }
     
     func toggleBottomBarState(state: BottomBarState) {
         if self.bottomBarState == state {
             return
         }
-        self.bottomBarState = state
+        DispatchQueue.main.async {
+            self.bottomBarState = state
+        }
     }
     
     func togglePickedThreadId(threadId: Int) {
@@ -54,7 +65,9 @@ class BottomBarStateDataStore: ObservableObject {
             return
         }
         
-        self.pickedThreadId = threadId
+        DispatchQueue.main.async {
+            self.pickedThreadId = threadId
+        }
     }
     
     func togglePickedUser(user: User) {
@@ -62,26 +75,17 @@ class BottomBarStateDataStore: ObservableObject {
             return
         }
         
-        self.pickedUser = user
+        DispatchQueue.main.async {
+            self.pickedUser = user
+        }
     }
-}
-
-struct ForumView : View {
-    @EnvironmentObject var userDataStore: UserDataStore
-    @EnvironmentObject var assetsDataStore: AssetsDataStore
-    
-    @ObservedObject var forumDataStore: ForumDataStore
-    @ObservedObject var gameIconLoader: ImageLoader
-    
-    @ObservedObject var bottomBarStateDataStore: BottomBarStateDataStore
 
 
-    init(forumDataStore: ForumDataStore, gameIconLoader: ImageLoader, bottomBarStateDataStore: BottomBarStateDataStore) {
+    init(forumDataStore: ForumDataStore, gameIconLoader: ImageLoader) {
         // To remove only extra separators below the list:
         // UITableView.appearance().tableFooterView = UIView()
         self.forumDataStore = forumDataStore
         self.gameIconLoader = gameIconLoader
-        self.bottomBarStateDataStore = bottomBarStateDataStore
         
         // To remove all separators including the actual ones:
         UITableView.appearance().separatorStyle = .none
@@ -187,8 +191,10 @@ struct ForumView : View {
                                                     Divider()
                                                     
                                                     if self.forumDataStore.threadDataStores[threadId]!.didLoadImages {
-                                                        ThreadRow(threadDataStore: self.forumDataStore.threadDataStores[threadId]!, bottomBarStateDataStore: self.bottomBarStateDataStore, width: a.size.width * 0.9, height: a.size.height)
+                                                        ThreadRow(threadDataStore: self.forumDataStore.threadDataStores[threadId]!, turnBottomPopup: { self.turnBottomPopup() }, width: a.size.width * 0.9, height: a.size.height)
+                                                        
                                                             .background(Color.white)
+
                                                             .frame(width: a.size.width, height: a.size.height * 0.045 + 10 + 10 + (self.forumDataStore.threadDataStores[threadId]!.thread.title.isEmpty == false ? 16 : 0) + min(self.forumDataStore.threadDataStores[threadId]!.desiredHeight, 200)
                                                                 + 10
                                                                 + max(a.size.height * 0.1, min(a.size.height * 0.15, self.forumDataStore.threadDataStores[threadId]!.threadImagesHeight) + 20)
@@ -243,29 +249,31 @@ struct ForumView : View {
                     }
                     .position(x: a.size.width * 0.88, y: a.size.height * 0.88)
                     
-                    if self.bottomBarStateDataStore.isBottomPopupOn == true {
+                    if self.isBottomPopupOn == true {
                         VStack {
-                            if self.bottomBarStateDataStore.bottomBarState == .addEmoji {
-                                EmojiPickerPopupView(forumDataStore: self.forumDataStore, bottomBarStateDataStore: self.bottomBarStateDataStore)
+                            Text("hi")
+                            if self.bottomBarState == .addEmoji {
+                                EmojiPickerPopupView(forumDataStore: self.forumDataStore, pickedThreadId: self.$pickedThreadId, turnBottomPopup: { self.turnBottomPopup() })
                             }
+//                            else if self.bottomBarState == .reportThread {
+//                                ReportPopupView(forumDataStore: self.forumDataStore, pickedThreadId: self.$pickedThreadId)
+//                            } else if self.bottomBarState == .blockUser {
+//                                BlockUserPopupView(blockHiddenDataStore: BlockHiddenDataStore(), pickedUser: self.$pickedUser)
+//                            }
                         }
-                        .frame(width: a.size.width, height: a.size.height * 0.2)
+                        .frame(width: a.size.width, height: a.size.height * 0.25)
                         .background(self.assetsDataStore.colors["darkButNotBlack"]!)
                         .cornerRadius(5, corners: [.topLeft, .topRight])
                         .KeyboardAwarePadding()
                         .transition(.move(edge: .bottom))
                         .animation(.default)
                     }
-
-                    //                    if self.gameDataStore.isReportPopupActiveByForumId[self.gameId] == true {
-                    //                        ReportPopupView(forumId: self.gameId)
-                    //                            .background(self.gameDataStore.colors["darkButNotBlack"]!)
-                    //                            .cornerRadius(5, corners: [.topLeft, .topRight])
-                    //                            .KeyboardAwarePadding()
-                    //                            .transition(.move(edge: .bottom))
-                    //                            .animation(.default)
-                    //                    }
-                    //
+                        
+                    Text("TAP THIS TO TOGGLE BOTTOM POPUP")
+                        .onTapGesture {
+                            self.isBottomPopupOn.toggle()
+                    }
+                    
                     //                    if self.gameDataStore.isBlockPopupActiveByForumId[self.gameId] == true {
                     //                        BlockUserPopupView(forumId: self.gameId)
                     //                            .background(self.gameDataStore.colors["darkButNotBlack"]!)

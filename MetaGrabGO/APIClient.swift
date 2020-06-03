@@ -40,6 +40,12 @@ enum EndPoint: String, CodingKey {
     // post thread
     case postThreadByGameId = "post_thread_by_game_id"
     
+    // post comment
+    case postCommentByThreadId = "post_comment_by_thread_id"
+    
+    // fetch comments
+    case getCommentTreeByThreadId = "get_comment_tree_by_thread_id"
+    
     // follow games
     case getFollowGameByUserId = "get_followed_games_by_user_id"
     case followGameByGameId = "follow_game_by_game_id"
@@ -58,6 +64,7 @@ enum EndPoint: String, CodingKey {
     case hideCommentByUserId = "hide_comment_by_user_id"
     case unhideCommentByUserId = "unhide_comment_by_user_id"
     
+    // black list and hide
     case blockUser = "add_user_to_blacklist_by_user_id"
     case unblockUser = "remove_user_from_blacklist_by_user_id"
     case getBlacklist = "get_blacklisted_users_by_user_id"
@@ -77,6 +84,9 @@ enum EndPoint: String, CodingKey {
     case addEmojiByThreadId = "add_new_emoji_by_thread_id"
     case removeEmojiByThreadId = "remove_emoji_by_thread_id"
     case deleteVoteByVoteIdThread = "delete_vote_by_vote_id_thread"
+    
+    // report
+    case addReportByThreadId = "add_report_by_thread_id"
     
 }
 

@@ -26,7 +26,7 @@ struct FrontHubView: View {
             
             GeometryReader { a in
                 VStack(alignment: .leading) {
-                    ScrollView(.vertical, showsIndicators: true) {
+                    List(.vertical, showsIndicators: true) {
                         VStack(alignment: .leading) {
                             Text("FRONT PAGE")
                                 .font(.title)

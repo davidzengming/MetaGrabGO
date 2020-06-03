@@ -12,7 +12,14 @@ struct ThreadRow : View {
     @EnvironmentObject var assetsDataStore: AssetsDataStore
     @EnvironmentObject var userDataStore: UserDataStore
     @ObservedObject var threadDataStore: ThreadDataStore
-    @ObservedObject var bottomBarStateDataStore: BottomBarStateDataStore
+    
+
+    
+    
+    var turnBottomPopup: () -> Void
+//    var toggleBottomBarState: (_ state: BottomBarState) -> Void
+//    var togglePickedThreadId: (_ threadId: Int) -> Void
+//    var togglePickedUser: (_ user: User) -> Void
     
     var width: CGFloat
     var height: CGFloat
@@ -23,17 +30,24 @@ struct ThreadRow : View {
     let threadsFromBottomToGetReadyToLoadNextPage = 1
     let threadsPerNewPageCount = 10
     
-    //    func onClickUser() {
-    //        if self.gameDataStore.users[self.gameDataStore.threads[self.threadId]!.author]!.id == self.userDataStore.token!.userId {
-    //            return
-    //        }
-    //
-    //        self.gameDataStore.isAddEmojiModalActiveByForumId[self.gameDataStore.threads[self.threadId]!.forum] = false
-    //        self.gameDataStore.isReportPopupActiveByForumId[self.gameId] = false
-    //
-    //        self.gameDataStore.lastClickedBlockUserByForumId[self.gameId] = self.gameDataStore.users[self.gameDataStore.threads[self.threadId]!.author]!.id
-    //        self.gameDataStore.isBlockPopupActiveByForumId[self.gameId] = true
-    //    }
+//    init(threadDataStore: ThreadDataStore, turnBottomPopUp: @escaping () -> Void, width: CGFloat, height: CGFloat) {
+//        self.threadDataStore = threadDataStore
+//        self.turnBottomPopup = turnBottomPopUp
+//
+//        self.width = width
+//        self.height = height
+//    }
+    
+    func onClickUser() {
+        if self.threadDataStore.author.id == self.userDataStore.token!.userId {
+            print("Cannot report self.")
+            return
+        }
+//
+//        self.togglePickedUser(self.threadDataStore.author)
+//        self.toggleBottomBarState(.blockUser)
+//        self.turnBottomPopup(true)
+    }
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -48,9 +62,9 @@ struct ThreadRow : View {
                 VStack(alignment: .leading, spacing: 0) {
                     Text(self.threadDataStore.author.username)
                         .frame(height: self.height * 0.025, alignment: .leading)
-                    //                        .onTapGesture {
-                    //                            self.onClickUser()
-                    //                    }
+                        .onTapGesture {
+                            self.onClickUser()
+                    }
                     
                     Text(self.threadDataStore.relativeDateString!)
                         .font(.system(size: 14))
@@ -62,25 +76,26 @@ struct ThreadRow : View {
             }
             .frame(width: self.width, height: self.height * 0.045, alignment: .leading)
             .padding(.bottom, 10)
+            
             //
-            //            NavigationLink(destination: ThreadView(threadId: self.threadId, gameId: self.gameId)) {
-            VStack(alignment: .leading) {
-                HStack {
-                    if self.threadDataStore.thread.title.count > 0 {
-                        Text(self.threadDataStore.thread.title)
-                            .fontWeight(.medium)
-                        Spacer()
+            NavigationLink(destination: LazyView { ThreadView(threadDataStore: self.threadDataStore) }) {
+                VStack(alignment: .leading) {
+                    HStack {
+                        if self.threadDataStore.thread.title.count > 0 {
+                            Text(self.threadDataStore.thread.title)
+                                .fontWeight(.medium)
+                            Spacer()
+                        }
+                    }
+                    
+                    if self.threadDataStore.textStorage.length > 0 {
+                        FancyPantsEditorView(existedTextStorage: self.$threadDataStore.textStorage, desiredHeight: self.$threadDataStore.desiredHeight,  newTextStorage: .constant(NSTextStorage(string: "")), isEditable: .constant(false), isFirstResponder: .constant(false), didBecomeFirstResponder: .constant(false), showFancyPantsEditorBar: .constant(false), isNewContent: false, isThread: true, threadId: self.threadDataStore.thread.id, isOmniBar: false)
+                            .frame(width: self.width * 0.9, height: min(self.threadDataStore.desiredHeight, 200), alignment: .leading)
                     }
                 }
-                
-                if self.threadDataStore.textStorage.length > 0 {
-                    FancyPantsEditorView(existedTextStorage: self.$threadDataStore.textStorage, desiredHeight: self.$threadDataStore.desiredHeight,  newTextStorage: .constant(NSTextStorage(string: "")), isEditable: .constant(false), isFirstResponder: .constant(false), didBecomeFirstResponder: .constant(false), showFancyPantsEditorBar: .constant(false), isNewContent: false, isThread: true, threadId: self.threadDataStore.thread.id, isOmniBar: false)
-                        .frame(width: self.width * 0.9, height: min(self.threadDataStore.desiredHeight, 200), alignment: .leading)
-                }
             }
-                //            }
-                .buttonStyle(PlainButtonStyle())
-                .padding(.bottom, 10)
+            .buttonStyle(PlainButtonStyle())
+            .padding(.bottom, 10)
             
             HStack(spacing: 10) {
                 ForEach(self.threadDataStore.imageArr, id: \.self) { index in
@@ -92,6 +107,9 @@ struct ThreadRow : View {
                 }
             }
             .padding(.vertical, 10)
+            .onAppear() {
+                print("hihi")
+            }
             
             VStack(alignment: .leading, spacing: 20) {
                 HStack(spacing: 10) {
@@ -106,39 +124,40 @@ struct ThreadRow : View {
                     }
                     .frame(height: self.height * 0.025, alignment: .leading)
                     
-                    //                    HStack {
-                    //                        if self.gameDataStore.isThreadHiddenByThreadId[self.threadId]! == true {
-                    //                            Text("Unhide")
-                    //                                .bold()
-                    //                                .onTapGesture {
-                    //                                    self.gameDataStore.unhideThread(access: self.userDataStore.token!.access, threadId: self.threadId)
-                    //                            }
-                    //                        } else {
-                    //                            Text("Hide")
-                    //                                .bold()
-                    //                                .onTapGesture {
-                    //                                    self.gameDataStore.hideThread(access: self.userDataStore.token!.access, threadId: self.threadId)
-                    //                            }
-                    //                        }
-                    //                    }
-                    //
-                    //                    HStack {
-                    //                        Text("Report")
-                    //                            .bold()
-                    //                            .onTapGesture {
-                    //                                self.gameDataStore.isBlockPopupActiveByForumId[self.gameId] = false
-                    //                                self.gameDataStore.isAddEmojiModalActiveByForumId[self.gameDataStore.threads[self.threadId]!.forum] = false
-                    //                                self.gameDataStore.lastClickedReportThreadByForumId[self.gameId] = self.threadId
-                    //                                self.gameDataStore.isReportPopupActiveByForumId[self.gameId] = true
-                    //                        }
-                    //                    }
+                    HStack {
+                        if self.threadDataStore.isHidden == true {
+                            Text("Unhide")
+                                .bold()
+                                .onTapGesture {
+                                    self.threadDataStore.unhideThread(access: self.userDataStore.token!.access, threadId: self.threadDataStore.thread.id)
+                            }
+                        } else {
+                            Text("Hide")
+                                .bold()
+                                .onTapGesture {
+                                    self.threadDataStore.hideThread(access: self.userDataStore.token!.access, threadId: self.threadDataStore.thread.id)
+                            }
+                        }
+                    }
+                    
+                    HStack {
+                        Text("Report")
+                            .bold()
+                            .onTapGesture {
+//                                self.bottomBarStateDataStore.togglePickedThreadId(threadId: self.threadDataStore.thread.id)
+//                                self.bottomBarStateDataStore.toggleBottomBarState(state: .reportThread)
+//                                self.bottomBarStateDataStore.turnBottomPopup(state: true)
+                        }
+                    }
                     
                     Spacer()
                 }
                 .foregroundColor(Color.gray)
                 .frame(width: self.width * 0.9)
                 
-                EmojiBarThreadView(threadDataStore: self.threadDataStore, bottomBarStateDataStore: self.bottomBarStateDataStore)
+                EmojiBarThreadView(threadDataStore: self.threadDataStore, turnBottomPopup: { self.turnBottomPopup() })
+//
+//                                   toggleBottomBarState: self.toggleBottomBarState, togglePickedThreadId: self.togglePickedThreadId, togglePickedUser: self.togglePickedUser)
             }
             .padding(.top, 10)
         }
