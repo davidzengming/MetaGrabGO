@@ -21,6 +21,8 @@ struct NewThreadView: View {
     
     @ObservedObject var forumDataStore: ForumDataStore
     
+    var containerWidth: CGFloat
+    
     @State var title: String = ""
     @State var flair = 0
     @State var content: NSTextStorage = NSTextStorage(string: "")
@@ -39,10 +41,10 @@ struct NewThreadView: View {
     func submitThread() {
         if self.showImagePicker == true {
             self.showImagePicker = false
-            self.forumDataStore.submitThread(forumDataStore: self.forumDataStore, access:self.userDataStore.token!.access, title: self.title, flair: self.flair, content: self.content, imageData: self.dataDict, imagesArray: self.imagesArray, userId: self.userDataStore.token!.userId)
+            self.forumDataStore.submitThread(forumDataStore: self.forumDataStore, access:self.userDataStore.token!.access, title: self.title, flair: self.flair, content: self.content, imageData: self.dataDict, imagesArray: self.imagesArray, userId: self.userDataStore.token!.userId, containerWidth: self.containerWidth)
             self.presentationMode.wrappedValue.dismiss()
         } else {
-            self.forumDataStore.submitThread(forumDataStore: self.forumDataStore, access:self.userDataStore.token!.access, title: self.title, flair: self.flair, content: self.content, imageData: self.dataDict, imagesArray: self.imagesArray, userId: self.userDataStore.token!.userId)
+            self.forumDataStore.submitThread(forumDataStore: self.forumDataStore, access:self.userDataStore.token!.access, title: self.title, flair: self.flair, content: self.content, imageData: self.dataDict, imagesArray: self.imagesArray, userId: self.userDataStore.token!.userId, containerWidth: self.containerWidth)
             self.presentationMode.wrappedValue.dismiss()
         }
     }

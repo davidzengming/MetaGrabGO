@@ -13,19 +13,18 @@ struct ReportPopupView: View {
     @ObservedObject var forumDataStore: ForumDataStore
     
     @Binding var pickedThreadId: Int
-    
-//    var turnBottomPopup: (_ state: Bool) -> Void
-//    var toggleBottomBarState: (_ state: BottomBarState) -> Void
-//    var togglePickedThreadId: (_ threadId: Int) -> Void
-//    var togglePickedUser: (_ user: User) -> Void
+    var turnBottomPopup: (Bool) -> Void
+    var toggleBottomBarState: (BottomBarState) -> Void
+    var togglePickedUser: (User) -> Void
+    var togglePickedThreadId: (Int) -> Void
     
     @State var reportReason: String = ""
     @State var isSendingReport = false
     
     func dismissView() {
-//        self.togglePickedThreadId(-1)
-//        self.toggleBottomBarState(.inActive)
-//        self.turnBottomPopup(false)
+        self.togglePickedThreadId(-1)
+        self.toggleBottomBarState(.inActive)
+        self.turnBottomPopup(false)
     }
     
     func submitReport() {

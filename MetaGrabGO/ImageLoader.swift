@@ -40,7 +40,11 @@ class ImageLoader: ObservableObject {
         if let image = cache?[self.url] {
             DispatchQueue.main.async {
                 self.imageHeight = image.size.height
-                self.downloadedImage = image
+                
+                withAnimation() {
+                    self.downloadedImage = image
+                }
+                
                 dispatchGroup?.leave()
             }
             

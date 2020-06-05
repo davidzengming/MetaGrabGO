@@ -23,7 +23,7 @@ class ForumDataStore: ObservableObject {
     @Published var forumNextPageStartIndex : Int?
     @Published var isLoaded: Bool
     @Published var isLoadingNextPage: Bool = false
-    
+
     let API = APIClient()
     
     init(game: Game, isFollowed: Bool) {
@@ -95,7 +95,7 @@ class ForumDataStore: ObservableObject {
         }.resume()
     }
     
-    func fetchThreads(access: String, start:Int = 0, count:Int = 10, refresh: Bool = false, userId: Int) {
+    func fetchThreads(access: String, start:Int = 0, count:Int = 10, refresh: Bool = false, userId: Int, containerWidth: CGFloat) {
         if self.isLoadingNextPage == true {
             return
         }
@@ -144,7 +144,7 @@ class ForumDataStore: ObservableObject {
                             
                             let author = thread.users[0]
                             
-                            self.threadDataStores[thread.id] = ThreadDataStore(gameId: self.game.id, thread: thread, vote: myVote, author: author, cache: self.cache, emojiArr: thread.emojis!.emojisIdArr, emojiReactionCount: thread.emojis!.emojiReactionCountDict, userArrPerEmoji: thread.emojis!.userArrPerEmojiDict, didReactToEmojiDict: thread.emojis!.didReactToEmojiDict)
+                            self.threadDataStores[thread.id] = ThreadDataStore(gameId: self.game.id, thread: thread, vote: myVote, author: author, cache: self.cache, emojiArr: thread.emojis!.emojisIdArr, emojiReactionCount: thread.emojis!.emojiReactionCountDict, userArrPerEmoji: thread.emojis!.userArrPerEmojiDict, didReactToEmojiDict: thread.emojis!.didReactToEmojiDict, containerWidth: containerWidth)
                             
                             self.childThreadSubs[thread.id] = self.threadDataStores[thread.id]!.objectWillChange.receive(on: DispatchQueue.main).sink(receiveValue: {[weak self] _ in self?.objectWillChange.send()
                             })
@@ -171,7 +171,7 @@ class ForumDataStore: ObservableObject {
     }
     
     func submitThread(forumDataStore: ForumDataStore, access: String, title: String, flair: Int, content: NSTextStorage, imageData: [UUID: Data], imagesArray: [UUID], userId:
-        Int) {
+        Int, containerWidth: CGFloat) {
         
         let cloudinary = CLDCloudinary(configuration: CLDConfiguration(cloudName: "dzengcdn", apiKey: "348513889264333", secure: true))
         let taskGroup = DispatchGroup()
@@ -214,7 +214,7 @@ class ForumDataStore: ObservableObject {
                         let vote = tempNewThreadResponse.voteResponse
                         
                         DispatchQueue.main.async {
-                            self.threadDataStores[tempThread.id] = ThreadDataStore(gameId: forumDataStore.game.id, thread: tempThread, vote: vote, author: tempThread.users[0], cache: self.cache, emojiArr: tempThread.emojis!.emojisIdArr, emojiReactionCount: tempThread.emojis!.emojiReactionCountDict, userArrPerEmoji: tempThread.emojis!.userArrPerEmojiDict, didReactToEmojiDict: tempThread.emojis!.didReactToEmojiDict)
+                            self.threadDataStores[tempThread.id] = ThreadDataStore(gameId: forumDataStore.game.id, thread: tempThread, vote: vote, author: tempThread.users[0], cache: self.cache, emojiArr: tempThread.emojis!.emojisIdArr, emojiReactionCount: tempThread.emojis!.emojiReactionCountDict, userArrPerEmoji: tempThread.emojis!.userArrPerEmojiDict, didReactToEmojiDict: tempThread.emojis!.didReactToEmojiDict, containerWidth: containerWidth)
                             
                             self.childThreadSubs[tempThread.id] = self.threadDataStores[tempThread.id]!.objectWillChange.receive(on: DispatchQueue.main).sink(receiveValue: {[weak self] _ in self?.objectWillChange.send()
                             })
@@ -258,14 +258,16 @@ class ThreadDataStore: ObservableObject {
     
     @Published var imageLoaders: [Int: ImageLoader] = [:]
     @Published var imageArr: [Int] = []
-    @Published var didLoadImages = false
     @Published var isHidden: Bool = false
     
     @Published var threadNextPageStartIndex: Int?
     
     private var childCommentSubs = [Int: AnyCancellable]()
+    private var imageLoaderSubs = [Int: AnyCancellable]()
     
     @ObservedObject var emojis: EmojiDataStore
+    
+    @Published var areCommentsLoaded: Bool = false
     
     private var emojisSub: AnyCancellable?
     var threadImagesHeight: CGFloat = 0
@@ -277,11 +279,12 @@ class ThreadDataStore: ObservableObject {
     
     let API = APIClient()
     
-    init(gameId: Int, thread: Thread, vote: Vote?, author: User, cache: ImageCache, emojiArr: [Int], emojiReactionCount: [Int: Int], userArrPerEmoji: [Int: [User]], didReactToEmojiDict: [Int: Bool]) {
-        self.desiredHeight = 0
+    init(gameId: Int, thread: Thread, vote: Vote?, author: User, cache: ImageCache, emojiArr: [Int], emojiReactionCount: [Int: Int], userArrPerEmoji: [Int: [User]], didReactToEmojiDict: [Int: Bool], containerWidth: CGFloat) {
         self.relativeDateString = RelativeDateTimeFormatter().localizedString(for: thread.created, relativeTo: Date())
-        self.textStorage = generateTextStorageFromJson(contentString: thread.contentString, contentAttributes: thread.contentAttributes)
+        let textStorage = generateTextStorageFromJson(contentString: thread.contentString, contentAttributes: thread.contentAttributes)
         
+        self.textStorage = textStorage
+        self.desiredHeight = textStorage.height(containerWidth: containerWidth)
         self.gameId = gameId
         self.thread = thread
         self.vote = vote
@@ -302,32 +305,27 @@ class ThreadDataStore: ObservableObject {
     func mountImages() {
         for (index, imageUrl) in thread.imageUrls.urls.enumerated() {
             imageLoaders[index] = ImageLoader(url: imageUrl, cache: cache, whereIsThisFrom: "thread: " + String(self.thread.id) + " image: " + String(index), loadManually: true)
-            
+            self.imageLoaderSubs[index] = imageLoaders[index]!.objectWillChange.receive(on: DispatchQueue.main).sink(receiveValue: {[weak self] _ in self?.objectWillChange.send() })
             imageArr.append(index)
         }
     }
     
     func loadImages() {
-        if didLoadImages == true {
-            return
-        }
-        
         let taskGroup = DispatchGroup()
         
         for index in imageArr {
             imageLoaders[index]!.load(dispatchGroup: taskGroup)
         }
-        
-        taskGroup.notify(queue: .global()) {
-            var maxHeight: CGFloat = 0
-            for index in self.imageArr {
-                maxHeight = max(maxHeight, self.imageLoaders[index]!.imageHeight!)
-            }
-            
-            self.threadImagesHeight = maxHeight
-            self.didLoadImages = true
-            print("did load thread: ", self.thread.id)
-        }
+
+        // need to add on server side remember image size
+//        taskGroup.notify(queue: .global()) {
+//            var maxHeight: CGFloat = 0
+//            for index in self.imageArr {
+//                maxHeight = max(maxHeight, self.imageLoaders[index]!.imageHeight!)
+//            }
+//
+//            self.threadImagesHeight = maxHeight
+//        }
     }
     
     func upvoteByExistingVoteId(access: String, user: User, taskGroup: DispatchGroup? = nil) {
@@ -716,8 +714,11 @@ class ThreadDataStore: ObservableObject {
             self.childCommentSubs = [:]
             
             DispatchQueue.main.async {
-                self.childCommentList = []
-                self.childComments = [:]
+                if self.areCommentsLoaded == true {
+                    self.areCommentsLoaded = false
+                    self.childCommentList = []
+                    self.childComments = [:]
+                }
             }
         }
         
@@ -819,6 +820,7 @@ class ThreadDataStore: ObservableObject {
                         }
                         
                         self.childCommentList += firstLevelArr
+                        self.areCommentsLoaded = true
                     }
                 }
             }

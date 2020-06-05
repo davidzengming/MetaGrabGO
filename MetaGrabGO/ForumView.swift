@@ -35,60 +35,49 @@ struct ForumView : View {
     
     @ObservedObject var forumDataStore: ForumDataStore
     @ObservedObject var gameIconLoader: ImageLoader
-
+    
     @State var isBottomPopupOn = false
     @State var bottomBarState: BottomBarState = .addEmoji
     @State var pickedThreadId: Int = -1
     @State var pickedUser: User = User(id: -1, username: "placeholder")
     
-    func turnBottomPopup() {
-//        let state = true
-//        if self.isBottomPopupOn == state {
-//            return
-//        }
-        
-//            self.bottomBarState = .addEmoji
-            self.isBottomPopupOn.toggle()
+    func turnBottomPopup(state: Bool) {
+        if self.isBottomPopupOn != state {
+            self.isBottomPopupOn = state
+        }
     }
     
     func toggleBottomBarState(state: BottomBarState) {
         if self.bottomBarState == state {
             return
         }
-        DispatchQueue.main.async {
-            self.bottomBarState = state
-        }
+        self.bottomBarState = state
     }
     
     func togglePickedThreadId(threadId: Int) {
         if self.pickedThreadId == threadId {
             return
         }
-        
-        DispatchQueue.main.async {
-            self.pickedThreadId = threadId
-        }
+        self.pickedThreadId = threadId
     }
     
     func togglePickedUser(user: User) {
         if self.pickedUser == user {
             return
         }
-        
-        DispatchQueue.main.async {
-            self.pickedUser = user
-        }
+        self.pickedUser = user
     }
-
-
+    
+    
     init(forumDataStore: ForumDataStore, gameIconLoader: ImageLoader) {
         // To remove only extra separators below the list:
         // UITableView.appearance().tableFooterView = UIView()
         self.forumDataStore = forumDataStore
         self.gameIconLoader = gameIconLoader
         
+        // Navigation related
         // To remove all separators including the actual ones:
-        UITableView.appearance().separatorStyle = .none
+        //        UITableView.appearance().separatorStyle = .none
         // for navigation bar title color
         UINavigationBar.appearance().titleTextAttributes = [NSAttributedString.Key.foregroundColor:UIColor.white]
         // For navigation bar background color
@@ -96,6 +85,14 @@ struct ForumView : View {
         //        UINavigationBar.appearance().setBackgroundImage(UIImage(), for: .default) //makes status bar translucent
         UINavigationBar.appearance().tintColor = .white
         //        UINavigationBar.appearance().backgroundColor = .clear
+        
+        // List related
+        UITableView.appearance().backgroundColor = .clear
+        UITableViewCell.appearance().backgroundColor = .clear
+        UITableView.appearance().tableFooterView = UIView()
+        // To remove all separators including the actual ones:
+        UITableView.appearance().separatorStyle = .none
+        //        UITableView.appearance().separatorColor = .clear
     }
     
     private func followGame() {
@@ -113,136 +110,133 @@ struct ForumView : View {
             
             GeometryReader { a in
                 ZStack(alignment: .bottom) {
-                    VStack(spacing: 0) {
-                        ScrollView(.vertical) {
+                    List {
+//                        VStack(spacing: 0) {
                             VStack(spacing: 0) {
-                                VStack {
-                                    HStack {
-                                        if self.gameIconLoader.downloadedImage != nil {
-                                            Image(uiImage: self.gameIconLoader.downloadedImage!)
-                                                .resizable()
-                                                .aspectRatio(contentMode: .fill)
-                                                .frame(width: a.size.width * 0.15, height: a.size.width * 0.15, alignment: .leading)
-                                                .cornerRadius(5, corners: [.topLeft, .topRight, .bottomLeft, .bottomRight])
-                                                .overlay(
-                                                    RoundedRectangle(cornerRadius: 5)
-                                                        .stroke(Color.white, lineWidth: 2)
-                                            )
-                                        }
-                                        VStack(alignment: .leading) {
-                                            Text(self.forumDataStore.game.name)
-                                                .font(.system(size: a.size.width * 0.06))
-                                                .foregroundColor(Color.white)
-                                                .bold()
-                                            
-                                            HStack {
-                                                Text("Posts " + String(self.forumDataStore.game.threadCount))
-                                                    .foregroundColor(Color.white)
-                                                Text("Follows " + String(self.forumDataStore.game.followerCount))
-                                                    .foregroundColor(Color.white)
-                                            }
-                                            .font(.system(size: a.size.width * 0.04))
-                                        }
-                                        .padding()
-                                        Spacer()
+                                HStack(spacing: 0) {
+                                    if self.gameIconLoader.downloadedImage != nil {
+                                        Image(uiImage: self.gameIconLoader.downloadedImage!)
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fill)
+                                            .frame(width: a.size.width * 0.15, height: a.size.width * 0.15, alignment: .leading)
+                                            .cornerRadius(5, corners: [.topLeft, .topRight, .bottomLeft, .bottomRight])
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 5)
+                                                    .stroke(Color.white, lineWidth: 2)
+                                        )
+                                    }
+                                    VStack(alignment: .leading, spacing: 0) {
+                                        Text(self.forumDataStore.game.name)
+                                            .font(.system(size: a.size.width * 0.06))
+                                            .foregroundColor(Color.white)
+                                            .bold()
                                         
-                                        Text("Follow")
-                                            .font(.system(size: a.size.width * 0.04))
-                                            .padding(.horizontal, a.size.width * 0.05)
-                                            .padding(.vertical, a.size.width * 0.025)
-                                            .foregroundColor(self.forumDataStore.isFollowed == true ? Color.white : Color.black)
-                                            .background(self.forumDataStore.isFollowed == true ? Color.black : Color.white)
-                                            
-                                            .cornerRadius(a.size.width * 0.5)
-                                            .shadow(radius: a.size.width * 0.05)
-                                            .onTapGesture {
-                                                if self.forumDataStore.isFollowed == true {
-                                                    self.unfollowGame()
-                                                } else {
-                                                    self.followGame()
-                                                }
+                                        HStack {
+                                            Text("Posts " + String(self.forumDataStore.game.threadCount))
+                                                .foregroundColor(Color.white)
+                                            Text("Follows " + String(self.forumDataStore.game.followerCount))
+                                                .foregroundColor(Color.white)
                                         }
+                                        .font(.system(size: a.size.width * 0.04))
                                     }
-                                    .frame(width: a.size.width * 0.9)
-                                }
-                                .frame(width: a.size.width, height: a.size.width * 0.15)
-                                .padding(.vertical, 30)
-                                
-                                VStack {
-                                    Text("No stickied posts at the moment~")
-                                        .bold()
-                                        .foregroundColor(Color.gray)
-                                        .italic()
-                                        .padding()
-                                        .padding(.top, 10)
-                                }
-                                .frame(width: a.size.width)
-                                .background(Color.white)
-                                .cornerRadius(15, corners: [.topLeft, .topRight])
-                                
-                                VStack {
-                                    if self.forumDataStore.isLoaded == false {
-                                        Color.white
-                                            .frame(width: a.size.width, height: a.size.height * 0.3)
-                                    } else {
-                                        if self.forumDataStore.threadsList.count > 0 {
-                                            ForEach(self.forumDataStore.threadsList, id: \.self) { threadId in
-                                                VStack {
-                                                    Divider()
-                                                    
-                                                    if self.forumDataStore.threadDataStores[threadId]!.didLoadImages {
-                                                        ThreadRow(threadDataStore: self.forumDataStore.threadDataStores[threadId]!, turnBottomPopup: { self.turnBottomPopup() }, width: a.size.width * 0.9, height: a.size.height)
-                                                        
-                                                            .background(Color.white)
-
-                                                            .frame(width: a.size.width, height: a.size.height * 0.045 + 10 + 10 + (self.forumDataStore.threadDataStores[threadId]!.thread.title.isEmpty == false ? 16 : 0) + min(self.forumDataStore.threadDataStores[threadId]!.desiredHeight, 200)
-                                                                + 10
-                                                                + max(a.size.height * 0.1, min(a.size.height * 0.15, self.forumDataStore.threadDataStores[threadId]!.threadImagesHeight) + 20)
-                                                                + a.size.height * 0.025 + CGFloat(self.forumDataStore.threadDataStores[threadId]!.emojis.emojiArr.count) * 30
-                                                                + 40 + 20 + 20
-                                                        )
-                                                    }
-                                                }
+                                    .padding()
+                                    Spacer()
+                                    
+                                    Text("Follow")
+                                        .font(.system(size: a.size.width * 0.04))
+                                        .padding(.horizontal, a.size.width * 0.05)
+                                        .padding(.vertical, a.size.width * 0.025)
+                                        .foregroundColor(self.forumDataStore.isFollowed == true ? Color.white : Color.black)
+                                        .background(self.forumDataStore.isFollowed == true ? Color.black : Color.white)
+                                        
+                                        .cornerRadius(a.size.width * 0.5)
+                                        .shadow(radius: a.size.width * 0.05)
+                                        .onTapGesture {
+                                            if self.forumDataStore.isFollowed == true {
+                                                self.unfollowGame()
+                                            } else {
+                                                self.followGame()
                                             }
-                                        } else {
-                                            VStack {
-                                                Image(systemName: "pencil.circle.fill")
-                                                    .resizable()
-                                                    .scaledToFit()
-                                                    .frame(width: a.size.width * 0.3, height: a.size.width * 0.3)
-                                                    .padding()
-                                                    .foregroundColor(Color(.lightGray))
-                                                Text("Create the very first post.")
-                                                    .bold()
-                                                    .foregroundColor(Color(.lightGray))
-                                                    .padding()
-                                            }
-                                            .frame(width: a.size.width, height: a.size.height * 0.3)
-                                        }
                                     }
                                 }
-                                .background(Color.white)
-                                .frame(width: a.size.width)
-                                .background(self.assetsDataStore.colors["darkButNotBlack"])
-                                
-                                ForumLoadMoreView(forumDataStore: self.forumDataStore)
-                                    .frame(width: a.size.width, height: a.size.height * 0.1)
+                                .frame(width: a.size.width * 0.9)
                             }
-                        }
-                        .frame(width: a.size.width, height: a.size.height)
-                        //                        .frame(width: a.size.width, height: self.gameDataStore.forumsNextPageStartIndex[self.gameId] != nil && self.gameDataStore.forumsNextPageStartIndex[self.gameId]! != -1 ? a.size.height * 0.95 : a.size.height)
+                            .frame(width: a.size.width, height: a.size.width * 0.15)
+                            .padding(.vertical, 30)
+                            .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
+                            
+                            VStack(spacing: 0) {
+                                Text("No stickied posts at the moment~")
+                                    .bold()
+                                    .foregroundColor(Color.gray)
+                                    .italic()
+                                    .padding()
+                                    .padding(.top, 10)
+                            }
+                            .frame(width: a.size.width)
+                            .background(Color.white)
+                            .cornerRadius(15, corners: [.topLeft, .topRight])
+                        .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
+                            
+                            if self.forumDataStore.isLoaded == false {
+                                Color.white
+                                    .frame(width: a.size.width, height: a.size.height * 0.3)
+                                .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
+                            } else {
+                                if self.forumDataStore.isLoaded == true && self.forumDataStore.threadsList.count > 0 {
+//                                    VStack(spacing: 0) {
+                                        ForEach(self.forumDataStore.threadsList, id: \.self) { threadId in
+                                            VStack {
+                                                Divider()
+                                                ThreadRow(threadDataStore: self.forumDataStore.threadDataStores[threadId]!, turnBottomPopup: { state in self.turnBottomPopup(state: state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state: state)}, togglePickedUser: { pickedUser in self.togglePickedUser(user: pickedUser)}, togglePickedThreadId: { pickedThreadId in self.togglePickedThreadId(threadId: pickedThreadId)}, width: a.size.width * 0.9, height: a.size.height)
+                                                    .frame(width: a.size.width, height: a.size.height * 0.045 + 10 + 10 + (self.forumDataStore.threadDataStores[threadId]!.thread.title.isEmpty == false ? 16 : 0) + min(self.forumDataStore.threadDataStores[threadId]!.desiredHeight, 200)
+                                                        + 10
+                                                        + (a.size.height * 0.15 + 20)
+                                                        + a.size.height * 0.025 + CGFloat(self.forumDataStore.threadDataStores[threadId]!.emojis.emojiArr.count) * 30
+                                                        + 40 + 20 + 20
+                                                )
+                                                    .background(Color.white)
+                                            }
+                                            .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
+//                                        }
+                                    }
+                                    .background(Color.white)
+                                } else {
+                                    VStack(spacing: 0) {
+                                        Image(systemName: "pencil.circle.fill")
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(width: a.size.width * 0.3, height: a.size.width * 0.3)
+                                            .padding()
+                                            .foregroundColor(Color(.lightGray))
+                                        Text("Create the very first post.")
+                                            .bold()
+                                            .foregroundColor(Color(.lightGray))
+                                            .padding()
+                                    }
+                                    .frame(width: a.size.width, height: a.size.height * 0.3)
+                                    .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
+                                }
+                            }
+                            
+                        ForumLoadMoreView(forumDataStore: self.forumDataStore, containerWidth: a.size.width * 0.81)
+                                .frame(width: a.size.width, height: a.size.height * 0.1)
+                        .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
+                            
+                            //                        .frame(width: a.size.width, height: self.gameDataStore.forumsNextPageStartIndex[self.gameId] != nil && self.gameDataStore.forumsNextPageStartIndex[self.gameId]! != -1 ? a.size.height * 0.95 : a.size.height)
+//                        }
+//
                     }
+                    .frame(width: a.size.width, height: a.size.height)
                     .navigationBarTitle(Text(self.forumDataStore.game.name), displayMode: .inline)
                     .onAppear() {
-                        //                        if self.gameDataStore.isBackToGamesView {
-                        self.forumDataStore.fetchThreads(access: self.userDataStore.token!.access, userId: self.userDataStore.token!.userId)
-                        //                            self.gameDataStore.isBackToGamesView = false
-                        ////                        }
-                        //
-                        self.forumDataStore.insertGameHistory(access: self.userDataStore.token!.access, gameId: self.forumDataStore.game.id)
+                        if self.forumDataStore.isLoaded == false {
+                            self.forumDataStore.fetchThreads(access: self.userDataStore.token!.access, userId: self.userDataStore.token!.userId, containerWidth: a.size.width * 0.81)
+                            self.forumDataStore.insertGameHistory(access: self.userDataStore.token!.access, gameId: self.forumDataStore.game.id)
+                        }
                     }
                     
-                    NavigationLink(destination: NewThreadView(forumDataStore: self.forumDataStore)) {
+                    NavigationLink(destination: NewThreadView(forumDataStore: self.forumDataStore, containerWidth: a.size.width * 0.81)) {
                         NewThreadButton()
                             .frame(width: min(a.size.width, a.size.height) * 0.12, height: min(a.size.width, a.size.height) * 0.12, alignment: .center)
                             .shadow(radius: 10)
@@ -251,15 +245,14 @@ struct ForumView : View {
                     
                     if self.isBottomPopupOn == true {
                         VStack {
-                            Text("hi")
                             if self.bottomBarState == .addEmoji {
-                                EmojiPickerPopupView(forumDataStore: self.forumDataStore, pickedThreadId: self.$pickedThreadId, turnBottomPopup: { self.turnBottomPopup() })
+                                EmojiPickerPopupView(forumDataStore: self.forumDataStore, pickedThreadId: self.$pickedThreadId, turnBottomPopup: { state in self.turnBottomPopup(state: state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state: state)}, togglePickedUser: { pickedUser in self.togglePickedUser(user: pickedUser)}, togglePickedThreadId: { pickedThreadId in self.togglePickedThreadId(threadId: pickedThreadId)})
+                            } else if self.bottomBarState == .reportThread {
+                                ReportPopupView(forumDataStore: self.forumDataStore, pickedThreadId: self.$pickedThreadId, turnBottomPopup: { state in self.turnBottomPopup(state: state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state: state)}, togglePickedUser: { pickedUser in self.togglePickedUser(user: pickedUser)}, togglePickedThreadId: { pickedThreadId in self.togglePickedThreadId(threadId: pickedThreadId)})
+                                
+                            } else if self.bottomBarState == .blockUser {
+                                BlockUserPopupView(blockHiddenDataStore: BlockHiddenDataStore(), pickedUser: self.$pickedUser, turnBottomPopup: { state in self.turnBottomPopup(state: state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state: state)}, togglePickedUser: { pickedUser in self.togglePickedUser(user: pickedUser)}, togglePickedThreadId: { pickedThreadId in self.togglePickedThreadId(threadId: pickedThreadId)})
                             }
-//                            else if self.bottomBarState == .reportThread {
-//                                ReportPopupView(forumDataStore: self.forumDataStore, pickedThreadId: self.$pickedThreadId)
-//                            } else if self.bottomBarState == .blockUser {
-//                                BlockUserPopupView(blockHiddenDataStore: BlockHiddenDataStore(), pickedUser: self.$pickedUser)
-//                            }
                         }
                         .frame(width: a.size.width, height: a.size.height * 0.25)
                         .background(self.assetsDataStore.colors["darkButNotBlack"]!)
@@ -268,12 +261,6 @@ struct ForumView : View {
                         .transition(.move(edge: .bottom))
                         .animation(.default)
                     }
-                        
-                    Text("TAP THIS TO TOGGLE BOTTOM POPUP")
-                        .onTapGesture {
-                            self.isBottomPopupOn.toggle()
-                    }
-                    
                     //                    if self.gameDataStore.isBlockPopupActiveByForumId[self.gameId] == true {
                     //                        BlockUserPopupView(forumId: self.gameId)
                     //                            .background(self.gameDataStore.colors["darkButNotBlack"]!)

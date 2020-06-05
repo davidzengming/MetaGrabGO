@@ -16,6 +16,25 @@ extension UIFont {
     }
 }
 
+extension NSAttributedString {
+
+    func height(containerWidth: CGFloat) -> CGFloat {
+
+        let rect = self.boundingRect(with: CGSize.init(width: containerWidth, height: CGFloat.greatestFiniteMagnitude),
+                                     options: [.usesLineFragmentOrigin, .usesFontLeading],
+                                     context: nil)
+        return ceil(rect.size.height)
+    }
+
+    func width(containerHeight: CGFloat) -> CGFloat {
+
+        let rect = self.boundingRect(with: CGSize.init(width: CGFloat.greatestFiniteMagnitude, height: containerHeight),
+                                     options: [.usesLineFragmentOrigin, .usesFontLeading],
+                                     context: nil)
+        return ceil(rect.size.width)
+    }
+}
+
 import Foundation
 import SwiftUI
 
@@ -83,27 +102,33 @@ struct TextView: UIViewRepresentable {
         myTextView.textContainerInset = UIEdgeInsets.zero
         myTextView.textContainer.lineFragmentPadding = 0
         
-        DispatchQueue.main.async {
-            if self.isNewContent == false {
-                self.desiredHeight = ceil(TextViewHelper.calculateTextViewHeight(textView: myTextView))
-            } else {
-                if self.isOmniBar {
-                    self.desiredHeight = ceil(TextViewHelper.calculateTextViewHeight(textView: myTextView))
-                }
-            }
-        }
-        
+//        DispatchQueue.main.async {
+//            if self.isNewContent == false {
+//                let newDesiredHeight = ceil(TextViewHelper.calculateTextViewHeight(textView: myTextView))
+//                if newDesiredHeight != self.desiredHeight {
+//                    self.desiredHeight = newDesiredHeight
+//                }
+//
+//            } else {
+//                if self.isOmniBar {
+//                    self.desiredHeight = ceil(TextViewHelper.calculateTextViewHeight(textView: myTextView))
+//                }
+//            }
+//        }
+//
         return myTextView
     }
     
     func updateUIView(_ uiView: UITextView, context: Context) {
-        DispatchQueue.main.async {
-            if self.didBecomeFirstResponder && !self.isFirstResponder {
-                uiView.becomeFirstResponder()
-                self.isFirstResponder = true
-                self.didBecomeFirstResponder = false
-            }
-        }
+        
+        // there is a bug with this
+//        DispatchQueue.main.async {
+//            if self.didBecomeFirstResponder && !self.isFirstResponder {
+//                uiView.becomeFirstResponder()
+//                self.isFirstResponder = true
+//                self.didBecomeFirstResponder = false
+//            }
+//        }
         
         let leftCaretPos = uiView.selectedRange.location
         let rightCaretPos = uiView.selectedRange.location + uiView.selectedRange.length

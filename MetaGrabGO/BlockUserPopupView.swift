@@ -11,19 +11,17 @@ import SwiftUI
 struct BlockUserPopupView: View {
     @ObservedObject var blockHiddenDataStore: BlockHiddenDataStore
     @EnvironmentObject var userDataStore: UserDataStore
-    @ObservedObject var forumDataStore: ForumDataStore
-    
+
     @Binding var pickedUser: User
-//    var turnBottomPopup: (_ state: Bool) -> Void
-//    var toggleBottomBarState: (_ state: BottomBarState) -> Void
-//    var togglePickedThreadId: (_ threadId: Int) -> Void
-//    var togglePickedUser: (_ user: User) -> Void
-    
+    var turnBottomPopup: (Bool) -> Void
+    var toggleBottomBarState: (BottomBarState) -> Void
+    var togglePickedUser: (User) -> Void
+    var togglePickedThreadId: (Int) -> Void
 
     func dismissView() {
-//        self.togglePickedUser(User(id: -1, username: "placeholder"))
-//        self.toggleBottomBarState(.inActive)
-//        self.turnBottomPopup(false)
+        self.togglePickedUser(User(id: -1, username: "placeholder"))
+        self.toggleBottomBarState(.inActive)
+        self.turnBottomPopup(false)
     }
 
     func blockUser() {

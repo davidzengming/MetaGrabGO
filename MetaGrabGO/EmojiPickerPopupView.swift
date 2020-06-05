@@ -15,16 +15,15 @@ struct EmojiPickerPopupView: View {
     @ObservedObject var forumDataStore: ForumDataStore
     
     @Binding var pickedThreadId: Int
-    
-    var turnBottomPopup: () -> Void
-//    var toggleBottomBarState: (_ state: BottomBarState) -> Void
-//    var togglePickedThreadId: (_ threadId: Int) -> Void
-//    var togglePickedUser: (_ user: User) -> Void
+    var turnBottomPopup: (Bool) -> Void
+    var toggleBottomBarState: (BottomBarState) -> Void
+    var togglePickedUser: (User) -> Void
+    var togglePickedThreadId: (Int) -> Void
     
     func dismissView() {
-//        self.togglePickedThreadId(-1)
-//        self.toggleBottomBarState(.inActive)
-        self.turnBottomPopup()
+        self.togglePickedThreadId(-1)
+        self.toggleBottomBarState(.inActive)
+        self.turnBottomPopup(false)
     }
     
     func addEmoji(emojiId: Int) {
@@ -37,7 +36,7 @@ struct EmojiPickerPopupView: View {
                 switch self.forumDataStore.threadDataStores[self.pickedThreadId]!.vote!.direction {
                 case 1:
                     print("hello")
-                    return
+                    break
                 case 0:
                     self.forumDataStore.threadDataStores[self.pickedThreadId]!.upvoteByExistingVoteId(access: self.userDataStore.token!.access, user: self.userDataStore.user!, taskGroup: taskGroup)
                     break
@@ -50,6 +49,7 @@ struct EmojiPickerPopupView: View {
             } else {
                 self.forumDataStore.threadDataStores[self.pickedThreadId]!.addNewUpvote(access: self.userDataStore.token!.access, user: self.userDataStore.user!, taskGroup: taskGroup)
             }
+            
             break
         case 1:
             if self.forumDataStore.threadDataStores[self.pickedThreadId]!.vote != nil {
@@ -72,7 +72,7 @@ struct EmojiPickerPopupView: View {
         default:
             // already reacted
             if self.forumDataStore.threadDataStores[self.pickedThreadId]!.emojis.didReactToEmoji[emojiId] != nil && self.forumDataStore.threadDataStores[self.pickedThreadId]!.emojis.didReactToEmoji[emojiId]! == true {
-                return
+                break
             }
             
             let rowCount = self.forumDataStore.threadDataStores[self.pickedThreadId]!.emojis.emojiArr.count
@@ -84,10 +84,8 @@ struct EmojiPickerPopupView: View {
                 
                 if !hasUpvote && !hasDownvote && (emojiId != 0 && emojiId != 1) {
                     print("Too many emojis, don't have both upvote or downvotes need 2 spots for them.")
-                    return
                 } else if colCount ==  self.forumDataStore.threadDataStores[self.pickedThreadId]!.emojis.maxEmojiCountPerRow && ((!hasUpvote && emojiId != 0) || (!hasDownvote  && emojiId != 1)) {
                     print("Too many emojis, don't have upvote or downvote and needs 1 spot for it.")
-                    return
                 }
             }
             
