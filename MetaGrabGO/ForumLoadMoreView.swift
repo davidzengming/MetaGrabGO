@@ -17,6 +17,10 @@ struct ForumLoadMoreView: View {
     var containerWidth: CGFloat
     
     private func fetchNextPage() {
+        if self.forumDataStore.isLoadingNextPage {
+            return
+        }
+        
         self.forumDataStore.fetchThreads(access: self.userDataStore.token!.access, start: self.forumDataStore.forumNextPageStartIndex!, userId: self.userDataStore.token!.userId, containerWidth: self.containerWidth)
     }
     
@@ -28,9 +32,9 @@ struct ForumLoadMoreView: View {
                         Rectangle()
                             .frame(height: a.size.height * 0.25)
                             .background(self.assetsDataStore.colors["darkButNotBlack"]!)
-                        
+
                         Spacer()
-                        
+
                         if !self.forumDataStore.isLoadingNextPage {
                             HStack(alignment: .center) {
                                 Spacer()
@@ -53,28 +57,32 @@ struct ForumLoadMoreView: View {
                                     .padding(.bottom, 10)
                                 Spacer()
                             }
+                            .onAppear() {
+                                self.fetchNextPage()
+                            }
                         } else {
                             ActivityIndicator()
                                 .frame(width: a.size.height * 0.5, height: a.size.height * 0.5)
                                 .foregroundColor(Color.white)
                         }
-                        
+
                         Spacer()
                     }
                     .frame(width: a.size.width, height: a.size.height)
                     .background(self.assetsDataStore.colors["darkButNotBlack"]!)
                     .cornerRadius(15, corners: [.bottomLeft, .bottomRight])
-                    .onTapGesture {
-                        self.fetchNextPage()
-                    }
+
                 }
-                
+
                 self.assetsDataStore.colors["darkButNotBlack"]!
                     .frame(width: a.size.width, height: a.size.height * 0.25)
-                
-                Color.white
-                    .frame(width: a.size.width, height: a.size.height * 0.25)
-                    .cornerRadius(15, corners: [.bottomLeft, .bottomRight])
+
+                VStack {
+                    Color.white
+                        .frame(width: a.size.width, height: a.size.height * 0.25)
+                        .cornerRadius(15, corners: [.bottomLeft, .bottomRight])
+                    Spacer()
+                }
             }
         }
     }

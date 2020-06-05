@@ -61,10 +61,6 @@ class ForumDataStore: ObservableObject {
         }.resume()
     }
     
-    func fetchNextPage() {
-        
-    }
-    
     func followGame(access: String, gameId: Int) {
         let url = API.generateURL(resource: Resource.games, endPoint: EndPoint.followGameByGameId, detail: String(gameId))
         let request = API.generateRequest(url: url!, method: .POST)
@@ -102,6 +98,7 @@ class ForumDataStore: ObservableObject {
         
         DispatchQueue.main.async {
             if refresh == true {
+                self.threadDataStores = [:]
                 self.threadsList = []
                 self.forumNextPageStartIndex = nil
             }
@@ -710,17 +707,14 @@ class ThreadDataStore: ObservableObject {
     
     func fetchCommentTreeByThreadId(access: String, start:Int = 0, count:Int = 10, size:Int = 50, refresh: Bool = false, userId: Int) {
         
-        if refresh == true {
-            self.childCommentSubs = [:]
-            
-            DispatchQueue.main.async {
-                if self.areCommentsLoaded == true {
-                    self.areCommentsLoaded = false
-                    self.childCommentList = []
-                    self.childComments = [:]
-                }
-            }
-        }
+//        if refresh == true {
+//            self.childCommentSubs = [:]
+//
+//            DispatchQueue.main.async {
+//                self.areCommentsLoaded = false
+//                self.childCommentList = []
+//            }
+//        }
         
         let params = ["parent_thread_id": String(self.thread.id), "start": String(start), "count": String(count), "size": String(size)]
         let url = API.generateURL(resource: Resource.comments, endPoint: EndPoint.getCommentTreeByThreadId, params: params)
@@ -733,94 +727,94 @@ class ThreadDataStore: ObservableObject {
                     let serializedComments: CommentsResponse = load(jsonData: jsonString.data(using: .utf8)!)
                     
                     DispatchQueue.main.async {
-                        if serializedComments.commentsResponse.count == 0 {
-                            self.threadNextPageStartIndex = -1
-                            return
-                        }
-                        
-                        var levelArr = [Int]()
-                        var levelStore = [Int: CommentDataStore]()
-                        
-                        var nextLevelArr = [Int]()
-                        var nextLevelStore = [Int: CommentDataStore]()
-                        
-                        var levelCount = 0
-                        var i = 0
-                        var j = 0
-                        
-                        var x = 0 // level pointer
-                        
-                        var firstLevelArr = [Int]()
-                        var firstLevelStore = [Int: CommentDataStore]()
-                        
-                        while i < serializedComments.commentsResponse.count {
-                            // end of level
-                            while j < serializedComments.commentBreaksArr.count && serializedComments.commentBreaksArr[j] < i {
-                                if levelCount == 0 {
-                                    firstLevelArr = nextLevelArr
-                                    firstLevelStore = nextLevelStore
-                                    
-                                    levelArr = nextLevelArr
-                                    levelStore = nextLevelStore
-                                    
-                                    nextLevelArr = []
-                                    nextLevelStore = [:]
-                                    
-                                    levelCount += 1
-                                } else {
-                                    x += 1
-                                    if x > levelArr.count {
-                                        levelArr = nextLevelArr
-                                        levelStore = nextLevelStore
-                                        
-                                        nextLevelArr = []
-                                        nextLevelStore = [:]
-                                        
-                                        x = 0
-                                        levelCount += 1
-                                    }
-                                }
-                                j += 1
-                            }
-                            
-                            let commentId = serializedComments.commentsResponse[i].id
-                            nextLevelArr.append(commentId)
-                            
-                            var vote: Vote?
-                            if serializedComments.commentsResponse[i].votes.count > 0 {
-                                vote = serializedComments.commentsResponse[i].votes[0]
-                            }
-                            
-                            nextLevelStore[commentId] = CommentDataStore(ancestorThreadId: self.thread.id, gameId: self.gameId, comment:  serializedComments.commentsResponse[i], vote: vote, author: serializedComments.commentsResponse[i].users[0])
-                            
-                            if levelCount > 0 {
-                                print(levelCount, levelArr, x)
-                                let parentCommentId = levelArr[x]
-                                
-                                levelStore[parentCommentId]!.childCommentList.append(commentId)
-                                levelStore[parentCommentId]!.childComments[commentId] = nextLevelStore[commentId]
-                                
-                                levelStore[parentCommentId]!.childCommentSubs[commentId] = nextLevelStore[commentId]!.objectWillChange.receive(on: DispatchQueue.main).sink(receiveValue: {[weak self] _ in self?.objectWillChange.send()
-                                })
-                            }
-
-                            i += 1
-                        }
-                        
-                        if levelCount == 0 {
-                            firstLevelArr = nextLevelArr
-                            firstLevelStore = nextLevelStore
-                        }
-                        
-                        for commentId in firstLevelArr {
-                            self.childCommentSubs[commentId] = firstLevelStore[commentId]!.objectWillChange.receive(on: DispatchQueue.main).sink(receiveValue: {[weak self] _ in self?.objectWillChange.send()
-                            })
-                                
-                            self.childComments[commentId] = firstLevelStore[commentId]!
-                        }
-                        
-                        self.childCommentList += firstLevelArr
-                        self.areCommentsLoaded = true
+//                        if serializedComments.commentsResponse.count == 0 {
+//                            self.threadNextPageStartIndex = -1
+//                            return
+//                        }
+//
+//                        var levelArr = [Int]()
+//                        var levelStore = [Int: CommentDataStore]()
+//
+//                        var nextLevelArr = [Int]()
+//                        var nextLevelStore = [Int: CommentDataStore]()
+//
+//                        var levelCount = 0
+//                        var i = 0
+//                        var j = 0
+//
+//                        var x = 0 // level pointer
+//
+//                        var firstLevelArr = [Int]()
+//                        var firstLevelStore = [Int: CommentDataStore]()
+//
+//                        while i < serializedComments.commentsResponse.count {
+//                            // end of level
+//                            while j < serializedComments.commentBreaksArr.count && serializedComments.commentBreaksArr[j] < i {
+//                                if levelCount == 0 {
+//                                    firstLevelArr = nextLevelArr
+//                                    firstLevelStore = nextLevelStore
+//
+//                                    levelArr = nextLevelArr
+//                                    levelStore = nextLevelStore
+//
+//                                    nextLevelArr = []
+//                                    nextLevelStore = [:]
+//
+//                                    levelCount += 1
+//                                } else {
+//                                    x += 1
+//                                    if x > levelArr.count {
+//                                        levelArr = nextLevelArr
+//                                        levelStore = nextLevelStore
+//
+//                                        nextLevelArr = []
+//                                        nextLevelStore = [:]
+//
+//                                        x = 0
+//                                        levelCount += 1
+//                                    }
+//                                }
+//                                j += 1
+//                            }
+//
+//                            let commentId = serializedComments.commentsResponse[i].id
+//                            nextLevelArr.append(commentId)
+//
+//                            var vote: Vote?
+//                            if serializedComments.commentsResponse[i].votes.count > 0 {
+//                                vote = serializedComments.commentsResponse[i].votes[0]
+//                            }
+//
+//                            nextLevelStore[commentId] = CommentDataStore(ancestorThreadId: self.thread.id, gameId: self.gameId, comment:  serializedComments.commentsResponse[i], vote: vote, author: serializedComments.commentsResponse[i].users[0])
+//
+//                            if levelCount > 0 {
+//                                print(levelCount, levelArr, x)
+//                                let parentCommentId = levelArr[x]
+//
+//                                levelStore[parentCommentId]!.childCommentList.append(commentId)
+//                                levelStore[parentCommentId]!.childComments[commentId] = nextLevelStore[commentId]
+//
+//                                levelStore[parentCommentId]!.childCommentSubs[commentId] = nextLevelStore[commentId]!.objectWillChange.receive(on: DispatchQueue.main).sink(receiveValue: {[weak self] _ in self?.objectWillChange.send()
+//                                })
+//                            }
+//
+//                            i += 1
+//                        }
+//
+//                        if levelCount == 0 {
+//                            firstLevelArr = nextLevelArr
+//                            firstLevelStore = nextLevelStore
+//                        }
+//
+//                        for commentId in firstLevelArr {
+//                            self.childCommentSubs[commentId] = firstLevelStore[commentId]!.objectWillChange.receive(on: DispatchQueue.main).sink(receiveValue: {[weak self] _ in self?.objectWillChange.send()
+//                            })
+//
+//                            self.childComments[commentId] = firstLevelStore[commentId]!
+//                        }
+//
+//                        self.childCommentList += firstLevelArr
+//                        self.areCommentsLoaded = true
                     }
                 }
             }

@@ -291,7 +291,7 @@ struct ThreadView : View {
             }
             .onAppear() {
                 //                self.didBecomeFirstResponder = false
-//                self.threadDataStore.fetchCommentTreeByThreadId(access: self.userDataStore.token!.access, refresh: true, userId: self.userDataStore.token!.userId)
+                self.threadDataStore.fetchCommentTreeByThreadId(access: self.userDataStore.token!.access, refresh: true, userId: self.userDataStore.token!.userId)
                 //                self.gameDataStore.isThreadViewLoadedByThreadId[self.threadId] = false
             }
         }

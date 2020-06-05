@@ -26,6 +26,10 @@ struct ThreadRow : View {
     let threadsFromBottomToGetReadyToLoadNextPage = 1
     let threadsPerNewPageCount = 10
     
+    func fetchCommentTreeByThreadId() {
+        self.threadDataStore.fetchCommentTreeByThreadId(access: self.userDataStore.token!.access, userId: self.userDataStore.token!.userId)
+    }
+    
     func onClickUser() {
         if self.threadDataStore.author.id == self.userDataStore.token!.userId {
             print("Cannot report self.")
