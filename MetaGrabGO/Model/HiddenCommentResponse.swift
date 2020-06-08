@@ -9,5 +9,5 @@
 import Foundation
 
 struct HiddenCommentsResponse: Hashable, Codable {
-    var hiddenComments: [Comment]
+    var hiddenComments: [HiddenComment]
 }

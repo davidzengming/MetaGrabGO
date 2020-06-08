@@ -17,7 +17,7 @@ struct ForumLoadMoreView: View {
     var containerWidth: CGFloat
     
     private func fetchNextPage() {
-        if self.forumDataStore.isLoadingNextPage {
+        if self.forumDataStore.isLoadingNextPage == true {
             return
         }
         

@@ -71,6 +71,8 @@ struct ForumView : View {
     init(forumDataStore: ForumDataStore, gameIconLoader: ImageLoader) {
         self.forumDataStore = forumDataStore
         self.gameIconLoader = gameIconLoader
+        
+        print("creating forum for game:", forumDataStore.game.id)
         // Navigation related
         // To remove all separators including the actual ones:
         //        UITableView.appearance().separatorStyle = .none
@@ -207,8 +209,6 @@ struct ForumView : View {
                                     
                                     // hacky bug fix for rounded corner creating a tiny black line between 2 views
                                     .padding(.top, -10)
-
-                                
                             } else {
                                 VStack(spacing: 0) {
                                     Image(systemName: "pencil.circle.fill")

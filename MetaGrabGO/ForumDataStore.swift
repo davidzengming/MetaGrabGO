@@ -17,7 +17,7 @@ class ForumDataStore: ObservableObject {
     @Published var threadDataStores: [Int: ThreadDataStore]
     @Published var isFollowed: Bool
     
-    private var childThreadSubs = [Int: AnyCancellable]()
+//    private var childThreadSubs = [Int: AnyCancellable]()
     
     @Published var game: Game
     @Published var forumNextPageStartIndex : Int?
@@ -143,8 +143,8 @@ class ForumDataStore: ObservableObject {
                             
                             self.threadDataStores[thread.id] = ThreadDataStore(gameId: self.game.id, thread: thread, vote: myVote, author: author, cache: self.cache, emojiArr: thread.emojis!.emojisIdArr, emojiReactionCount: thread.emojis!.emojiReactionCountDict, userArrPerEmoji: thread.emojis!.userArrPerEmojiDict, didReactToEmojiDict: thread.emojis!.didReactToEmojiDict, containerWidth: containerWidth)
                             
-                            self.childThreadSubs[thread.id] = self.threadDataStores[thread.id]!.objectWillChange.receive(on: DispatchQueue.main).sink(receiveValue: {[weak self] _ in self?.objectWillChange.send()
-                            })
+//                            self.childThreadSubs[thread.id] = self.threadDataStores[thread.id]!.objectWillChange.receive(on: DispatchQueue.main).sink(receiveValue: {[weak self] _ in self?.objectWillChange.send()
+//                            })
                         }
                         
                         self.threadsList += newThreadsList
@@ -213,9 +213,9 @@ class ForumDataStore: ObservableObject {
                         DispatchQueue.main.async {
                             self.threadDataStores[tempThread.id] = ThreadDataStore(gameId: forumDataStore.game.id, thread: tempThread, vote: vote, author: tempThread.users[0], cache: self.cache, emojiArr: tempThread.emojis!.emojisIdArr, emojiReactionCount: tempThread.emojis!.emojiReactionCountDict, userArrPerEmoji: tempThread.emojis!.userArrPerEmojiDict, didReactToEmojiDict: tempThread.emojis!.didReactToEmojiDict, containerWidth: containerWidth)
                             
-                            self.childThreadSubs[tempThread.id] = self.threadDataStores[tempThread.id]!.objectWillChange.receive(on: DispatchQueue.main).sink(receiveValue: {[weak self] _ in self?.objectWillChange.send()
-                            })
-                            
+//                            self.childThreadSubs[tempThread.id] = self.threadDataStores[tempThread.id]!.objectWillChange.receive(on: DispatchQueue.main).sink(receiveValue: {[weak self] _ in self?.objectWillChange.send()
+//                            })
+//
                             self.threadsList.insert(tempThread.id, at: 0)
                             self.game.threadCount += 1
                         }
@@ -259,14 +259,14 @@ class ThreadDataStore: ObservableObject {
     
     @Published var threadNextPageStartIndex: Int?
     
-    private var childCommentSubs = [Int: AnyCancellable]()
+//    private var childCommentSubs = [Int: AnyCancellable]()
     private var imageLoaderSubs = [Int: AnyCancellable]()
     
     @ObservedObject var emojis: EmojiDataStore
+//    private var emojisSub: AnyCancellable?
     
     @Published var areCommentsLoaded: Bool = false
     
-    private var emojisSub: AnyCancellable?
     var threadImagesHeight: CGFloat = 0
     var cache: ImageCache
     var gameId: Int
@@ -292,8 +292,8 @@ class ThreadDataStore: ObservableObject {
         
         self.cache = cache
         self.emojis = EmojiDataStore(serializedEmojiArr: emojiArr, emojiReactionCount: emojiReactionCount, userArrPerEmoji: userArrPerEmoji, didReactToEmojiDict: didReactToEmojiDict)
-        self.emojisSub = emojis.objectWillChange.receive(on: DispatchQueue.main).sink(receiveValue: {[weak self] _ in self?.objectWillChange.send()
-        })
+//        self.emojisSub = emojis.objectWillChange.receive(on: DispatchQueue.main).sink(receiveValue: {[weak self] _ in self?.objectWillChange.send()
+//        })
         
         self.mountImages()
         self.loadImages()
@@ -705,16 +705,16 @@ class ThreadDataStore: ObservableObject {
 //        }.resume()
 //    }
     
-    func fetchCommentTreeByThreadId(access: String, start:Int = 0, count:Int = 10, size:Int = 50, refresh: Bool = false, userId: Int) {
+    func fetchCommentTreeByThreadId(access: String, start:Int = 0, count:Int = 10, size:Int = 50, refresh: Bool = false, userId: Int, containerWidth: CGFloat, leadPadding: CGFloat) {
         
-//        if refresh == true {
+        if refresh == true {
 //            self.childCommentSubs = [:]
-//
-//            DispatchQueue.main.async {
-//                self.areCommentsLoaded = false
-//                self.childCommentList = []
-//            }
-//        }
+
+            DispatchQueue.main.async {
+                self.areCommentsLoaded = false
+                self.childCommentList = []
+            }
+        }
         
         let params = ["parent_thread_id": String(self.thread.id), "start": String(start), "count": String(count), "size": String(size)]
         let url = API.generateURL(resource: Resource.comments, endPoint: EndPoint.getCommentTreeByThreadId, params: params)
@@ -727,94 +727,93 @@ class ThreadDataStore: ObservableObject {
                     let serializedComments: CommentsResponse = load(jsonData: jsonString.data(using: .utf8)!)
                     
                     DispatchQueue.main.async {
-//                        if serializedComments.commentsResponse.count == 0 {
-//                            self.threadNextPageStartIndex = -1
-//                            return
-//                        }
-//
-//                        var levelArr = [Int]()
-//                        var levelStore = [Int: CommentDataStore]()
-//
-//                        var nextLevelArr = [Int]()
-//                        var nextLevelStore = [Int: CommentDataStore]()
-//
-//                        var levelCount = 0
-//                        var i = 0
-//                        var j = 0
-//
-//                        var x = 0 // level pointer
-//
-//                        var firstLevelArr = [Int]()
-//                        var firstLevelStore = [Int: CommentDataStore]()
-//
-//                        while i < serializedComments.commentsResponse.count {
-//                            // end of level
-//                            while j < serializedComments.commentBreaksArr.count && serializedComments.commentBreaksArr[j] < i {
-//                                if levelCount == 0 {
-//                                    firstLevelArr = nextLevelArr
-//                                    firstLevelStore = nextLevelStore
-//
-//                                    levelArr = nextLevelArr
-//                                    levelStore = nextLevelStore
-//
-//                                    nextLevelArr = []
-//                                    nextLevelStore = [:]
-//
-//                                    levelCount += 1
-//                                } else {
-//                                    x += 1
-//                                    if x > levelArr.count {
-//                                        levelArr = nextLevelArr
-//                                        levelStore = nextLevelStore
-//
-//                                        nextLevelArr = []
-//                                        nextLevelStore = [:]
-//
-//                                        x = 0
-//                                        levelCount += 1
-//                                    }
-//                                }
-//                                j += 1
-//                            }
-//
-//                            let commentId = serializedComments.commentsResponse[i].id
-//                            nextLevelArr.append(commentId)
-//
-//                            var vote: Vote?
-//                            if serializedComments.commentsResponse[i].votes.count > 0 {
-//                                vote = serializedComments.commentsResponse[i].votes[0]
-//                            }
-//
-//                            nextLevelStore[commentId] = CommentDataStore(ancestorThreadId: self.thread.id, gameId: self.gameId, comment:  serializedComments.commentsResponse[i], vote: vote, author: serializedComments.commentsResponse[i].users[0])
-//
-//                            if levelCount > 0 {
-//                                print(levelCount, levelArr, x)
-//                                let parentCommentId = levelArr[x]
-//
-//                                levelStore[parentCommentId]!.childCommentList.append(commentId)
-//                                levelStore[parentCommentId]!.childComments[commentId] = nextLevelStore[commentId]
-//
-//                                levelStore[parentCommentId]!.childCommentSubs[commentId] = nextLevelStore[commentId]!.objectWillChange.receive(on: DispatchQueue.main).sink(receiveValue: {[weak self] _ in self?.objectWillChange.send()
-//                                })
-//                            }
-//
-//                            i += 1
-//                        }
-//
-//                        if levelCount == 0 {
-//                            firstLevelArr = nextLevelArr
-//                            firstLevelStore = nextLevelStore
-//                        }
-//
-//                        for commentId in firstLevelArr {
+                        if serializedComments.commentsResponse.count == 0 {
+                            self.threadNextPageStartIndex = -1
+                            return
+                        }
+
+                        var levelArr = [Int]()
+                        var levelStore = [Int: CommentDataStore]()
+
+                        var nextLevelArr = [Int]()
+                        var nextLevelStore = [Int: CommentDataStore]()
+
+                        var levelCount = 0
+                        var i = 0
+                        var j = 0
+
+                        var x = 0 // level pointer
+
+                        var firstLevelArr = [Int]()
+                        var firstLevelStore = [Int: CommentDataStore]()
+                        
+                        while i < serializedComments.commentsResponse.count {
+                            // end of level
+                            while j < serializedComments.commentBreaksArr.count && serializedComments.commentBreaksArr[j] < i {
+                                if levelCount == 0 {
+                                    firstLevelArr = nextLevelArr
+                                    firstLevelStore = nextLevelStore
+
+                                    levelArr = nextLevelArr
+                                    levelStore = nextLevelStore
+
+                                    nextLevelArr = []
+                                    nextLevelStore = [:]
+
+                                    levelCount += 1
+                                } else {
+                                    x += 1
+                                    if x > levelArr.count {
+                                        levelArr = nextLevelArr
+                                        levelStore = nextLevelStore
+
+                                        nextLevelArr = []
+                                        nextLevelStore = [:]
+
+                                        x = 0
+                                        levelCount += 1
+                                    }
+                                }
+                                j += 1
+                            }
+
+                            let commentId = serializedComments.commentsResponse[i].id
+                            nextLevelArr.append(commentId)
+
+                            var vote: Vote?
+                            if serializedComments.commentsResponse[i].votes.count > 0 {
+                                vote = serializedComments.commentsResponse[i].votes[0]
+                            }
+
+                            nextLevelStore[commentId] = CommentDataStore(ancestorThreadId: self.thread.id, gameId: self.gameId, comment:  serializedComments.commentsResponse[i], vote: vote, author: serializedComments.commentsResponse[i].users[0], containerWidth: containerWidth - leadPadding * CGFloat(levelCount))
+
+                            if levelCount > 0 {
+                                let parentCommentId = levelArr[x]
+
+                                levelStore[parentCommentId]!.childCommentList.append(commentId)
+                                levelStore[parentCommentId]!.childComments[commentId] = nextLevelStore[commentId]
+
+                                levelStore[parentCommentId]!.childCommentSubs[commentId] = nextLevelStore[commentId]!.objectWillChange.receive(on: DispatchQueue.main).sink(receiveValue: {[weak self] _ in self?.objectWillChange.send()
+                                })
+                            }
+
+                            i += 1
+                        }
+
+                        if levelCount == 0 {
+                            firstLevelArr = nextLevelArr
+                            firstLevelStore = nextLevelStore
+                        }
+
+                        for commentId in firstLevelArr {
 //                            self.childCommentSubs[commentId] = firstLevelStore[commentId]!.objectWillChange.receive(on: DispatchQueue.main).sink(receiveValue: {[weak self] _ in self?.objectWillChange.send()
 //                            })
-//
-//                            self.childComments[commentId] = firstLevelStore[commentId]!
-//                        }
-//
-//                        self.childCommentList += firstLevelArr
-//                        self.areCommentsLoaded = true
+
+                            self.childComments[commentId] = firstLevelStore[commentId]!
+                        }
+
+                        self.childCommentList += firstLevelArr
+                        self.areCommentsLoaded = true
                     }
                 }
             }
@@ -828,6 +827,8 @@ class CommentDataStore: ObservableObject {
     @Published var relativeDateString: String?
     @Published var textStorage: NSTextStorage
     @Published var isHidden: Bool = false
+    @Published var desiredHeight: CGFloat
+    
     var childCommentSubs = [Int: AnyCancellable]()
     
     var ancestorThreadId: Int
@@ -835,11 +836,9 @@ class CommentDataStore: ObservableObject {
     var comment: Comment
     var vote: Vote?
     var author: User
-    
-    @Published var desiredHeight: CGFloat
 
-    init(ancestorThreadId: Int, gameId: Int, comment: Comment, vote: Vote?, author: User) {
-        self.desiredHeight = 0
+    init(ancestorThreadId: Int, gameId: Int, comment: Comment, vote: Vote?, author: User, containerWidth: CGFloat) {
+        
         self.ancestorThreadId = ancestorThreadId
         self.gameId = gameId
         self.comment = comment
@@ -847,7 +846,10 @@ class CommentDataStore: ObservableObject {
         self.author = author
         
         self.relativeDateString = RelativeDateTimeFormatter().localizedString(for: comment.created, relativeTo: Date())
-        self.textStorage = generateTextStorageFromJson(contentString: comment.contentString, contentAttributes: comment.contentAttributes)
+        
+        let generatedTextStorage = generateTextStorageFromJson(contentString: comment.contentString, contentAttributes: comment.contentAttributes)
+        self.textStorage = generatedTextStorage
+        self.desiredHeight = generatedTextStorage.height(containerWidth: containerWidth)
         
         self.childCommentList = []
         self.childComments = [:]

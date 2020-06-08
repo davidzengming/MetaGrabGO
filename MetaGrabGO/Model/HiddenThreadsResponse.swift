@@ -9,5 +9,5 @@
 import Foundation
 
 struct HiddenThreadsResponse: Hashable, Codable {
-    var hiddenThreads: [Thread]
+    var hiddenThreads: [HiddenThread]
 }

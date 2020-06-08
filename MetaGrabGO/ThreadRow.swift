@@ -26,9 +26,21 @@ struct ThreadRow : View {
     let threadsFromBottomToGetReadyToLoadNextPage = 1
     let threadsPerNewPageCount = 10
     
-    func fetchCommentTreeByThreadId() {
-        self.threadDataStore.fetchCommentTreeByThreadId(access: self.userDataStore.token!.access, userId: self.userDataStore.token!.userId)
+    init(threadDataStore: ThreadDataStore, turnBottomPopup: @escaping (Bool) -> Void, toggleBottomBarState: @escaping (BottomBarState) -> Void, togglePickedUser: @escaping (User) -> Void, togglePickedThreadId: @escaping (Int) -> Void, width: CGFloat, height: CGFloat) {
+        self.threadDataStore = threadDataStore
+        self.turnBottomPopup = turnBottomPopup
+        self.toggleBottomBarState = toggleBottomBarState
+        self.togglePickedUser = togglePickedUser
+        self.togglePickedThreadId = togglePickedThreadId
+        self.width = width
+        self.height = height
+        
+        print("remaking thread row dude: ", threadDataStore.thread.id)
     }
+    
+//    func fetchCommentTreeByThreadId() {
+//        self.threadDataStore.fetchCommentTreeByThreadId(access: self.userDataStore.token!.access, userId: self.userDataStore.token!.userId)
+//    }
     
     func onClickUser() {
         if self.threadDataStore.author.id == self.userDataStore.token!.userId {

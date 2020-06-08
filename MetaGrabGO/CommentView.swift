@@ -16,6 +16,8 @@ struct CommentView : View {
     
     @ObservedObject var commentDataStore: CommentDataStore
     
+    @State var isEditable: Bool = false
+    
     var ancestorThreadId: Int
     let formatter = RelativeDateTimeFormatter()
     var width: CGFloat
@@ -25,12 +27,13 @@ struct CommentView : View {
     let level: Int
     let leadLineWidth: CGFloat = 3
     let verticalPadding: CGFloat = 15
+    let outerPadding : CGFloat = 20
     
-    @State var isEditable: Bool = false
+    
     
     func setReplyTargetToCommentId() {
-//        self.gameDataStore.isReplyBarReplyingToThreadByThreadId[ancestorThreadId] = false
-//        self.gameDataStore.replyTargetCommentIdByThreadId[ancestorThreadId] = commentId
+        //        self.gameDataStore.isReplyBarReplyingToThreadByThreadId[ancestorThreadId] = false
+        //        self.gameDataStore.replyTargetCommentIdByThreadId[ancestorThreadId] = commentId
     }
     
     func transformVotesString(points: Int) -> String {
@@ -52,167 +55,182 @@ struct CommentView : View {
     }
     
     func onClickUpvoteButton() {
-//        if self.gameDataStore.voteCommentMapping[commentId] != nil {
-//            if self.gameDataStore.votes[self.gameDataStore.voteCommentMapping[commentId]!]!.direction == 1 {
-//                self.gameDataStore.deleteCommentVote(access: self.userDataStore.token!.access, vote: self.gameDataStore.votes[self.gameDataStore.voteCommentMapping[commentId]!]!, userId: self.userDataStore.token!.userId)
-//            }  else if self.gameDataStore.votes[self.gameDataStore.voteCommentMapping[commentId]!]!.direction == 0 {
-//                self.gameDataStore.upvoteByExistingVoteIdComment(access: self.userDataStore.token!.access, voteId: self.gameDataStore.voteCommentMapping[commentId]!, comment: self.gameDataStore.comments[commentId]!, userId: self.userDataStore.token!.userId)
-//            } else {
-//                self.gameDataStore.switchUpvoteComment(access: self.userDataStore.token!.access, comment: self.gameDataStore.comments[commentId]!, userId: self.userDataStore.token!.userId)
-//            }
-//        } else {
-//            self.gameDataStore.addNewUpvoteComment(access: self.userDataStore.token!.access, comment: self.gameDataStore.comments[commentId]!, userId: self.userDataStore.token!.userId)
-//        }
+        //        if self.gameDataStore.voteCommentMapping[commentId] != nil {
+        //            if self.gameDataStore.votes[self.gameDataStore.voteCommentMapping[commentId]!]!.direction == 1 {
+        //                self.gameDataStore.deleteCommentVote(access: self.userDataStore.token!.access, vote: self.gameDataStore.votes[self.gameDataStore.voteCommentMapping[commentId]!]!, userId: self.userDataStore.token!.userId)
+        //            }  else if self.gameDataStore.votes[self.gameDataStore.voteCommentMapping[commentId]!]!.direction == 0 {
+        //                self.gameDataStore.upvoteByExistingVoteIdComment(access: self.userDataStore.token!.access, voteId: self.gameDataStore.voteCommentMapping[commentId]!, comment: self.gameDataStore.comments[commentId]!, userId: self.userDataStore.token!.userId)
+        //            } else {
+        //                self.gameDataStore.switchUpvoteComment(access: self.userDataStore.token!.access, comment: self.gameDataStore.comments[commentId]!, userId: self.userDataStore.token!.userId)
+        //            }
+        //        } else {
+        //            self.gameDataStore.addNewUpvoteComment(access: self.userDataStore.token!.access, comment: self.gameDataStore.comments[commentId]!, userId: self.userDataStore.token!.userId)
+        //        }
     }
     
     func onClickDownvoteButton() {
-//        if self.gameDataStore.voteCommentMapping[commentId] != nil {
-//            if self.gameDataStore.votes[self.gameDataStore.voteCommentMapping[commentId]!]!.direction == -1 {
-//                self.gameDataStore.deleteCommentVote(access: self.userDataStore.token!.access, vote: self.gameDataStore.votes[self.gameDataStore.voteCommentMapping[commentId]!]!, userId: self.userDataStore.token!.userId)
-//            } else if self.gameDataStore.votes[self.gameDataStore.voteCommentMapping[commentId]!]!.direction == 0 {
-//                self.gameDataStore.downvoteByExistingVoteIdComment(access: self.userDataStore.token!.access, voteId: self.gameDataStore.voteCommentMapping[commentId]!, comment: self.gameDataStore.comments[commentId]!, userId: self.userDataStore.token!.userId)
-//            } else {
-//                self.gameDataStore.switchDownvoteComment(access:  self.userDataStore.token!.access, comment: self.gameDataStore.comments[commentId]!, userId: self.userDataStore.token!.userId)
-//            }
-//        } else {
-//            self.gameDataStore.addNewDownvoteComment(access: self.userDataStore.token!.access, comment: self.gameDataStore.comments[commentId]!, userId: self.userDataStore.token!.userId)
-//        }
+        //        if self.gameDataStore.voteCommentMapping[commentId] != nil {
+        //            if self.gameDataStore.votes[self.gameDataStore.voteCommentMapping[commentId]!]!.direction == -1 {
+        //                self.gameDataStore.deleteCommentVote(access: self.userDataStore.token!.access, vote: self.gameDataStore.votes[self.gameDataStore.voteCommentMapping[commentId]!]!, userId: self.userDataStore.token!.userId)
+        //            } else if self.gameDataStore.votes[self.gameDataStore.voteCommentMapping[commentId]!]!.direction == 0 {
+        //                self.gameDataStore.downvoteByExistingVoteIdComment(access: self.userDataStore.token!.access, voteId: self.gameDataStore.voteCommentMapping[commentId]!, comment: self.gameDataStore.comments[commentId]!, userId: self.userDataStore.token!.userId)
+        //            } else {
+        //                self.gameDataStore.switchDownvoteComment(access:  self.userDataStore.token!.access, comment: self.gameDataStore.comments[commentId]!, userId: self.userDataStore.token!.userId)
+        //            }
+        //        } else {
+        //            self.gameDataStore.addNewDownvoteComment(access: self.userDataStore.token!.access, comment: self.gameDataStore.comments[commentId]!, userId: self.userDataStore.token!.userId)
+        //        }
     }
     
     var body: some View {
-        VStack(alignment: .trailing, spacing: 0) {
-            VStack(spacing: 0) {
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(Color(red: 225 / 255, green: 225 / 255, blue: 225 / 255))
-                    .frame(width: self.width - self.leadPadding, height: 1, alignment: .leading)
-                
-                HStack(spacing: 0) {
-                    if self.level > 0 {
-                        RoundedRectangle(cornerRadius: 25, style: .continuous)
-                            .fill(self.assetsDataStore.leadingLineColors[self.level % self.assetsDataStore.leadingLineColors.count])
-                            .frame(width: self.leadLineWidth, height: 30 + self.commentDataStore.desiredHeight + (self.isEditable ? 20 : 0) + 30)
-                            .padding(.trailing, 10)
-                    }
+        Group {
+            HStack {
+                Spacer()
+                VStack(spacing: 0) {
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(Color(red: 225 / 255, green: 225 / 255, blue: 225 / 255))
+                        .frame(width: self.width - self.leadPadding, height: 1, alignment: .leading)
                     
-                    VStack(alignment: .leading, spacing: 0) {
-                        VStack(alignment: .trailing, spacing: 0) {
+                    HStack(spacing: 0) {
+                        if self.level > 0 {
+                            RoundedRectangle(cornerRadius: 25, style: .continuous)
+                                .fill(self.assetsDataStore.leadingLineColors[self.level % self.assetsDataStore.leadingLineColors.count])
+                                .frame(width: self.leadLineWidth, height: 30 + self.commentDataStore.desiredHeight + (self.isEditable ? 20 : 0) + 30)
+                                .padding(.trailing, 10)
+                        }
+                        
+                        VStack(alignment: .leading, spacing: 0) {
                             VStack(alignment: .trailing, spacing: 0) {
-                                HStack(spacing: 0) {
-                                    VStack(spacing: 0) {
-                                        Image(systemName: "person.circle.fill")
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fit)
-                                            .foregroundColor(Color.orange)
-                                    }
-                                    .frame(width: 30, height: 30)
-                                    .padding(.trailing, 10)
-                                    
-                                    VStack(alignment: .leading, spacing: 0) {
-                                        HStack(spacing: 0) {
-                                            Text(self.commentDataStore.author.username)
-                                                .font(.system(size: 16))
-                                                .onTapGesture {
-//                                                    if self.gameDataStore.users[self.gameDataStore.comments[self.commentId]!.author]!.id == self.userDataStore.token!.userId {
-//                                                        return
-//                                                    }
-//
-//                                                    self.gameDataStore.isAddEmojiModalActiveByThreadViewId[self.ancestorThreadId] = false
-//                                                    self.gameDataStore.isReportPopupActiveByThreadId[self.ancestorThreadId] = false
-//                                                    self.gameDataStore.lastClickedBlockUserByThreadId[self.ancestorThreadId] = self.gameDataStore.users[self.gameDataStore.comments[self.commentId]!.author]!.id
-//                                                    self.gameDataStore.isBlockPopupActiveByThreadId[self.ancestorThreadId] = true
+                                VStack(alignment: .trailing, spacing: 0) {
+                                    HStack(spacing: 0) {
+                                        VStack(spacing: 0) {
+                                            Image(systemName: "person.circle.fill")
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fit)
+                                                .foregroundColor(Color.orange)
+                                        }
+                                        .frame(width: 30, height: 30)
+                                        .padding(.trailing, 10)
+                                        
+                                        VStack(alignment: .leading, spacing: 0) {
+                                            HStack(spacing: 0) {
+                                                Text(self.commentDataStore.author.username)
+                                                    .font(.system(size: 16))
+                                                    .onTapGesture {
+                                                        //                                                    if self.gameDataStore.users[self.gameDataStore.comments[self.commentId]!.author]!.id == self.userDataStore.token!.userId {
+                                                        //                                                        return
+                                                        //                                                    }
+                                                        //
+                                                        //                                                    self.gameDataStore.isAddEmojiModalActiveByThreadViewId[self.ancestorThreadId] = false
+                                                        //                                                    self.gameDataStore.isReportPopupActiveByThreadId[self.ancestorThreadId] = false
+                                                        //                                                    self.gameDataStore.lastClickedBlockUserByThreadId[self.ancestorThreadId] = self.gameDataStore.users[self.gameDataStore.comments[self.commentId]!.author]!.id
+                                                        //                                                    self.gameDataStore.isBlockPopupActiveByThreadId[self.ancestorThreadId] = true
+                                                }
+                                                //
+                                                Text(String(self.commentDataStore.comment.id))
+                                                    .onAppear() {
+                                                        print("hi comment", self.commentDataStore.comment.id)
+                                                }
+                                                .foregroundColor(.white)
+                                                
+                                                Spacer()
+                                                //                                            Image(":thumbs_up:")
+                                                //                                                .resizable()
+                                                //                                                .frame(width: 11, height: 11)
+                                                //                                                .padding(5)
+                                                //
+                                                //                                                .background(self.gameDataStore.voteCommentMapping[commentId] == nil || self.gameDataStore.votes[self.gameDataStore.voteCommentMapping[commentId]!]!.direction == 1 ? Color.black : Color(.lightGray))
+                                                //                                                .cornerRadius(5)
+                                                //                                                .onTapGesture {
+                                                //                                                    self.onClickUpvoteButton()
+                                                //                                            }
+                                                //
+                                                //                                            Text(self.gameDataStore.voteCountStringByCommentId[commentId]!)
+                                                //                                                .frame(width: 25, height: 16)
+                                                //
+                                                //                                            Image(":thumbs_down:")
+                                                //                                                .resizable()
+                                                //                                                .frame(width: 11, height: 11)
+                                                //                                                .padding(5)
+                                                //
+                                                //                                                .background(self.gameDataStore.voteCommentMapping[commentId] != nil && self.gameDataStore.votes[self.gameDataStore.voteCommentMapping[commentId]!]!.direction == -1 ? Color.black : Color(.lightGray))
+                                                //                                                .cornerRadius(5)
+                                                //                                                .onTapGesture {
+                                                //                                                    self.onClickDownvoteButton()
+                                                //                                            }
                                             }
                                             
-                                            Spacer()
-//                                            Image(":thumbs_up:")
-//                                                .resizable()
-//                                                .frame(width: 11, height: 11)
-//                                                .padding(5)
-//
-//                                                .background(self.gameDataStore.voteCommentMapping[commentId] == nil || self.gameDataStore.votes[self.gameDataStore.voteCommentMapping[commentId]!]!.direction == 1 ? Color.black : Color(.lightGray))
-//                                                .cornerRadius(5)
-//                                                .onTapGesture {
-//                                                    self.onClickUpvoteButton()
-//                                            }
-//
-//                                            Text(self.gameDataStore.voteCountStringByCommentId[commentId]!)
-//                                                .frame(width: 25, height: 16)
-//
-//                                            Image(":thumbs_down:")
-//                                                .resizable()
-//                                                .frame(width: 11, height: 11)
-//                                                .padding(5)
-//
-//                                                .background(self.gameDataStore.voteCommentMapping[commentId] != nil && self.gameDataStore.votes[self.gameDataStore.voteCommentMapping[commentId]!]!.direction == -1 ? Color.black : Color(.lightGray))
-//                                                .cornerRadius(5)
-//                                                .onTapGesture {
-//                                                    self.onClickDownvoteButton()
-//                                            }
+                                            Text(self.commentDataStore.relativeDateString!)
+                                                .foregroundColor(Color(.darkGray))
+                                                .font(.system(size: 14))
+                                                .padding(.bottom, 5)
+                                        }
+                                    }
+                                    .padding(.vertical, 5)
+                                    
+                                    FancyPantsEditorView(existedTextStorage: self.$commentDataStore.textStorage, desiredHeight: self.$commentDataStore.desiredHeight, newTextStorage: .constant(NSTextStorage(string: "")), isEditable: self.$isEditable, isFirstResponder: .constant(false), didBecomeFirstResponder: .constant(false), showFancyPantsEditorBar: .constant(false), isNewContent: false, isThread: false, isOmniBar: false)
+                                        
+                                        .frame(height: self.commentDataStore.desiredHeight + (self.isEditable ? 20 : 0), alignment: .leading)
+                                    //
+                                    //                                    .onTapGesture {
+                                    ////                                        self.setReplyTargetToCommentId()
+                                    ////                                        self.omniBarDidBecomeFirstResponder = true
+                                    //                                }
+                                    
+                                    HStack {
+                                        HStack {
+                                            if self.commentDataStore.isHidden == true {
+                                                Text("Unhide")
+                                                    .bold()
+                                                    .onTapGesture {
+                                                        //                                                    self.commentDataStore.unhideComment(access: self.userDataStore.token!.access, commentId: self.commentId)
+                                                }
+                                            } else {
+                                                Text("Hide")
+                                                    .bold()
+                                                    .onTapGesture {
+                                                        //                                                    self.commentDataStore.hideComment(access: self.userDataStore.token!.access, commentId: self.commentId)
+                                                }
+                                            }
                                         }
                                         
-//                                        Text(self.gameDataStore.relativeDateStringByCommentId[self.commentId]!)
-//                                            .foregroundColor(Color(.darkGray))
-//                                            .font(.system(size: 14))
-//                                            .padding(.bottom, 5)
-                                    }
-                                }
-                                
-                                FancyPantsEditorView(existedTextStorage: self.$commentDataStore.textStorage, desiredHeight: self.$commentDataStore.desiredHeight, newTextStorage: .constant(NSTextStorage(string: "")), isEditable: self.$isEditable, isFirstResponder: .constant(false), didBecomeFirstResponder: .constant(false), showFancyPantsEditorBar: .constant(false), isNewContent: false, isThread: false, isOmniBar: false)
-                                
-//                                    .frame(width: self.width - self.leadPadding - staticPadding * 2 - 30 - 10 - (self.level > 0 ? 10 + self.leadLineWidth: 0), height: self.commentDataStore.desiredHeight + (self.isEditable ? 20 : 0), alignment: .leading)
-//
-//                                    .onTapGesture {
-////                                        self.setReplyTargetToCommentId()
-////                                        self.omniBarDidBecomeFirstResponder = true
-//                                }
-                                
-                                HStack {
-                                    HStack {
-                                        if self.commentDataStore.isHidden == true {
-                                            Text("Unhide")
-                                            .bold()
+                                        
+                                        HStack {
+                                            Text("Report")
+                                                .bold()
                                                 .onTapGesture {
-//                                                    self.commentDataStore.unhideComment(access: self.userDataStore.token!.access, commentId: self.commentId)
-                                            }
-                                        } else {
-                                            Text("Hide")
-                                            .bold()
-                                                .onTapGesture {
-//                                                    self.commentDataStore.hideComment(access: self.userDataStore.token!.access, commentId: self.commentId)
+                                                    //                                                self.gameDataStore.isBlockPopupActiveByThreadId[self.ancestorThreadId] = false
+                                                    //                                                self.gameDataStore.isAddEmojiModalActiveByThreadViewId[self.ancestorThreadId] = false
+                                                    //                                                self.gameDataStore.lastClickedReportCommentByThreadId[self.ancestorThreadId] = self.commentId
+                                                    //
+                                                    //                                                self.gameDataStore.isLastClickedReportThreadInThreadViewByThreadId[self.ancestorThreadId] = false
+                                                    //                                                self.gameDataStore.isReportPopupActiveByThreadId[self.ancestorThreadId] = true
                                             }
                                         }
+                                        
+                                        Spacer()
                                     }
-                                    
-                                    HStack {
-                                        Text("Report")
-                                        .bold()
-                                            .onTapGesture {
-//                                                self.gameDataStore.isBlockPopupActiveByThreadId[self.ancestorThreadId] = false
-//                                                self.gameDataStore.isAddEmojiModalActiveByThreadViewId[self.ancestorThreadId] = false
-//                                                self.gameDataStore.lastClickedReportCommentByThreadId[self.ancestorThreadId] = self.commentId
-//
-//                                                self.gameDataStore.isLastClickedReportThreadInThreadViewByThreadId[self.ancestorThreadId] = false
-//                                                self.gameDataStore.isReportPopupActiveByThreadId[self.ancestorThreadId] = true
-                                        }
-                                    }
-                                    
-                                    Spacer()
-                                }
-                                .foregroundColor(.gray)
-                                .frame(width: self.width - self.leadPadding - staticPadding * 2 - 30 - 10 - (self.level > 0 ? 10 + self.leadLineWidth: 0), height:
-                                20)
+                                    .foregroundColor(.gray)
+                                    .frame(height: 20)
                                     .padding(.top, 10)
+                                }
                             }
+                            .frame(width: self.width - self.leadPadding - staticPadding * 2 - (self.level > 0 ? 10 + self.leadLineWidth: 0), height: 30 + self.commentDataStore.desiredHeight + (self.isEditable ? 20 : 0) + 30, alignment: .leading)
                         }
-                        .frame(width: self.width - self.leadPadding - staticPadding * 2 - (self.level > 0 ? 10 + self.leadLineWidth: 0), height: 30 + self.commentDataStore.desiredHeight + (self.isEditable ? 20 : 0) + 30, alignment: .leading)
+                        .padding(.horizontal, self.staticPadding)
+                        .padding(.vertical, self.verticalPadding)
                     }
-                    .padding(.horizontal, self.staticPadding)
-                    .padding(.vertical, self.verticalPadding)
+                    //                .background(self.gameDataStore.replyTargetCommentIdByThreadId[ancestorThreadId] != nil && self.gameDataStore.replyTargetCommentIdByThreadId[ancestorThreadId]! == commentId ? Color.gray : Color(red: 248 / 255, green: 248 / 255, blue: 248 / 255))
                 }
-//                .background(self.gameDataStore.replyTargetCommentIdByThreadId[ancestorThreadId] != nil && self.gameDataStore.replyTargetCommentIdByThreadId[ancestorThreadId]! == commentId ? Color.gray : Color(red: 248 / 255, green: 248 / 255, blue: 248 / 255))
             }
+            .frame(width: self.width)
             
             if self.commentDataStore.childCommentList.count < self.commentDataStore.comment.numChilds {
-                MoreCommentsView(commentDataStore: self.commentDataStore, width: self.width - self.leadPadding - staticPadding * 2 - 10 - self.leadLineWidth - 20, leadLineWidth: self.leadLineWidth, staticPadding: self.staticPadding, verticalPadding: self.verticalPadding, level: self.level + 1)
+                HStack {
+                    Spacer()
+                    MoreCommentsView(commentDataStore: self.commentDataStore, width: self.width - self.leadPadding - staticPadding * 2 - 10 - self.leadLineWidth - 20, leadLineWidth: self.leadLineWidth, staticPadding: self.staticPadding, verticalPadding: self.verticalPadding, level: self.level + 1)
+                }
+                .frame(width: self.width)
             }
             
             if self.commentDataStore.childCommentList.count > 0 {
