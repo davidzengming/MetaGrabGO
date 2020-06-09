@@ -238,7 +238,6 @@ struct ThreadView : View {
                             self.threadDataStore.fetchCommentTreeByThreadId(access: self.userDataStore.token!.access, refresh: true, userId: self.userDataStore.token!.userId, containerWidth: a.size.width - self.outerPadding * 2, leadPadding: 20)
                         }
                         
-                        
                         //                                self.didBecomeFirstResponder = false
                         
                         //                self.gameDataStore.isThreadViewLoadedByThreadId[self.threadId] = false

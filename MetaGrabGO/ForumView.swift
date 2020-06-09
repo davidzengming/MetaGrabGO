@@ -28,7 +28,48 @@ enum BottomBarState {
     case addEmoji, reportThread, blockUser, inActive, fancyBar
 }
 
-struct ForumView : View {
+struct BottomBarView: View {
+    @EnvironmentObject var assetsDataStore: AssetsDataStore
+    @ObservedObject var forumDataStore: ForumDataStore
+    @Binding var isBottomPopupOn: Bool
+    @Binding var bottomBarState: BottomBarState
+    @Binding var pickedThreadId: Int
+    @Binding var pickedUser: User
+    
+    var width: CGFloat
+    var height: CGFloat
+    
+    var turnBottomPopup: (Bool) -> Void
+    var toggleBottomBarState: (BottomBarState) -> Void
+    var togglePickedUser: (User) -> Void
+    var togglePickedThreadId: (Int) -> Void
+    
+    var body: some View {
+        Group {
+            if self.isBottomPopupOn == true {
+                VStack {
+                    if self.bottomBarState == .addEmoji {
+                        EmojiPickerPopupView(forumDataStore: self.forumDataStore, pickedThreadId: self.$pickedThreadId, turnBottomPopup: { state in self.turnBottomPopup(state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state)}, togglePickedUser: { pickedUser in self.togglePickedUser(pickedUser)}, togglePickedThreadId: { pickedThreadId in self.togglePickedThreadId(pickedThreadId)})
+                    } else if self.bottomBarState == .reportThread {
+                        ReportPopupView(forumDataStore: self.forumDataStore, pickedThreadId: self.$pickedThreadId, turnBottomPopup: { state in self.turnBottomPopup(state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state)}, togglePickedUser: { pickedUser in self.togglePickedUser(pickedUser)}, togglePickedThreadId: { pickedThreadId in self.togglePickedThreadId(pickedThreadId)})
+                    } else if self.bottomBarState == .blockUser {
+                        BlockUserPopupView(blockHiddenDataStore: BlockHiddenDataStore(), pickedUser: self.$pickedUser, turnBottomPopup: { state in self.turnBottomPopup(state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state)}, togglePickedUser: { pickedUser in self.togglePickedUser(pickedUser)}, togglePickedThreadId: { pickedThreadId in self.togglePickedThreadId(pickedThreadId)})
+                    }
+                }
+                .frame(width: self.width, height: self.height)
+                .background(self.assetsDataStore.colors["darkButNotBlack"]!)
+                .cornerRadius(5, corners: [.topLeft, .topRight])
+                .KeyboardAwarePadding()
+                .transition(.move(edge: .bottom))
+                .animation(.default)
+            }
+            
+        }
+        
+    }
+}
+
+struct ForumView: View {
     @EnvironmentObject var blockHiddenDataStore: BlockHiddenDataStore
     @EnvironmentObject var userDataStore: UserDataStore
     @EnvironmentObject var assetsDataStore: AssetsDataStore
@@ -148,7 +189,6 @@ struct ForumView : View {
                                     .padding(.vertical, a.size.width * 0.025)
                                     .foregroundColor(self.forumDataStore.isFollowed == true ? Color.white : Color.black)
                                     .background(self.forumDataStore.isFollowed == true ? Color.black : Color.white)
-                                    
                                     .cornerRadius(a.size.width * 0.5)
                                     .shadow(radius: a.size.width * 0.05)
                                     .onTapGesture {
@@ -193,7 +233,7 @@ struct ForumView : View {
                                                 ceil (a.size.height * 0.045 + 10 + 10 + (self.forumDataStore.threadDataStores[threadId]!.thread.title.isEmpty == false ? 16 : 0) + min(self.forumDataStore.threadDataStores[threadId]!.desiredHeight, 200)
                                                 + 10
                                                     + (self.forumDataStore.threadDataStores[threadId]!.imageLoaders.count > 0 ? (a.size.height * 0.15) : 0)  + 30
-                                                + a.size.height * 0.025 + CGFloat(self.forumDataStore.threadDataStores[threadId]!.emojis.emojiArr.count) * 30
+                                                + a.size.height * 0.025 + CGFloat(self.forumDataStore.threadDataStores[threadId]!.emojis.emojiArr.count) * 40
                                                 + 40 + 20 + 20)
                                         )
                                         .background(Color.white)
@@ -246,24 +286,7 @@ struct ForumView : View {
                     }
                     .position(x: a.size.width * 0.88, y: a.size.height * 0.88)
                     
-                    if self.isBottomPopupOn == true {
-                        VStack {
-                            if self.bottomBarState == .addEmoji {
-                                EmojiPickerPopupView(forumDataStore: self.forumDataStore, pickedThreadId: self.$pickedThreadId, turnBottomPopup: { state in self.turnBottomPopup(state: state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state: state)}, togglePickedUser: { pickedUser in self.togglePickedUser(user: pickedUser)}, togglePickedThreadId: { pickedThreadId in self.togglePickedThreadId(threadId: pickedThreadId)})
-                            } else if self.bottomBarState == .reportThread {
-                                ReportPopupView(forumDataStore: self.forumDataStore, pickedThreadId: self.$pickedThreadId, turnBottomPopup: { state in self.turnBottomPopup(state: state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state: state)}, togglePickedUser: { pickedUser in self.togglePickedUser(user: pickedUser)}, togglePickedThreadId: { pickedThreadId in self.togglePickedThreadId(threadId: pickedThreadId)})
-                                
-                            } else if self.bottomBarState == .blockUser {
-                                BlockUserPopupView(blockHiddenDataStore: BlockHiddenDataStore(), pickedUser: self.$pickedUser, turnBottomPopup: { state in self.turnBottomPopup(state: state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state: state)}, togglePickedUser: { pickedUser in self.togglePickedUser(user: pickedUser)}, togglePickedThreadId: { pickedThreadId in self.togglePickedThreadId(threadId: pickedThreadId)})
-                            }
-                        }
-                        .frame(width: a.size.width, height: a.size.height * 0.25)
-                        .background(self.assetsDataStore.colors["darkButNotBlack"]!)
-                        .cornerRadius(5, corners: [.topLeft, .topRight])
-                        .KeyboardAwarePadding()
-                        .transition(.move(edge: .bottom))
-                        .animation(.default)
-                    }
+                    BottomBarView(forumDataStore: self.forumDataStore, isBottomPopupOn: self.$isBottomPopupOn, bottomBarState: self.$bottomBarState, pickedThreadId: self.$pickedThreadId, pickedUser: self.$pickedUser, width: a.size.width, height: a.size.height * 0.25, turnBottomPopup: { state in self.turnBottomPopup(state: state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state: state)}, togglePickedUser: { pickedUser in self.togglePickedUser(user: pickedUser)}, togglePickedThreadId: { pickedThreadId in self.togglePickedThreadId(threadId: pickedThreadId)})
                 }
             }
             .edgesIgnoringSafeArea(.bottom)

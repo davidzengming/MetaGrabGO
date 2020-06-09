@@ -35,7 +35,7 @@ struct ThreadRow : View {
         self.width = width
         self.height = height
         
-        print("remaking thread row dude: ", threadDataStore.thread.id)
+        print("remaking thread row: ", threadDataStore.thread.id)
     }
     
 //    func fetchCommentTreeByThreadId() {

@@ -263,7 +263,7 @@ class ThreadDataStore: ObservableObject {
     private var imageLoaderSubs = [Int: AnyCancellable]()
     
     @ObservedObject var emojis: EmojiDataStore
-//    private var emojisSub: AnyCancellable?
+    private var emojisSub: AnyCancellable?
     
     @Published var areCommentsLoaded: Bool = false
     
@@ -292,8 +292,8 @@ class ThreadDataStore: ObservableObject {
         
         self.cache = cache
         self.emojis = EmojiDataStore(serializedEmojiArr: emojiArr, emojiReactionCount: emojiReactionCount, userArrPerEmoji: userArrPerEmoji, didReactToEmojiDict: didReactToEmojiDict)
-//        self.emojisSub = emojis.objectWillChange.receive(on: DispatchQueue.main).sink(receiveValue: {[weak self] _ in self?.objectWillChange.send()
-//        })
+        self.emojisSub = emojis.objectWillChange.receive(on: DispatchQueue.main).sink(receiveValue: {[weak self] _ in self?.objectWillChange.send()
+        })
         
         self.mountImages()
         self.loadImages()
