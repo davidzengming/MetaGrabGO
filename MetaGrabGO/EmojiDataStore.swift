@@ -97,11 +97,13 @@ class EmojiDataStore: ObservableObject {
             }
             self.usersSetReactToEmoji[emojiId]!.insert(user.id)
             
-            if self.emojiCount[emojiId] != nil {
+            let didEmojiExistInArr = self.emojiCount[emojiId] != nil
+            self.emojiCount[emojiId] = newEmojiCount
+            if didEmojiExistInArr == true {
+                print(emojiId, self.emojiCount)
                 print("Emoji already exists in array, not adding a new icon.")
                 return
             }
-            self.emojiCount[emojiId] = newEmojiCount
             self.emojiArr = self.getShiftedArrayForAddEmoji(emojiId: emojiId)
         }
     }

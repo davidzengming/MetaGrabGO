@@ -69,6 +69,54 @@ struct BottomBarView: View {
     }
 }
 
+struct BottomBarViewThreadVer: View {
+    @EnvironmentObject var assetsDataStore: AssetsDataStore
+    @ObservedObject var threadDataStore: ThreadDataStore
+    @Binding var isBottomPopupOn: Bool
+    @Binding var bottomBarState: BottomBarState
+    @Binding var pickedThreadId: Int
+    @Binding var pickedCommentId: CommentDataStore?
+    @Binding var pickedUser: User
+    
+    var width: CGFloat
+    var height: CGFloat
+    
+    var turnBottomPopup: (Bool) -> Void
+    var toggleBottomBarState: (BottomBarState) -> Void
+    var togglePickedUser: (User) -> Void
+    var togglePickedThreadId: (Int) -> Void
+    var togglePickedCommentId: (CommentDataStore?) -> Void
+    
+    var body: some View {
+        Group {
+            if self.isBottomPopupOn == true {
+                VStack {
+                    if self.bottomBarState == .addEmoji {
+                        EmojiPickerPopupViewThreadVer(threadDataStore: threadDataStore, pickedThreadId: self.$pickedThreadId, turnBottomPopup: { state in self.turnBottomPopup(state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state)}, togglePickedUser: { pickedUser in self.togglePickedUser(pickedUser)}, togglePickedThreadId: { pickedThreadId in self.togglePickedThreadId(pickedThreadId)}, togglePickedCommentId: { pickedCommentId in self.togglePickedCommentId(pickedCommentId)} )
+                    } else if self.bottomBarState == .reportThread {
+                        ReportPopupViewThreadVer(threadDataStore: threadDataStore, pickedThreadId: self.$pickedThreadId, pickedCommentId: self.$pickedCommentId, turnBottomPopup: { state in self.turnBottomPopup(state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state)}, togglePickedUser: { pickedUser in self.togglePickedUser(pickedUser)}, togglePickedThreadId: { pickedThreadId in self.togglePickedThreadId(pickedThreadId)}, togglePickedCommentId: { pickedCommentId in self.togglePickedCommentId(pickedCommentId)})
+                    } else if self.bottomBarState == .blockUser {
+                        BlockUserPopupView(blockHiddenDataStore: BlockHiddenDataStore(), pickedUser: self.$pickedUser, turnBottomPopup: { state in self.turnBottomPopup(state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state)}, togglePickedUser: { pickedUser in self.togglePickedUser(pickedUser)}, togglePickedThreadId: { pickedThreadId in self.togglePickedThreadId(pickedThreadId)})
+                    }
+                }
+                .frame(width: self.width, height: self.height)
+                .background(self.assetsDataStore.colors["darkButNotBlack"]!)
+                .cornerRadius(5, corners: [.topLeft, .topRight])
+                .KeyboardAwarePadding()
+                .transition(.move(edge: .bottom))
+                .animation(.default)
+            }
+            
+        }
+        
+    }
+}
+
+
+
+
+
+
 struct ForumView: View {
     @EnvironmentObject var blockHiddenDataStore: BlockHiddenDataStore
     @EnvironmentObject var userDataStore: UserDataStore

@@ -17,17 +17,17 @@ extension UIFont {
 }
 
 extension NSAttributedString {
-
+    
     func height(containerWidth: CGFloat) -> CGFloat {
-
+        
         let rect = self.boundingRect(with: CGSize.init(width: containerWidth, height: CGFloat.greatestFiniteMagnitude),
                                      options: [.usesLineFragmentOrigin, .usesFontLeading],
                                      context: nil)
         return ceil(rect.size.height)
     }
-
+    
     func width(containerHeight: CGFloat) -> CGFloat {
-
+        
         let rect = self.boundingRect(with: CGSize.init(width: CGFloat.greatestFiniteMagnitude, height: containerHeight),
                                      options: [.usesLineFragmentOrigin, .usesFontLeading],
                                      context: nil)
@@ -58,6 +58,7 @@ struct TextView: UIViewRepresentable {
     @Binding var didChangeNumberedBulletList: Bool
     
     @Binding var isEditable: Bool
+    
     @Binding var isFirstResponder: Bool
     @Binding var didBecomeFirstResponder: Bool
     
@@ -102,33 +103,33 @@ struct TextView: UIViewRepresentable {
         myTextView.textContainerInset = UIEdgeInsets.zero
         myTextView.textContainer.lineFragmentPadding = 0
         
-//        DispatchQueue.main.async {
-//            if self.isNewContent == false {
-//                let newDesiredHeight = ceil(TextViewHelper.calculateTextViewHeight(textView: myTextView))
-//                if newDesiredHeight != self.desiredHeight {
-//                    self.desiredHeight = newDesiredHeight
-//                }
-//
-//            } else {
-//                if self.isOmniBar {
-//                    self.desiredHeight = ceil(TextViewHelper.calculateTextViewHeight(textView: myTextView))
-//                }
-//            }
-//        }
-//
+        //        DispatchQueue.main.async {
+        //            if self.isNewContent == false {
+        //                let newDesiredHeight = ceil(TextViewHelper.calculateTextViewHeight(textView: myTextView))
+        //                if newDesiredHeight != self.desiredHeight {
+        //                    self.desiredHeight = newDesiredHeight
+        //                }
+        //
+        //            } else {
+        //                if self.isOmniBar {
+        //                    self.desiredHeight = ceil(TextViewHelper.calculateTextViewHeight(textView: myTextView))
+        //                }
+        //            }
+        //        }
+        //
         return myTextView
     }
     
     func updateUIView(_ uiView: UITextView, context: Context) {
         
         // there is a bug with this
-//        DispatchQueue.main.async {
-//            if self.didBecomeFirstResponder && !self.isFirstResponder {
-//                uiView.becomeFirstResponder()
-//                self.isFirstResponder = true
-//                self.didBecomeFirstResponder = false
-//            }
-//        }
+        if self.didBecomeFirstResponder && !self.isFirstResponder {
+            DispatchQueue.main.async {
+                self.isFirstResponder = true
+                self.didBecomeFirstResponder = false
+                uiView.becomeFirstResponder()
+            }
+        }
         
         let leftCaretPos = uiView.selectedRange.location
         let rightCaretPos = uiView.selectedRange.location + uiView.selectedRange.length
@@ -289,7 +290,7 @@ struct TextView: UIViewRepresentable {
                 
                 if text == "\n" {
                     TextViewHelper.formatNewLineAndAdjustCursor(isNumbered: false, leftCaretPos: leftCaretPos, enumerateKey: enumerateKey, enumerateHeaderKey: enumerateHeaderKey, textStorage: self.textStorage, textView: textView)
-
+                    
                     updateTextViewHeight(textView: textView)
                     return false
                 } else if text == "" && range.length == 1 && k == 0 {
@@ -305,28 +306,34 @@ struct TextView: UIViewRepresentable {
                     }
                 }
             }
-
+            
             return true
         }
         
         func updateTextViewHeight(textView: UITextView) {
-            DispatchQueue.main.async {
-                if self.parent.isNewContent == false {
-                    if self.parent.isThread == true {
-                        let newHeight = ceil(TextViewHelper.calculateTextViewHeight(textView: textView))
-                        if newHeight != self.parent.desiredHeight {
-                            self.parent.desiredHeight = newHeight
-                        }
-                    } else {
-                        let newHeight =  ceil(TextViewHelper.calculateTextViewHeight(textView: textView))
-                        if newHeight != self.parent.desiredHeight {
+            
+            if self.parent.isNewContent == false {
+                if self.parent.isThread == true {
+                    let newHeight = ceil(TextViewHelper.calculateTextViewHeight(textView: textView))
+                    if newHeight != self.parent.desiredHeight {
+                        DispatchQueue.main.async {
                             self.parent.desiredHeight = newHeight
                         }
                     }
                 } else {
-                    if self.parent.isOmniBar == true {
-                        let newHeight = ceil(TextViewHelper.calculateTextViewHeight(textView: textView))
-                        if newHeight != self.parent.desiredHeight {
+                    let newHeight =  ceil(TextViewHelper.calculateTextViewHeight(textView: textView))
+                    if newHeight != self.parent.desiredHeight {
+                        DispatchQueue.main.async {
+                            self.parent.desiredHeight = newHeight
+                        }
+                    }
+                }
+            } else {
+                if self.parent.isOmniBar == true {
+                    let newHeight = ceil(TextViewHelper.calculateTextViewHeight(textView: textView))
+                    
+                    if newHeight != self.parent.desiredHeight {
+                        DispatchQueue.main.async {
                             self.parent.desiredHeight = newHeight
                         }
                     }
@@ -357,7 +364,7 @@ struct TextView: UIViewRepresentable {
             let k = textView.selectedRange.length
             let rightCaretPos = leftCaretPos + k
             
-//            let startTime1 = CFAbsoluteTimeGetCurrent()
+            //            let startTime1 = CFAbsoluteTimeGetCurrent()
             let isRightSideCaret = TextViewHelper.isRightSideCaret(at: leftCaretPos, textStorage: self.textStorage)
             
             var nextBoldState = false
@@ -366,7 +373,7 @@ struct TextView: UIViewRepresentable {
             
             var nextNumberedListState = false
             var nextDashListState = false
-
+            
             if k > 0 {
                 nextBoldState = TextViewHelper.isAllBoldInSubstring(s: textStorage.attributedSubstring(from: NSMakeRange(leftCaretPos, k))) ? true : false
                 nextItalicState = TextViewHelper.isAllItalicInSubstring(s: textStorage.attributedSubstring(from: NSMakeRange(leftCaretPos, k))) ? true : false
@@ -429,7 +436,7 @@ struct TextView: UIViewRepresentable {
             setDashBulletListState(to: nextDashListState)
             setDidChangeDashBulletList(to: false)
             
-//            let timeElapsed1 = CFAbsoluteTimeGetCurrent() - startTime1
+            //            let timeElapsed1 = CFAbsoluteTimeGetCurrent() - startTime1
         }
         
         func setDidChangeBold(to status: Bool) {

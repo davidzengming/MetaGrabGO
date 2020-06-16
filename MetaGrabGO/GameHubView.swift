@@ -66,8 +66,6 @@ struct GameHubView: View {
                 UserProfileView(blockHiddenDataStore: BlockHiddenDataStore())
                     .navigationBarTitle("Profile")
                     .navigationBarHidden(true)
-                
-                //.edgesIgnoringSafeArea(.top)
             }
                 
             .tabItem {

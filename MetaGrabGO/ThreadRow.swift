@@ -37,11 +37,7 @@ struct ThreadRow : View {
         
         print("remaking thread row: ", threadDataStore.thread.id)
     }
-    
-//    func fetchCommentTreeByThreadId() {
-//        self.threadDataStore.fetchCommentTreeByThreadId(access: self.userDataStore.token!.access, userId: self.userDataStore.token!.userId)
-//    }
-    
+
     func onClickUser() {
         if self.threadDataStore.author.id == self.userDataStore.token!.userId {
             print("Cannot report self.")
@@ -88,7 +84,7 @@ struct ThreadRow : View {
                             .fontWeight(.medium)
                     }
                     
-                    FancyPantsEditorView(existedTextStorage: self.$threadDataStore.textStorage, desiredHeight: self.$threadDataStore.desiredHeight,  newTextStorage: .constant(NSTextStorage(string: "")), isEditable: .constant(false), isFirstResponder: .constant(false), didBecomeFirstResponder: .constant(false), showFancyPantsEditorBar: .constant(false), isNewContent: false, isThread: true, threadId: self.threadDataStore.thread.id, isOmniBar: false)
+                    FancyPantsEditorView(existedTextStorage: self.$threadDataStore.textStorage, desiredHeight: self.$threadDataStore.desiredHeight,  newTextStorage: .constant(NSTextStorage(string: "")), isEditable: .constant(false), isFirstResponder: .constant(false), didBecomeFirstResponder: .constant(false), showFancyPantsEditorBar: .constant(false), isNewContent: false, isThread: true, threadId: self.threadDataStore.thread.id, isOmniBar: false, width: self.width, height: self.height)
                         .frame(width: self.width * 0.9, height: min(self.threadDataStore.desiredHeight, 200), alignment: .leading)
                 }
             }

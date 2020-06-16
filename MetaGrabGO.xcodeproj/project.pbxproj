@@ -36,7 +36,6 @@
 		3E36114F24760DEA004C70B4 /* NSAttributedStringKey+CustomAttribute.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E36114E24760DEA004C70B4 /* NSAttributedStringKey+CustomAttribute.swift */; };
 		3E36115124760DF6004C70B4 /* UploadDashPlaceholderButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E36115024760DF6004C70B4 /* UploadDashPlaceholderButton.swift */; };
 		3E36115324760DFF004C70B4 /* NewThreadButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E36115224760DFF004C70B4 /* NewThreadButton.swift */; };
-		3E36115524760E0F004C70B4 /* TextEditorButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E36115424760E0F004C70B4 /* TextEditorButtons.swift */; };
 		3E36115724760E19004C70B4 /* TextViewHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E36115624760E19004C70B4 /* TextViewHelper.swift */; };
 		3E36115924760E5C004C70B4 /* Load.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E36115824760E5C004C70B4 /* Load.swift */; };
 		3E36115B24760E8F004C70B4 /* GameDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E36115A24760E8F004C70B4 /* GameDataStore.swift */; };
@@ -75,7 +74,6 @@
 		3ED7816024782C5E00C5EE96 /* ForumDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ED7815F24782C5E00C5EE96 /* ForumDataStore.swift */; };
 		3ED7816424784EA600C5EE96 /* FancyPantsEditorBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ED7816324784EA600C5EE96 /* FancyPantsEditorBarView.swift */; };
 		3ED7816624784EAF00C5EE96 /* TextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ED7816524784EAF00C5EE96 /* TextView.swift */; };
-		3ED781682478517100C5EE96 /* KeyboardheightDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ED781672478517100C5EE96 /* KeyboardheightDataStore.swift */; };
 		3EE38C6C2475CB8B007E9F32 /* DarkHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EE38C6B2475CB8B007E9F32 /* DarkHostingController.swift */; };
 		3EE38C6E2475CDF6007E9F32 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EE38C6D2475CDF6007E9F32 /* MainView.swift */; };
 		3EE38C702475CE35007E9F32 /* UserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EE38C6F2475CE35007E9F32 /* UserView.swift */; };
@@ -115,7 +113,6 @@
 		3E36114E24760DEA004C70B4 /* NSAttributedStringKey+CustomAttribute.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSAttributedStringKey+CustomAttribute.swift"; sourceTree = "<group>"; };
 		3E36115024760DF6004C70B4 /* UploadDashPlaceholderButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UploadDashPlaceholderButton.swift; sourceTree = "<group>"; };
 		3E36115224760DFF004C70B4 /* NewThreadButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NewThreadButton.swift; sourceTree = "<group>"; };
-		3E36115424760E0F004C70B4 /* TextEditorButtons.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TextEditorButtons.swift; sourceTree = "<group>"; };
 		3E36115624760E19004C70B4 /* TextViewHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TextViewHelper.swift; sourceTree = "<group>"; };
 		3E36115824760E5C004C70B4 /* Load.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Load.swift; sourceTree = "<group>"; };
 		3E36115A24760E8F004C70B4 /* GameDataStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GameDataStore.swift; sourceTree = "<group>"; };
@@ -156,7 +153,6 @@
 		3ED7815F24782C5E00C5EE96 /* ForumDataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForumDataStore.swift; sourceTree = "<group>"; };
 		3ED7816324784EA600C5EE96 /* FancyPantsEditorBarView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FancyPantsEditorBarView.swift; sourceTree = "<group>"; };
 		3ED7816524784EAF00C5EE96 /* TextView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TextView.swift; sourceTree = "<group>"; };
-		3ED781672478517100C5EE96 /* KeyboardheightDataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardheightDataStore.swift; sourceTree = "<group>"; };
 		3EE38C6B2475CB8B007E9F32 /* DarkHostingController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DarkHostingController.swift; sourceTree = "<group>"; };
 		3EE38C6D2475CDF6007E9F32 /* MainView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
 		3EE38C6F2475CE35007E9F32 /* UserView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserView.swift; sourceTree = "<group>"; };
@@ -267,7 +263,6 @@
 				3ED7816324784EA600C5EE96 /* FancyPantsEditorBarView.swift */,
 				3ED7816524784EAF00C5EE96 /* TextView.swift */,
 				3E36115624760E19004C70B4 /* TextViewHelper.swift */,
-				3E36115424760E0F004C70B4 /* TextEditorButtons.swift */,
 				3E36115024760DF6004C70B4 /* UploadDashPlaceholderButton.swift */,
 				3EB25B502475CA6C00C465D1 /* Assets.xcassets */,
 				3E7ACE202476AFC700873BC8 /* ImageLoader.swift */,
@@ -275,7 +270,6 @@
 				3E36115824760E5C004C70B4 /* Load.swift */,
 				3E36114C24760DE7004C70B4 /* KeyChain.swift */,
 				3E7ACE162476A40E00873BC8 /* KeyboardModifier.swift */,
-				3ED781672478517100C5EE96 /* KeyboardheightDataStore.swift */,
 				3E2FCF3D247E9C8A00CF37FE /* HideTabViewBarFunctions.swift */,
 				3E36114E24760DEA004C70B4 /* NSAttributedStringKey+CustomAttribute.swift */,
 				3EB25B552475CA6C00C465D1 /* LaunchScreen.storyboard */,
@@ -456,7 +450,6 @@
 				3E36113B24760DAB004C70B4 /* GameHistoryResponse.swift in Sources */,
 				3E7ACE172476A40E00873BC8 /* KeyboardModifier.swift in Sources */,
 				3E36113524760DAB004C70B4 /* ImageUrls.swift in Sources */,
-				3E36115524760E0F004C70B4 /* TextEditorButtons.swift in Sources */,
 				3E36115324760DFF004C70B4 /* NewThreadButton.swift in Sources */,
 				3E36113F24760DAB004C70B4 /* Vote.swift in Sources */,
 				3E7ACE1524769E1200873BC8 /* AssetsDataStore.swift in Sources */,
@@ -471,7 +464,6 @@
 				3E36114D24760DE7004C70B4 /* KeyChain.swift in Sources */,
 				3E36114924760DAB004C70B4 /* NewCommentResponse.swift in Sources */,
 				3E9994E52485939500BD1BD7 /* CommentsResponse.swift in Sources */,
-				3ED781682478517100C5EE96 /* KeyboardheightDataStore.swift in Sources */,
 				3ED7816424784EA600C5EE96 /* FancyPantsEditorBarView.swift in Sources */,
 				3E36113624760DAB004C70B4 /* User.swift in Sources */,
 				3E36116124760EE9004C70B4 /* PopularGamesView.swift in Sources */,

@@ -19,21 +19,86 @@ extension UIApplication {
 struct ThreadView : View {
     @EnvironmentObject var assetsDataStore: AssetsDataStore
     @EnvironmentObject var userDataStore: UserDataStore
-    
     @ObservedObject var threadDataStore: ThreadDataStore
     
-    let placeholder = Image(systemName: "photo")
     let formatter = RelativeDateTimeFormatter()
     let outerPadding : CGFloat = 20
+    let placeholder = Image(systemName: "rectangle.fill")
     
-    @State var replyBoxOpen: Bool = false
     @State var isEditable = false
-    @State var showFancyPantsEditorBar = false
-    @State var replyContent = NSTextStorage(string: "")
-    @State var test = NSTextStorage(string: "")
+    @State var isBottomPopupOn = false
+    @State var bottomBarState: BottomBarState = .fancyBar
+    @State var pickedThreadId: Int = -1
+    @State var pickedCommentId: CommentDataStore?
     
-    //    @State var isFirstResponder = false
-    //    @State var didBecomeFirstResponder = false
+    @State var pickedUser: User = User(id: -1, username: "placeholder")
+    
+    // reply bar
+    @State var replyContent = NSTextStorage(string: "")
+    @State var replyBarDesiredHeight: CGFloat = 20 // subject to font size changes
+    @State var keyboardHeight: CGFloat = 0
+    @State var replyFutureContainerWidth: CGFloat = 0
+    
+    @State var isFirstResponder: Bool = false
+    @State var didBecomeFirstResponder: Bool = false
+    
+    
+    func turnBottomPopup(state: Bool) {
+        if self.isBottomPopupOn != state {
+            self.isBottomPopupOn = state
+        }
+    }
+    
+    func toggleBottomBarState(state: BottomBarState) {
+        if self.bottomBarState == state {
+            return
+        }
+        self.bottomBarState = state
+    }
+    
+    func togglePickedThreadId(threadId: Int) {
+        if self.pickedThreadId == threadId {
+            return
+        }
+        self.pickedThreadId = threadId
+    }
+    
+    func togglePickedCommentId(commentId: CommentDataStore?) {
+        if commentId != nil && self.pickedCommentId != nil && self.pickedCommentId!.comment.id == commentId!.comment.id {
+            return
+        }
+        
+        self.pickedCommentId = commentId
+    }
+    
+    func toggleDidBecomeFirstResponder() {
+        self.didBecomeFirstResponder = true
+    }
+    
+    func togglePickedUser(user: User) {
+        if self.pickedUser == user {
+            return
+        }
+        self.pickedUser = user
+    }
+    
+    func toggleReplyFutureContainerWidth(width: CGFloat) {
+        if self.replyFutureContainerWidth == width {
+            return
+        }
+        self.replyFutureContainerWidth = width
+    }
+    
+    func onClickUser() {
+        if self.threadDataStore.author.id == self.userDataStore.token!.userId {
+            print("Cannot report self.")
+            return
+        }
+        
+        self.togglePickedUser(user: self.threadDataStore.author)
+        self.toggleBottomBarState(state: .blockUser)
+        self.turnBottomPopup(state: true)
+    }
     
     func scrollToOriginalThread() {
     }
@@ -50,12 +115,8 @@ struct ThreadView : View {
         print("thread view created", threadDataStore.thread.id)
     }
     
-    //    func postPrimaryComment() {
-    //        self.threadDataStore.postMainComment(access: self.userDataStore.token!.access, threadId: threadId, content: replyContent)
-    //    }
-    //
-    func fetchNextPage() {
-        //        self.threadDataStore.fetchCommentTreeByThreadId(access: self.userDataStore.token!.access, start: self.threadDataStore.threadNextPageStartIndex!, userId: self.userDataStore.token!.userId)
+    func fetchNextPage(containerWidth: CGFloat) {
+        self.threadDataStore.fetchCommentTreeByThreadId(access: self.userDataStore.token!.access, start: self.threadDataStore.childCommentList.count, refresh: true, userId: self.userDataStore.token!.userId, containerWidth: containerWidth, leadPadding: 20)
     }
     
     //    func toggleEditMode() {
@@ -84,6 +145,15 @@ struct ThreadView : View {
     //        self.endEditing()
     //    }
     
+    func submit() {
+        print("submitted")
+        if pickedCommentId != nil {
+            self.pickedCommentId!.submit
+        } else {
+            self.threadDataStore.postMainComment(access: self.userDataStore.token!.access, content: self.replyContent, containerWidth: self.replyFutureContainerWidth)
+        }
+    }
+    
     var body: some View {
         ZStack {
             self.assetsDataStore.colors["darkButNotBlack"]!
@@ -92,21 +162,9 @@ struct ThreadView : View {
             Color.white
                 .edgesIgnoringSafeArea(.bottom)
             
-            //            if (self.gameDataStore.isAddEmojiModalActiveByThreadViewId[self.threadId] == nil || self.gameDataStore.isAddEmojiModalActiveByThreadViewId[self.threadId]! == false) && (self.gameDataStore.isReportPopupActiveByThreadId[self.threadId] == nil || self.gameDataStore.isReportPopupActiveByThreadId[self.threadId]! == false) &&
-            //                (self.gameDataStore.isBlockPopupActiveByThreadId[self.threadId] == nil ||
-            //                    self.gameDataStore.isBlockPopupActiveByThreadId[self.threadId]! == false) {
-            //                Color(red: 248 / 255, green: 248 / 255, blue: 248 / 255)
-            //                    .edgesIgnoringSafeArea(.bottom)
-            //            } else {
-            //                self.gameDataStore.colors["darkButNotBlack"]!
-            //                    .edgesIgnoringSafeArea(.bottom)
-            //
-            //                Color(red: 248 / 255, green: 248 / 255, blue: 248 / 255)
-            //            }
-            //
             GeometryReader { a in
-                VStack(spacing: 0) {
-                    VStack(alignment: .trailing, spacing: 0) {
+                ZStack(alignment: .bottom) {
+                    VStack {
                         List {
                             HStack(spacing: 0) {
                                 VStack(spacing: 0) {
@@ -125,12 +183,7 @@ struct ThreadView : View {
                                         Spacer()
                                     }
                                     .onTapGesture {
-                                        //
-                                        //                                                self.gameDataStore.isAddEmojiModalActiveByThreadViewId[self.threadId] = false
-                                        //                                                self.gameDataStore.isReportPopupActiveByThreadId[self.threadId] = false
-                                        //                                                self.gameDataStore.lastClickedBlockUserByThreadId[self.threadId] = self.gameDataStore.users[self.gameDataStore.threads[self.threadId]!.author]!.id
-                                        //                                                self.gameDataStore.isBlockPopupActiveByThreadId[self.threadId] = true
-                                        
+                                        self.onClickUser()
                                     }
                                     
                                     Text(self.threadDataStore.relativeDateString!)
@@ -140,27 +193,42 @@ struct ThreadView : View {
                                 }
                             }
                             .padding(.top, 20)
-                            //                                    .background(self.gameDataStore.isReplyBarReplyingToThreadByThreadId[self.threadId]!
-                            //                                        == true ? Color.gray : Color(red: 248 / 255, green: 248 / 255, blue: 248 / 255))
                             
-                            FancyPantsEditorView(existedTextStorage: self.$threadDataStore.textStorage, desiredHeight: self.$threadDataStore.desiredHeight,  newTextStorage: .constant(NSTextStorage(string: "")), isEditable: .constant(false), isFirstResponder: .constant(false), didBecomeFirstResponder: .constant(false), showFancyPantsEditorBar: .constant(false), isNewContent: false, isThread: true, threadId: self.threadDataStore.thread.id, isOmniBar: false)
+                            FancyPantsEditorView(existedTextStorage: self.$threadDataStore.textStorage, desiredHeight: self.$threadDataStore.desiredHeight,  newTextStorage: .constant(NSTextStorage(string: "")), isEditable: .constant(false), isFirstResponder: .constant(false), didBecomeFirstResponder: .constant(false), showFancyPantsEditorBar: .constant(false), isNewContent: false, isThread: true, threadId: self.threadDataStore.thread.id, isOmniBar: false, width: a.size.width, height: a.size.height)
                                 .frame(width: a.size.width - self.outerPadding * 2, height: self.threadDataStore.desiredHeight + (self.isEditable ? 20 : 0))
                                 .padding(.bottom, 10)
-                            //                                    .background(self.gameDataStore.isReplyBarReplyingToThreadByThreadId[self.threadId]!
-                            //                                        == true ? Color.gray : Color(red: 248 / 255, green: 248 / 255, blue: 248 / 255))
-                            
+
                             HStack(spacing: 10) {
                                 ForEach(self.threadDataStore.imageArr, id: \.self) { index in
-                                    Image(uiImage: self.threadDataStore.imageLoaders[index]!.downloadedImage!)
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fit)
-                                        .cornerRadius(5)
-                                        .frame(minWidth: a.size.width * 0.05, maxWidth: a.size.width * 0.25, minHeight: a.size.height * 0.1, maxHeight: a.size.height * 0.15, alignment: .center)
+                                    Group {
+                                        if self.threadDataStore.imageLoaders[index]!.downloadedImage != nil {
+                                            Image(uiImage: self.threadDataStore.imageLoaders[index]!.downloadedImage!)
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fit)
+                                                .cornerRadius(5)
+                                                .frame(minWidth: a.size.width * 0.05, maxWidth: a.size.width * 0.25, minHeight: a.size.height * 0.1, maxHeight: a.size.height * 0.15, alignment: .center)
+                                        } else {
+                                            self.placeholder
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fit)
+                                                .cornerRadius(5)
+                                                .frame(minWidth: a.size.width * 0.05, maxWidth: a.size.width * 0.25, minHeight: a.size.height * 0.1, maxHeight: a.size.height * 0.15, alignment: .center)
+                                        }
+                                    }
                                 }
                             }
                             .padding(.vertical, 10)
                             
                             HStack(spacing: 10) {
+                                HStack(spacing: 5) {
+                                    Image(systemName: "bubble.right.fill")
+                                    Text(String(self.threadDataStore.thread.numSubtreeNodes))
+                                        .font(.system(size: 16))
+                                        .bold()
+                                    Text("Comments")
+                                        .bold()
+                                }
+                                
                                 HStack {
                                     if self.threadDataStore.isHidden == true {
                                         Text("Unhide")
@@ -181,9 +249,9 @@ struct ThreadView : View {
                                     Text("Report")
                                         .bold()
                                         .onTapGesture {
-                                            //                                                        self.togglePickedThreadId(threadId: self.threadDataStore.thread.id)
-                                            //                                                        self.toggleBottomBarState(state: .reportThread)
-                                            //                                                        self.turnBottomPopup(state: true)
+                                            self.togglePickedThreadId(threadId: self.threadDataStore.thread.id)
+                                            self.toggleBottomBarState(state: .reportThread)
+                                            self.turnBottomPopup(state: true)
                                     }
                                 }
                                 
@@ -192,108 +260,73 @@ struct ThreadView : View {
                             .frame(width: a.size.width - self.outerPadding * 2, height: 20)
                             .foregroundColor(.gray)
                             
-                            //                                        EmojiBarThreadView(threadDataStore: self.threadDataStore)
+                            EmojiBarThreadView(threadDataStore: self.threadDataStore, turnBottomPopup: { state in self.turnBottomPopup(state: state) }, toggleBottomBarState: { state in self.toggleBottomBarState(state: state)}, togglePickedUser: { user in self.togglePickedUser(user: user)}, togglePickedThreadId: { threadId in self.togglePickedThreadId(threadId: threadId) })
                             
-                            //                                    if self.gameDataStore.isThreadViewLoadedByThreadId[self.threadId] == nil || self.gameDataStore.isThreadViewLoadedByThreadId[self.threadId]! == false {
-                            //                                        Color(red: 248 / 255, green: 248 / 255, blue: 248 / 255)
-                            //                                            .frame(width: a.size.width - self.outerPadding * 2, height: a.size.height / 2)
-                            //
-                            //                                    } else {
-                            
-                            if self.threadDataStore.areCommentsLoaded && !self.threadDataStore.childCommentList.isEmpty {
-                                ForEach(self.threadDataStore.childCommentList, id: \.self) { commentId in
-                                    CommentView(commentDataStore: self.threadDataStore.childComments[commentId]!, ancestorThreadId: self.threadDataStore.thread.id, width: a.size.width - self.outerPadding * 2, height: a.size.height, leadPadding: 0, level: 0)
+                            if self.threadDataStore.areCommentsLoaded {
+                                if !self.threadDataStore.childCommentList.isEmpty {
+                                    ForEach(self.threadDataStore.childCommentList, id: \.self) { commentId in
+                                        CommentView(commentDataStore: self.threadDataStore.childComments[commentId]!, ancestorThreadId: self.threadDataStore.thread.id, width: a.size.width - self.outerPadding * 2, height: a.size.height, leadPadding: 0, level: 0, turnBottomPopup: { state in self.turnBottomPopup(state: state) }, toggleBottomBarState: { state in self.toggleBottomBarState(state: state) }, togglePickedUser: { user in self.togglePickedUser(user: user) }, togglePickedCommentId: { commentId in self.togglePickedCommentId(commentId: commentId) }, toggleDidBecomeFirstResponder: self.toggleDidBecomeFirstResponder)
+                                    }
+                                } else {
+                                    Divider()
+                                    VStack {
+                                        Image(systemName: "pencil.circle.fill")
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(width: a.size.width * 0.3, height: a.size.width * 0.3)
+                                            .padding()
+                                            .foregroundColor(Color(.lightGray))
+                                        Text("Don't leave the poster hanging.")
+                                            .bold()
+                                            .foregroundColor(Color(.lightGray))
+                                            .padding()
+                                    }
+                                    .frame(width: a.size.width - self.outerPadding * 2, height: a.size.height / 2)
                                 }
                             } else {
-                                Divider()
-                                
-                                VStack {
-                                    Image(systemName: "pencil.circle.fill")
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(width: a.size.width * 0.3, height: a.size.width * 0.3)
-                                        .padding()
-                                        .foregroundColor(Color(.lightGray))
-                                    Text("Don't leave the poster hanging.")
-                                        .bold()
-                                        .foregroundColor(Color(.lightGray))
-                                        .padding()
-                                }
-                                .frame(width: a.size.width - self.outerPadding * 2, height: a.size.height / 2)
+                                ActivityIndicator()
+                                    .frame(width: a.size.width, height: a.size.height * 0.20)
+                                    .foregroundColor(self.assetsDataStore.colors["darkButNotBlack"]!)
                             }
-                            //                                    }
                             
-                            //                                    if self.gameDataStore.moreCommentsByThreadId[self.threadId] != nil && self.gameDataStore.moreCommentsByThreadId[self.threadId]!.count > 0 {
-                            //                                        Button(action: self.fetchNextPage) {
-                            //                                            Text("Load more comments (\(self.gameDataStore.threads[self.threadId]!.numChilds - self.gameDataStore.mainCommentListByThreadId[self.threadId]!.count) replies)")
-                            //                                        }
-                            //                                        .frame(width: a.size.width - self.outerPadding * 2, height: a.size.height * 0.05, alignment: .leading)
-                            //                                        .padding(.vertical, 10)
-                            //                                    }
+                            if self.threadDataStore.childCommentList.count < self.threadDataStore.thread.numChilds {
+                                if self.threadDataStore.isLoadingNextPage == true {
+                                    ActivityIndicator()
+                                        .frame(width: a.size.width, height: a.size.height * 0.20)
+                                        .foregroundColor(self.assetsDataStore.colors["darkButNotBlack"]!)
+                                } else {
+                                    
+                                    HStack {
+                                        
+                                        Spacer()
+                                        Text("Load more comments (\(self.threadDataStore.thread.numChilds - self.threadDataStore.childCommentList.count) replies)")
+                                            .frame(width: a.size.width - self.outerPadding * 2 - 5, height: a.size.height * 0.05, alignment: .leading)
+                                            .onTapGesture {
+                                                self.fetchNextPage(containerWidth: a.size.width - self.outerPadding * 2)
+                                        }
+                                    }
+                                }
+                            }
                         }
-                    }
-                    .frame(width: a.size.width)
-                    .onAppear() {
-                        if self.threadDataStore.areCommentsLoaded == false {
-                            self.threadDataStore.fetchCommentTreeByThreadId(access: self.userDataStore.token!.access, refresh: true, userId: self.userDataStore.token!.userId, containerWidth: a.size.width - self.outerPadding * 2, leadPadding: 20)
+                        .frame(width: a.size.width, height: a.size.height - (20 + 20 + 40))
+                        .onAppear() {
+                            if self.threadDataStore.areCommentsLoaded == false {
+                                self.threadDataStore.fetchCommentTreeByThreadId(access: self.userDataStore.token!.access, refresh: true, userId: self.userDataStore.token!.userId, containerWidth: a.size.width - self.outerPadding * 2, leadPadding: 20)
+                            }
                         }
                         
-                        //                                self.didBecomeFirstResponder = false
-                        
-                        //                self.gameDataStore.isThreadViewLoadedByThreadId[self.threadId] = false
+                        Spacer()
                     }
-                        
-                    .onTapGesture {
-                        //                        self.endEditing()
-                        //                        self.didBecomeFirstResponder = false
-                        //                        self.isFirstResponder = false
-                    }
+                    .frame(width: a.size.width, height: a.size.height)
+
+                    FancyPantsEditorView(existedTextStorage: .constant(NSTextStorage(string: "")), desiredHeight: self.$replyBarDesiredHeight, newTextStorage: self.$replyContent, isEditable: .constant(true), isFirstResponder: self.$isFirstResponder, didBecomeFirstResponder: self.$didBecomeFirstResponder, showFancyPantsEditorBar: .constant(true), isNewContent: true, isThread: true, isOmniBar: true, submit: self.submit, width: a.size.width, height: a.size.height, togglePickedCommentId: { commentId in self.togglePickedCommentId(commentId: commentId)}, futureContainerWidthThread: a.size.width - self.outerPadding * 2)
+                    .KeyboardAwarePadding()
                     
-                    //                    if self.gameDataStore.isAddEmojiModalActiveByThreadViewId[self.threadId]! == true {
-                    //                        VStack {
-                    //                            EmojiPickerPopupView(parentForumId: self.gameId, ancestorThreadId: self.threadId)
-                    //                        }
-                    //
-                    //                        .frame(width: a.size.width, height: a.size.height * 0.2)
-                    //                        .background(self.gameDataStore.colors["darkButNotBlack"]!)
-                    //                        .cornerRadius(5, corners: [.topLeft, .topRight])
-                    //                        .transition(.move(edge: .bottom))
-                    //                        .animation(.default)
-                    //                    }
-                    //
-                    //                    if self.gameDataStore.isReportPopupActiveByThreadId[self.threadId] == true {
-                    //                        ReportPopupView(threadId: self.threadId)
-                    //                            .frame(width: a.size.width, height: a.size.height * 0.3)
-                    //                            .background(self.gameDataStore.colors["darkButNotBlack"]!)
-                    //                            .cornerRadius(5, corners: [.topLeft, .topRight])
-                    //                            .transition(.move(edge: .bottom))
-                    //                            .animation(.default)
-                    //                    }
-                    //
-                    //                    if self.gameDataStore.isBlockPopupActiveByThreadId[self.threadId] == true {
-                    //                        BlockUserPopupView(threadId: self.threadId)
-                    //                            .frame(width: a.size.width, height: a.size.height * 0.2)
-                    //                            .background(self.gameDataStore.colors["darkButNotBlack"]!)
-                    //                            .cornerRadius(5, corners: [.topLeft, .topRight])
-                    //                            .transition(.move(edge: .bottom))
-                    //                            .animation(.default)
-                    //                    }
-                    //
-                    //                    if (self.gameDataStore.isAddEmojiModalActiveByThreadViewId[self.threadId] == nil || self.gameDataStore.isAddEmojiModalActiveByThreadViewId[self.threadId]! == false) && (self.gameDataStore.isReportPopupActiveByThreadId[self.threadId] == nil || self.gameDataStore.isReportPopupActiveByThreadId[self.threadId]! == false) &&
-                    //                        (self.gameDataStore.isBlockPopupActiveByThreadId[self.threadId] == nil ||
-                    //                            self.gameDataStore.isBlockPopupActiveByThreadId[self.threadId]! == false) {
-                    //                        VStack(spacing: 0) {
-                    //                            FancyPantsEditorView(newTextStorage: self.$replyContent, isEditable: .constant(true), isFirstResponder: self.$isFirstResponder, didBecomeFirstResponder: self.$didBecomeFirstResponder, showFancyPantsEditorBar: self.$showFancyPantsEditorBar, isNewContent: true, isThread: true, threadId: self.threadId, isOmniBar: true, submit: { self.submit() })
-                    //                        }
-                    //                        .frame(width: a.size.width, height: self.gameDataStore.keyboardHeight == 0 ? 50 : (self.gameDataStore.threadViewReplyBarDesiredHeight[self.threadId]! + 20 + 20 + 40))
-                    //                        .animation(.spring())
-                    //                        .transition(.slide)
-                    //                        .background(Color.white)
-                    //                    }
+                    BottomBarViewThreadVer(threadDataStore: self.threadDataStore, isBottomPopupOn: self.$isBottomPopupOn, bottomBarState: self.$bottomBarState, pickedThreadId: self.$pickedThreadId,  pickedCommentId: self.$pickedCommentId, pickedUser: self.$pickedUser, width: a.size.width, height: a.size.height * 0.25, turnBottomPopup: { state in self.turnBottomPopup(state: state) }, toggleBottomBarState: { state in self.toggleBottomBarState(state: state)}, togglePickedUser: { user in self.togglePickedUser(user: user)}, togglePickedThreadId: { threadId in self.togglePickedThreadId(threadId: threadId) }, togglePickedCommentId: { commentId in self.togglePickedCommentId(commentId: commentId) })
                 }
                 
-                //                .KeyboardAwarePadding()
             }
+            .edgesIgnoringSafeArea(.bottom)
         }
     }
 }

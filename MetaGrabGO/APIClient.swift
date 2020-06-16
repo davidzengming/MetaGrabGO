@@ -46,6 +46,8 @@ enum EndPoint: String, CodingKey {
     // fetch comments
     case getCommentTreeByThreadId = "get_comment_tree_by_thread_id"
     
+    case getCommentTreeByCommentId = "get_comment_tree_by_parent_comment"
+    
     // follow games
     case getFollowGameByUserId = "get_followed_games_by_user_id"
     case followGameByGameId = "follow_game_by_game_id"
@@ -76,6 +78,7 @@ enum EndPoint: String, CodingKey {
     
     case upvoteByExistingVoteId = "upvote_by_vote_id"
     case downvoteByVoteId = "downvote_by_vote_id"
+    
     case addNewUpvoteByThreadId = "add_new_upvote_by_thread_id"
     case switchUpvoteByThreadId = "downvote_to_upvote_by_thread_id"
     case addNewDownvoteByThreadId = "add_new_downvote_by_thread_id"
@@ -85,9 +88,16 @@ enum EndPoint: String, CodingKey {
     case removeEmojiByThreadId = "remove_emoji_by_thread_id"
     case deleteVoteByVoteIdThread = "delete_vote_by_vote_id_thread"
     
+    case addNewUpvoteByCommentId = "add_new_upvote_by_comment_id"
+    case switchUpvoteByCommentId = "downvote_to_upvote_by_comment_id"
+    case addNewDownvoteByCommentId = "add_new_downvote_by_comment_id"
+    case switchDownvoteByCommentId = "upvote_to_downvote_by_comment_id"
+    
+    case deleteVoteByVoteIdComment = "delete_vote_by_vote_id_comment"
+    
     // report
     case addReportByThreadId = "add_report_by_thread_id"
-    
+    case addReportByCommentId = "add_report_by_comment_id"
 }
 
 enum HttpMethod: String, CodingKey {

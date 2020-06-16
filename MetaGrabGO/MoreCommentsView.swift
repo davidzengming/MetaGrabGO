@@ -31,7 +31,7 @@ struct MoreCommentsView: View {
     }
     
     func fetchNextPage() {
-//        self.commentDataStore.fetchCommentTreeByParentComment(access: self.userDataStore.token!.access, parentCommentId: commentId, start: self.gameDataStore.commentNextPageStartIndex[commentId]!, userId: self.userDataStore.token!.userId)
+        self.commentDataStore.fetchCommentTreeByCommentId(access: self.userDataStore.token!.access, start: self.commentDataStore.childCommentList.count, refresh: true, userId: self.userDataStore.token!.userId, containerWidth: self.width + self.staticPadding * 2 + 10, leadPadding: 20)
     }
     
     var body: some View {
@@ -56,11 +56,8 @@ struct MoreCommentsView: View {
                 .onTapGesture() {
                     self.fetchNextPage()
                 }
-//                .background(Color.green)
                 .padding(.horizontal, self.staticPadding)
                 .padding(.vertical, self.verticalPadding)
-//                .background(Color.white)
-                
             }
         }
     }

@@ -12,7 +12,6 @@ struct MainView: View {
                 GameHubView()
                     .environmentObject(GameDataStore())
                     .environmentObject(AssetsDataStore())
-                    .environmentObject(KeyboardHeightDataStore())
             }
         }
     }

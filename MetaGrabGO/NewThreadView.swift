@@ -60,28 +60,6 @@ struct NewThreadView: View {
         }
     }
     
-//    func dismissView() {
-//        if self.showImagePicker == true {
-//            self.showImagePicker = false
-//
-//            let seconds = 2.0
-//            DispatchQueue.main.asyncAfter(deadline: .now() + seconds) {
-//                self.presentationMode.wrappedValue.dismiss()
-//            }
-//        } else {
-//            self.presentationMode.wrappedValue.dismiss()
-//        }
-//    }
-    
-//    var btnBack: some View {
-//        Button(action: dismissView) {
-//            Image(systemName: "chevron.left")
-//                .resizable()
-//                .font(Font.system(size: 24))
-//                .foregroundColor(Color.white)
-//        }
-//    }
-//
     var body: some View {
         GeometryReader { a in
             VStack {
@@ -126,7 +104,7 @@ struct NewThreadView: View {
                 }
                 .padding()
                 
-                FancyPantsEditorView(existedTextStorage: .constant(NSTextStorage(string: "")), desiredHeight: .constant(0), newTextStorage: self.$content, isEditable: .constant(true), isFirstResponder: self.$isFirstResponder, didBecomeFirstResponder: self.$didBecomeFirstResponder, showFancyPantsEditorBar: .constant(false), isNewContent: true, isThread: true, isOmniBar: false)
+                FancyPantsEditorView(existedTextStorage: .constant(NSTextStorage(string: "")), desiredHeight: .constant(0), newTextStorage: self.$content, isEditable: .constant(true), isFirstResponder: self.$isFirstResponder, didBecomeFirstResponder: self.$didBecomeFirstResponder, showFancyPantsEditorBar: .constant(false), isNewContent: true, isThread: true, isOmniBar: false, width: a.size.width, height: a.size.height)
                     .frame(minWidth: 0, maxWidth: a.size.width, minHeight: 0, maxHeight: a.size.height * 0.5, alignment: .leading)
                     .cornerRadius(5, corners: [.bottomLeft, .bottomRight, .topLeft, .topRight])
                     .overlay(
