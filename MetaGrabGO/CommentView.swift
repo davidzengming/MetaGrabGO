@@ -32,10 +32,10 @@ struct CommentView : View {
     var turnBottomPopup: (Bool) -> Void
     var toggleBottomBarState: (BottomBarState) -> Void
     var togglePickedUser: (User) -> Void
-    var togglePickedCommentId: (CommentDataStore?) -> Void
+    var togglePickedCommentId: (CommentDataStore?, CGFloat) -> Void
     var toggleDidBecomeFirstResponder: () -> Void
     
-    init(commentDataStore: CommentDataStore, ancestorThreadId: Int, width: CGFloat, height: CGFloat, leadPadding: CGFloat, level: Int, turnBottomPopup: @escaping (Bool) -> Void, toggleBottomBarState: @escaping (BottomBarState) -> Void, togglePickedUser: @escaping (User) -> Void, togglePickedCommentId: @escaping (CommentDataStore?) -> Void, toggleDidBecomeFirstResponder: @escaping () -> Void) {
+    init(commentDataStore: CommentDataStore, ancestorThreadId: Int, width: CGFloat, height: CGFloat, leadPadding: CGFloat, level: Int, turnBottomPopup: @escaping (Bool) -> Void, toggleBottomBarState: @escaping (BottomBarState) -> Void, togglePickedUser: @escaping (User) -> Void, togglePickedCommentId: @escaping (CommentDataStore?, CGFloat) -> Void, toggleDidBecomeFirstResponder: @escaping () -> Void) {
         self.commentDataStore = commentDataStore
         self.ancestorThreadId = ancestorThreadId
         self.width = width
@@ -188,7 +188,7 @@ struct CommentView : View {
                                         
                                         .frame(height: self.commentDataStore.desiredHeight + (self.isEditable ? 20 : 0), alignment: .leading)
                                         .onTapGesture {
-                                            self.togglePickedCommentId(self.commentDataStore)
+                                            self.togglePickedCommentId(self.commentDataStore, self.width - self.leadPadding - self.staticPadding * 2 - 10 - self.leadLineWidth - 20)
                                             self.toggleDidBecomeFirstResponder()
                                     }
                                     
@@ -214,7 +214,7 @@ struct CommentView : View {
                                             Text("Report")
                                                 .bold()
                                                 .onTapGesture {
-                                                    self.togglePickedCommentId(self.commentDataStore)
+                                                    self.togglePickedCommentId(self.commentDataStore, self.width - self.leadPadding - self.staticPadding * 2 - 10 - self.leadLineWidth - 20)
                                                     self.toggleBottomBarState(.reportThread)
                                                     self.turnBottomPopup(true)
                                             }
@@ -251,7 +251,7 @@ struct CommentView : View {
             
             if self.commentDataStore.childCommentList.count > 0 {
                 ForEach(self.commentDataStore.childCommentList, id: \.self) { commentId in
-                    CommentView(commentDataStore: self.commentDataStore.childComments[commentId]!, ancestorThreadId: self.ancestorThreadId, width: self.width, height: self.height, leadPadding: self.leadPadding + 20, level: self.level + 1, turnBottomPopup: { state in self.turnBottomPopup(state) }, toggleBottomBarState: { state in self.toggleBottomBarState(state) }, togglePickedUser: { user in self.togglePickedUser(user) }, togglePickedCommentId: { commentId in self.togglePickedCommentId(commentId) }, toggleDidBecomeFirstResponder: self.toggleDidBecomeFirstResponder)
+                    CommentView(commentDataStore: self.commentDataStore.childComments[commentId]!, ancestorThreadId: self.ancestorThreadId, width: self.width, height: self.height, leadPadding: self.leadPadding + 20, level: self.level + 1, turnBottomPopup: { state in self.turnBottomPopup(state) }, toggleBottomBarState: { state in self.toggleBottomBarState(state) }, togglePickedUser: { user in self.togglePickedUser(user) }, togglePickedCommentId: { (commentId, futureContainerWidth) in self.togglePickedCommentId(commentId, futureContainerWidth) }, toggleDidBecomeFirstResponder: self.toggleDidBecomeFirstResponder)
                 }
             }
         }

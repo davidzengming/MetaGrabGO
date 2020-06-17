@@ -42,18 +42,18 @@ struct BottomBarView: View {
     var turnBottomPopup: (Bool) -> Void
     var toggleBottomBarState: (BottomBarState) -> Void
     var togglePickedUser: (User) -> Void
-    var togglePickedThreadId: (Int) -> Void
+    var togglePickedThreadId: (Int, CGFloat) -> Void
     
     var body: some View {
         Group {
             if self.isBottomPopupOn == true {
                 VStack {
                     if self.bottomBarState == .addEmoji {
-                        EmojiPickerPopupView(forumDataStore: self.forumDataStore, pickedThreadId: self.$pickedThreadId, turnBottomPopup: { state in self.turnBottomPopup(state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state)}, togglePickedUser: { pickedUser in self.togglePickedUser(pickedUser)}, togglePickedThreadId: { pickedThreadId in self.togglePickedThreadId(pickedThreadId)})
+                        EmojiPickerPopupView(forumDataStore: self.forumDataStore, pickedThreadId: self.$pickedThreadId, turnBottomPopup: { state in self.turnBottomPopup(state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state)}, togglePickedUser: { pickedUser in self.togglePickedUser(pickedUser)}, togglePickedThreadId: { (pickedThreadId, futureContainerWidth) in self.togglePickedThreadId(pickedThreadId, futureContainerWidth)})
                     } else if self.bottomBarState == .reportThread {
-                        ReportPopupView(forumDataStore: self.forumDataStore, pickedThreadId: self.$pickedThreadId, turnBottomPopup: { state in self.turnBottomPopup(state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state)}, togglePickedUser: { pickedUser in self.togglePickedUser(pickedUser)}, togglePickedThreadId: { pickedThreadId in self.togglePickedThreadId(pickedThreadId)})
+                        ReportPopupView(forumDataStore: self.forumDataStore, pickedThreadId: self.$pickedThreadId, turnBottomPopup: { state in self.turnBottomPopup(state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state)}, togglePickedUser: { pickedUser in self.togglePickedUser(pickedUser)}, togglePickedThreadId: { (pickedThreadId, futureContainerWidth) in self.togglePickedThreadId(pickedThreadId, futureContainerWidth)})
                     } else if self.bottomBarState == .blockUser {
-                        BlockUserPopupView(blockHiddenDataStore: BlockHiddenDataStore(), pickedUser: self.$pickedUser, turnBottomPopup: { state in self.turnBottomPopup(state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state)}, togglePickedUser: { pickedUser in self.togglePickedUser(pickedUser)}, togglePickedThreadId: { pickedThreadId in self.togglePickedThreadId(pickedThreadId)})
+                        BlockUserPopupView(blockHiddenDataStore: BlockHiddenDataStore(), pickedUser: self.$pickedUser, turnBottomPopup: { state in self.turnBottomPopup(state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state)}, togglePickedUser: { pickedUser in self.togglePickedUser(pickedUser)}, togglePickedThreadId: { (pickedThreadId, futureContainerWidth) in self.togglePickedThreadId(pickedThreadId, futureContainerWidth)})
                     }
                 }
                 .frame(width: self.width, height: self.height)
@@ -84,19 +84,19 @@ struct BottomBarViewThreadVer: View {
     var turnBottomPopup: (Bool) -> Void
     var toggleBottomBarState: (BottomBarState) -> Void
     var togglePickedUser: (User) -> Void
-    var togglePickedThreadId: (Int) -> Void
-    var togglePickedCommentId: (CommentDataStore?) -> Void
+    var togglePickedThreadId: (Int, CGFloat) -> Void
+    var togglePickedCommentId: (CommentDataStore?, CGFloat) -> Void
     
     var body: some View {
         Group {
             if self.isBottomPopupOn == true {
                 VStack {
                     if self.bottomBarState == .addEmoji {
-                        EmojiPickerPopupViewThreadVer(threadDataStore: threadDataStore, pickedThreadId: self.$pickedThreadId, turnBottomPopup: { state in self.turnBottomPopup(state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state)}, togglePickedUser: { pickedUser in self.togglePickedUser(pickedUser)}, togglePickedThreadId: { pickedThreadId in self.togglePickedThreadId(pickedThreadId)}, togglePickedCommentId: { pickedCommentId in self.togglePickedCommentId(pickedCommentId)} )
+                        EmojiPickerPopupViewThreadVer(threadDataStore: threadDataStore, pickedThreadId: self.$pickedThreadId, turnBottomPopup: { state in self.turnBottomPopup(state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state)}, togglePickedUser: { pickedUser in self.togglePickedUser(pickedUser)}, togglePickedThreadId: { (pickedThreadId, futureContainerWidth) in self.togglePickedThreadId(pickedThreadId, futureContainerWidth)}, togglePickedCommentId: { (pickedCommentId, futureContainerWidth) in self.togglePickedCommentId(pickedCommentId, futureContainerWidth)} )
                     } else if self.bottomBarState == .reportThread {
-                        ReportPopupViewThreadVer(threadDataStore: threadDataStore, pickedThreadId: self.$pickedThreadId, pickedCommentId: self.$pickedCommentId, turnBottomPopup: { state in self.turnBottomPopup(state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state)}, togglePickedUser: { pickedUser in self.togglePickedUser(pickedUser)}, togglePickedThreadId: { pickedThreadId in self.togglePickedThreadId(pickedThreadId)}, togglePickedCommentId: { pickedCommentId in self.togglePickedCommentId(pickedCommentId)})
+                        ReportPopupViewThreadVer(threadDataStore: threadDataStore, pickedThreadId: self.$pickedThreadId, pickedCommentId: self.$pickedCommentId, turnBottomPopup: { state in self.turnBottomPopup(state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state)}, togglePickedUser: { pickedUser in self.togglePickedUser(pickedUser)}, togglePickedThreadId: { (pickedThreadId, futureContainerWidth) in self.togglePickedThreadId(pickedThreadId, futureContainerWidth)}, togglePickedCommentId: { (pickedCommentId, futureContainerWidth) in self.togglePickedCommentId(pickedCommentId, futureContainerWidth)})
                     } else if self.bottomBarState == .blockUser {
-                        BlockUserPopupView(blockHiddenDataStore: BlockHiddenDataStore(), pickedUser: self.$pickedUser, turnBottomPopup: { state in self.turnBottomPopup(state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state)}, togglePickedUser: { pickedUser in self.togglePickedUser(pickedUser)}, togglePickedThreadId: { pickedThreadId in self.togglePickedThreadId(pickedThreadId)})
+                        BlockUserPopupView(blockHiddenDataStore: BlockHiddenDataStore(), pickedUser: self.$pickedUser, turnBottomPopup: { state in self.turnBottomPopup(state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state)}, togglePickedUser: { pickedUser in self.togglePickedUser(pickedUser)}, togglePickedThreadId: { (pickedThreadId, futureContainerWidth) in self.togglePickedThreadId(pickedThreadId, futureContainerWidth)})
                     }
                 }
                 .frame(width: self.width, height: self.height)
@@ -143,7 +143,7 @@ struct ForumView: View {
         self.bottomBarState = state
     }
     
-    func togglePickedThreadId(threadId: Int) {
+    func togglePickedThreadId(threadId: Int, futureContainerWidth: CGFloat) {
         if self.pickedThreadId == threadId {
             return
         }
@@ -276,7 +276,7 @@ struct ForumView: View {
                                 ForEach(self.forumDataStore.threadsList, id: \.self) { threadId in
                                     VStack(spacing: 0) {
                                         Divider()
-                                        ThreadRow(threadDataStore: self.forumDataStore.threadDataStores[threadId]!, turnBottomPopup: { state in self.turnBottomPopup(state: state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state: state)}, togglePickedUser: { pickedUser in self.togglePickedUser(user: pickedUser)}, togglePickedThreadId: { pickedThreadId in self.togglePickedThreadId(threadId: pickedThreadId)}, width: a.size.width * 0.9, height: a.size.height)
+                                        ThreadRow(threadDataStore: self.forumDataStore.threadDataStores[threadId]!, turnBottomPopup: { state in self.turnBottomPopup(state: state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state: state)}, togglePickedUser: { pickedUser in self.togglePickedUser(user: pickedUser)}, togglePickedThreadId: { (pickedThreadId, futureContainerWidth) in self.togglePickedThreadId(threadId: pickedThreadId, futureContainerWidth: futureContainerWidth)}, width: a.size.width * 0.9, height: a.size.height)
                                             .frame(width: a.size.width, height:
                                                 ceil (a.size.height * 0.045 + 10 + 10 + (self.forumDataStore.threadDataStores[threadId]!.thread.title.isEmpty == false ? 16 : 0) + min(self.forumDataStore.threadDataStores[threadId]!.desiredHeight, 200)
                                                 + 10
@@ -334,7 +334,7 @@ struct ForumView: View {
                     }
                     .position(x: a.size.width * 0.88, y: a.size.height * 0.88)
                     
-                    BottomBarView(forumDataStore: self.forumDataStore, isBottomPopupOn: self.$isBottomPopupOn, bottomBarState: self.$bottomBarState, pickedThreadId: self.$pickedThreadId, pickedUser: self.$pickedUser, width: a.size.width, height: a.size.height * 0.25, turnBottomPopup: { state in self.turnBottomPopup(state: state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state: state)}, togglePickedUser: { pickedUser in self.togglePickedUser(user: pickedUser)}, togglePickedThreadId: { pickedThreadId in self.togglePickedThreadId(threadId: pickedThreadId)})
+                    BottomBarView(forumDataStore: self.forumDataStore, isBottomPopupOn: self.$isBottomPopupOn, bottomBarState: self.$bottomBarState, pickedThreadId: self.$pickedThreadId, pickedUser: self.$pickedUser, width: a.size.width, height: a.size.height * 0.25, turnBottomPopup: { state in self.turnBottomPopup(state: state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state: state)}, togglePickedUser: { pickedUser in self.togglePickedUser(user: pickedUser)}, togglePickedThreadId: { (pickedThreadId, futureContainerWidth) in self.togglePickedThreadId(threadId: pickedThreadId, futureContainerWidth: futureContainerWidth)})
                 }
             }
             .edgesIgnoringSafeArea(.bottom)

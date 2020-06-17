@@ -42,6 +42,11 @@ struct ThreadView : View {
     @State var isFirstResponder: Bool = false
     @State var didBecomeFirstResponder: Bool = false
     
+    init(threadDataStore: ThreadDataStore) {
+        self.threadDataStore = threadDataStore
+        print("thread view created", threadDataStore.thread.id)
+        self.pickedThreadId = threadDataStore.thread.id
+    }
     
     func turnBottomPopup(state: Bool) {
         if self.isBottomPopupOn != state {
@@ -56,18 +61,27 @@ struct ThreadView : View {
         self.bottomBarState = state
     }
     
-    func togglePickedThreadId(threadId: Int) {
+    func togglePickedThreadId(threadId: Int, futureContainerWidth: CGFloat) {
         if self.pickedThreadId == threadId {
             return
         }
+        
+        self.bottomBarState = .inActive
+        self.isBottomPopupOn = false
+        
+        self.replyFutureContainerWidth = futureContainerWidth
         self.pickedThreadId = threadId
     }
     
-    func togglePickedCommentId(commentId: CommentDataStore?) {
+    func togglePickedCommentId(commentId: CommentDataStore?, futureContainerWidth: CGFloat) {
         if commentId != nil && self.pickedCommentId != nil && self.pickedCommentId!.comment.id == commentId!.comment.id {
             return
         }
         
+        self.bottomBarState = .inActive
+        self.isBottomPopupOn = false
+        
+        self.replyFutureContainerWidth = futureContainerWidth
         self.pickedCommentId = commentId
     }
     
@@ -110,11 +124,6 @@ struct ThreadView : View {
         UIApplication.shared.endEditing()
     }
     
-    init(threadDataStore: ThreadDataStore) {
-        self.threadDataStore = threadDataStore
-        print("thread view created", threadDataStore.thread.id)
-    }
-    
     func fetchNextPage(containerWidth: CGFloat) {
         self.threadDataStore.fetchCommentTreeByThreadId(access: self.userDataStore.token!.access, start: self.threadDataStore.childCommentList.count, refresh: true, userId: self.userDataStore.token!.userId, containerWidth: containerWidth, leadPadding: 20)
     }
@@ -145,13 +154,18 @@ struct ThreadView : View {
     //        self.endEditing()
     //    }
     
-    func submit() {
+    func submit(mainCommentContainerWidth: CGFloat) {
         print("submitted")
+
         if pickedCommentId != nil {
-            self.pickedCommentId!.submit
+            self.pickedCommentId!.postChildComment(access: self.userDataStore.token!.access, content: self.replyContent, containerWidth: self.replyFutureContainerWidth)
         } else {
-            self.threadDataStore.postMainComment(access: self.userDataStore.token!.access, content: self.replyContent, containerWidth: self.replyFutureContainerWidth)
+            self.threadDataStore.postMainComment(access: self.userDataStore.token!.access, content: self.replyContent, containerWidth: mainCommentContainerWidth)
         }
+        self.endEditing()
+        self.pickedCommentId = nil
+        self.replyContent.setAttributedString(NSAttributedString(string: ""))
+        self.replyFutureContainerWidth = CGFloat(0)
     }
     
     var body: some View {
@@ -249,7 +263,7 @@ struct ThreadView : View {
                                     Text("Report")
                                         .bold()
                                         .onTapGesture {
-                                            self.togglePickedThreadId(threadId: self.threadDataStore.thread.id)
+                                            self.togglePickedThreadId(threadId: self.threadDataStore.thread.id, futureContainerWidth: CGFloat(0))
                                             self.toggleBottomBarState(state: .reportThread)
                                             self.turnBottomPopup(state: true)
                                     }
@@ -260,12 +274,12 @@ struct ThreadView : View {
                             .frame(width: a.size.width - self.outerPadding * 2, height: 20)
                             .foregroundColor(.gray)
                             
-                            EmojiBarThreadView(threadDataStore: self.threadDataStore, turnBottomPopup: { state in self.turnBottomPopup(state: state) }, toggleBottomBarState: { state in self.toggleBottomBarState(state: state)}, togglePickedUser: { user in self.togglePickedUser(user: user)}, togglePickedThreadId: { threadId in self.togglePickedThreadId(threadId: threadId) })
+                            EmojiBarThreadView(threadDataStore: self.threadDataStore, turnBottomPopup: { state in self.turnBottomPopup(state: state) }, toggleBottomBarState: { state in self.toggleBottomBarState(state: state)}, togglePickedUser: { user in self.togglePickedUser(user: user)}, togglePickedThreadId: { (threadId, futureContainerWidth) in self.togglePickedThreadId(threadId: threadId, futureContainerWidth: futureContainerWidth) })
                             
                             if self.threadDataStore.areCommentsLoaded {
                                 if !self.threadDataStore.childCommentList.isEmpty {
                                     ForEach(self.threadDataStore.childCommentList, id: \.self) { commentId in
-                                        CommentView(commentDataStore: self.threadDataStore.childComments[commentId]!, ancestorThreadId: self.threadDataStore.thread.id, width: a.size.width - self.outerPadding * 2, height: a.size.height, leadPadding: 0, level: 0, turnBottomPopup: { state in self.turnBottomPopup(state: state) }, toggleBottomBarState: { state in self.toggleBottomBarState(state: state) }, togglePickedUser: { user in self.togglePickedUser(user: user) }, togglePickedCommentId: { commentId in self.togglePickedCommentId(commentId: commentId) }, toggleDidBecomeFirstResponder: self.toggleDidBecomeFirstResponder)
+                                        CommentView(commentDataStore: self.threadDataStore.childComments[commentId]!, ancestorThreadId: self.threadDataStore.thread.id, width: a.size.width - self.outerPadding * 2, height: a.size.height, leadPadding: 0, level: 0, turnBottomPopup: { state in self.turnBottomPopup(state: state) }, toggleBottomBarState: { state in self.toggleBottomBarState(state: state) }, togglePickedUser: { user in self.togglePickedUser(user: user) }, togglePickedCommentId: { (commentId, futureContainerWidth) in self.togglePickedCommentId(commentId: commentId, futureContainerWidth: futureContainerWidth) }, toggleDidBecomeFirstResponder: self.toggleDidBecomeFirstResponder)
                                     }
                                 } else {
                                     Divider()
@@ -319,10 +333,12 @@ struct ThreadView : View {
                     }
                     .frame(width: a.size.width, height: a.size.height)
 
-                    FancyPantsEditorView(existedTextStorage: .constant(NSTextStorage(string: "")), desiredHeight: self.$replyBarDesiredHeight, newTextStorage: self.$replyContent, isEditable: .constant(true), isFirstResponder: self.$isFirstResponder, didBecomeFirstResponder: self.$didBecomeFirstResponder, showFancyPantsEditorBar: .constant(true), isNewContent: true, isThread: true, isOmniBar: true, submit: self.submit, width: a.size.width, height: a.size.height, togglePickedCommentId: { commentId in self.togglePickedCommentId(commentId: commentId)}, futureContainerWidthThread: a.size.width - self.outerPadding * 2)
+                    FancyPantsEditorView(existedTextStorage: .constant(NSTextStorage(string: "")), desiredHeight: self.$replyBarDesiredHeight, newTextStorage: self.$replyContent, isEditable: .constant(true), isFirstResponder: self.$isFirstResponder, didBecomeFirstResponder: self.$didBecomeFirstResponder, showFancyPantsEditorBar: .constant(true), isNewContent: true, isThread: true, isOmniBar: true, submit: { mainCommentContainerWidth in self.submit(mainCommentContainerWidth: mainCommentContainerWidth)}, width: a.size.width, height: a.size.height, togglePickedCommentId: { (commentId, futureContainerWidth) in self.togglePickedCommentId(commentId: commentId, futureContainerWidth: futureContainerWidth)}, mainCommentContainerWidth: a.size.width - self.outerPadding * 2)
                     .KeyboardAwarePadding()
+                    .animation(.spring())
+                    .transition(.slide)
                     
-                    BottomBarViewThreadVer(threadDataStore: self.threadDataStore, isBottomPopupOn: self.$isBottomPopupOn, bottomBarState: self.$bottomBarState, pickedThreadId: self.$pickedThreadId,  pickedCommentId: self.$pickedCommentId, pickedUser: self.$pickedUser, width: a.size.width, height: a.size.height * 0.25, turnBottomPopup: { state in self.turnBottomPopup(state: state) }, toggleBottomBarState: { state in self.toggleBottomBarState(state: state)}, togglePickedUser: { user in self.togglePickedUser(user: user)}, togglePickedThreadId: { threadId in self.togglePickedThreadId(threadId: threadId) }, togglePickedCommentId: { commentId in self.togglePickedCommentId(commentId: commentId) })
+                    BottomBarViewThreadVer(threadDataStore: self.threadDataStore, isBottomPopupOn: self.$isBottomPopupOn, bottomBarState: self.$bottomBarState, pickedThreadId: self.$pickedThreadId,  pickedCommentId: self.$pickedCommentId, pickedUser: self.$pickedUser, width: a.size.width, height: a.size.height * 0.25, turnBottomPopup: { state in self.turnBottomPopup(state: state) }, toggleBottomBarState: { state in self.toggleBottomBarState(state: state)}, togglePickedUser: { user in self.togglePickedUser(user: user)}, togglePickedThreadId: { (threadId, futureContainerWidth) in self.togglePickedThreadId(threadId: threadId, futureContainerWidth: futureContainerWidth) }, togglePickedCommentId: { (commentId, futureContainerWidth) in self.togglePickedCommentId(commentId: commentId, futureContainerWidth: futureContainerWidth) })
                 }
                 
             }

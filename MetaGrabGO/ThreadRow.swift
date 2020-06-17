@@ -16,7 +16,7 @@ struct ThreadRow : View {
     var turnBottomPopup: (Bool) -> Void
     var toggleBottomBarState: (BottomBarState) -> Void
     var togglePickedUser: (User) -> Void
-    var togglePickedThreadId: (Int) -> Void
+    var togglePickedThreadId: (Int, CGFloat) -> Void
     var width: CGFloat
     var height: CGFloat
     
@@ -26,7 +26,7 @@ struct ThreadRow : View {
     let threadsFromBottomToGetReadyToLoadNextPage = 1
     let threadsPerNewPageCount = 10
     
-    init(threadDataStore: ThreadDataStore, turnBottomPopup: @escaping (Bool) -> Void, toggleBottomBarState: @escaping (BottomBarState) -> Void, togglePickedUser: @escaping (User) -> Void, togglePickedThreadId: @escaping (Int) -> Void, width: CGFloat, height: CGFloat) {
+    init(threadDataStore: ThreadDataStore, turnBottomPopup: @escaping (Bool) -> Void, toggleBottomBarState: @escaping (BottomBarState) -> Void, togglePickedUser: @escaping (User) -> Void, togglePickedThreadId: @escaping (Int, CGFloat) -> Void, width: CGFloat, height: CGFloat) {
         self.threadDataStore = threadDataStore
         self.turnBottomPopup = turnBottomPopup
         self.toggleBottomBarState = toggleBottomBarState
@@ -143,7 +143,7 @@ struct ThreadRow : View {
                         Text("Report")
                             .bold()
                             .onTapGesture {
-                                self.togglePickedThreadId(self.threadDataStore.thread.id)
+                                self.togglePickedThreadId(self.threadDataStore.thread.id, CGFloat(0))
                                 self.toggleBottomBarState(.reportThread)
                                 self.turnBottomPopup(true)
                         }
@@ -154,7 +154,7 @@ struct ThreadRow : View {
                 .foregroundColor(Color.gray)
                 .frame(width: self.width * 0.9)
                 
-                EmojiBarThreadView(threadDataStore: self.threadDataStore, turnBottomPopup: { state in self.turnBottomPopup(state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state)}, togglePickedUser: { pickedUser in self.togglePickedUser(pickedUser)}, togglePickedThreadId: { pickedThreadId in self.togglePickedThreadId(pickedThreadId) })
+                EmojiBarThreadView(threadDataStore: self.threadDataStore, turnBottomPopup: { state in self.turnBottomPopup(state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state)}, togglePickedUser: { pickedUser in self.togglePickedUser(pickedUser)}, togglePickedThreadId: { (pickedThreadId, futureContainerWidth) in self.togglePickedThreadId(pickedThreadId, futureContainerWidth) })
             }
             .padding(.top, 10)
         }

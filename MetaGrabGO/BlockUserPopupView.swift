@@ -16,7 +16,7 @@ struct BlockUserPopupView: View {
     var turnBottomPopup: (Bool) -> Void
     var toggleBottomBarState: (BottomBarState) -> Void
     var togglePickedUser: (User) -> Void
-    var togglePickedThreadId: (Int) -> Void
+    var togglePickedThreadId: (Int, CGFloat) -> Void
 
     func dismissView() {
         self.togglePickedUser(User(id: -1, username: "placeholder"))

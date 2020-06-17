@@ -42,6 +42,7 @@ enum EndPoint: String, CodingKey {
     
     // post comment
     case postCommentByThreadId = "post_comment_by_thread_id"
+    case postCommentByParentCommentId = "post_comment_by_parent_comment_id"
     
     // fetch comments
     case getCommentTreeByThreadId = "get_comment_tree_by_thread_id"

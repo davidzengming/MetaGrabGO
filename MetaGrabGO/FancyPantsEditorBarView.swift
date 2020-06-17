@@ -41,12 +41,11 @@ struct FancyPantsEditorView: View {
     @State var hasText: Bool = false
     @State var isAttributesEditorOn: Bool = false
     
-    var submit: (() -> Void)?
-    
+    var submit: ((CGFloat) -> Void)?
     var width: CGFloat
     var height: CGFloat
-    
-    var togglePickedCommentId: ((CommentDataStore?) -> Void)?
+    var togglePickedCommentId: ((CommentDataStore?, CGFloat) -> Void)?
+    var mainCommentContainerWidth: CGFloat?
     
     func toggleAttributesEditor() {
         self.isAttributesEditorOn = !self.isAttributesEditorOn
@@ -146,7 +145,7 @@ struct FancyPantsEditorView: View {
                         Color.black
                             .opacity(0.0001)
                             .onTapGesture {
-                                self.togglePickedCommentId!(nil)
+                                self.togglePickedCommentId!(nil, CGFloat(0))
                                 self.isFirstResponder = false
                                 UIApplication.shared.endEditing()
                         }
@@ -201,7 +200,7 @@ struct FancyPantsEditorView: View {
                                     .padding(.horizontal, 10)
                             }
                             
-                            Button(action: self.submit!) {
+                            Button(action: { self.submit!(self.mainCommentContainerWidth!) }) {
                                 Text("Submit")
                                     .bold()
                                     .padding(.horizontal, 5)

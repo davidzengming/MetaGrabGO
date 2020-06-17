@@ -16,13 +16,13 @@ struct ReportPopupView: View {
     var turnBottomPopup: (Bool) -> Void
     var toggleBottomBarState: (BottomBarState) -> Void
     var togglePickedUser: (User) -> Void
-    var togglePickedThreadId: (Int) -> Void
+    var togglePickedThreadId: (Int, CGFloat) -> Void
     
     @State var reportReason: String = ""
     @State var isSendingReport = false
     
     func dismissView() {
-        self.togglePickedThreadId(-1)
+        self.togglePickedThreadId(-1, CGFloat(0))
         self.toggleBottomBarState(.inActive)
         self.turnBottomPopup(false)
     }
@@ -101,15 +101,15 @@ struct ReportPopupViewThreadVer: View {
     var turnBottomPopup: (Bool) -> Void
     var toggleBottomBarState: (BottomBarState) -> Void
     var togglePickedUser: (User) -> Void
-    var togglePickedThreadId: (Int) -> Void
-    var togglePickedCommentId: (CommentDataStore?) -> Void
+    var togglePickedThreadId: (Int, CGFloat) -> Void
+    var togglePickedCommentId: (CommentDataStore?, CGFloat) -> Void
     
     @State var reportReason: String = ""
     @State var isSendingReport = false
     
     func dismissView() {
-        self.togglePickedThreadId(-1)
-        self.togglePickedCommentId(nil)
+        self.togglePickedThreadId(-1, CGFloat(0))
+        self.togglePickedCommentId(nil, CGFloat(0))
         self.toggleBottomBarState(.inActive)
         self.turnBottomPopup(false)
     }

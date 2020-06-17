@@ -690,9 +690,10 @@ class ThreadDataStore: ObservableObject {
                     let tempVote = tempNewCommentResponse.voteResponse
                     let user = tempNewCommentResponse.userResponse
                     
-                    self.childComments[tempMainComment.id] = CommentDataStore(ancestorThreadId: self.thread.id, gameId: self.gameId, comment: tempMainComment, vote: tempVote, author: user, containerWidth: containerWidth)
+                    let commentDataStore = CommentDataStore(ancestorThreadId: self.thread.id, gameId: self.gameId, comment: tempMainComment, vote: tempVote, author: user, containerWidth: containerWidth)
                     
                     DispatchQueue.main.async {
+                        self.childComments[tempMainComment.id] = commentDataStore
                         self.childCommentList.insert(tempMainComment.id, at: 0)
                     }
                 }
@@ -1240,6 +1241,32 @@ class CommentDataStore: ObservableObject {
                     DispatchQueue.main.async {
                         self.childCommentList += firstLevelArr
                         self.isLoadingNextPage = false
+                    }
+                }
+            }
+        }.resume()
+    }
+    
+    func postChildComment(access: String, content: NSTextStorage, containerWidth: CGFloat) {
+        let params = ["parent_comment_id": String(self.comment.id)]
+        let url = API.generateURL(resource: Resource.comments, endPoint: EndPoint.postCommentByParentCommentId, params: params)
+        let json: [String: Any] = ["content_string": content.string, "content_attributes": ["attributes": TextViewHelper.parseTextStorageAttributesAsBitRep(content: content)]]
+        let request = API.generateRequest(url: url!, method: .POST, json: json)
+        let session = API.generateSession(access: access)
+        
+        session.dataTask(with: request) { (data, response, error) in
+            if let data = data {
+                if let jsonString = String(data: data, encoding: .utf8) {
+                    let tempNewCommentResponse: NewCommentResponse = load(jsonData: jsonString.data(using: .utf8)!)
+                    let tempChildComment = tempNewCommentResponse.commentResponse
+                    let tempVote = tempNewCommentResponse.voteResponse
+                    let user = tempNewCommentResponse.userResponse
+                    
+                    let commentDataStore = CommentDataStore(ancestorThreadId: self.ancestorThreadId, gameId: self.gameId, comment: tempChildComment, vote: tempVote, author: user, containerWidth: containerWidth)
+                    
+                    DispatchQueue.main.async {
+                        self.childComments[tempChildComment.id] = commentDataStore
+                        self.childCommentList.insert(tempChildComment.id, at: 0)
                     }
                 }
             }
