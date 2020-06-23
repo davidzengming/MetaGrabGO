@@ -3,17 +3,25 @@ import SwiftUI
 // Entry point into view
 struct MainView: View {
     @EnvironmentObject var userDataStore: UserDataStore
+    @EnvironmentObject var assetsDataStore: AssetsDataStore
     
     var body: some View {
-        VStack {
-            if self.userDataStore.isAuthenticated == false {
-                UserView()
-            } else {
-                GameHubView()
-                    .environmentObject(GameDataStore())
-                    .environmentObject(AssetsDataStore())
+        ZStack {
+            self.assetsDataStore.colors["darkButNotBlack"]!
+                .edgesIgnoringSafeArea(.all)
+            
+            VStack {
+                if self.userDataStore.isAuthenticated == false {
+                    UserView()
+                } else {
+                    GameHubView()
+                        .environmentObject(RecentFollowDataStore())
+                        .environmentObject(GlobalGamesDataStore())
+                        .environmentObject(GameDataStore())
+                }
             }
         }
+        
     }
 }
 

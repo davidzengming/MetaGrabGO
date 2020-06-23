@@ -108,6 +108,9 @@ enum HttpMethod: String, CodingKey {
 
 struct APIClient {
     private let cloudinary = CLDCloudinary(configuration: CLDConfiguration(cloudName: "dzengcdn", apiKey: "348513889264333", secure: true))
+    
+    //68.183.105.7
+    //127.0.0.1
     private let baseUrl: URL? = URL(string: "http://127.0.0.1:8000/")
     
     func generateURL(resource: Resource, endPoint: EndPoint, detail: String? = nil, params: [String: String]? = nil) -> URL? {

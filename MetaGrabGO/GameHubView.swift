@@ -25,59 +25,56 @@ struct GameHubView: View {
         //        navBarAppearance.largeTitleTextAttributes = [.foregroundColor: UIColor.white, NSAttributedString.Key.kern: kern]
         //        navBarAppearance.titleTextAttributes = [.foregroundColor: UIColor.white, NSAttributedString.Key.kern: kern]
         //
+        
+        print("game hub view created")
     }
     
     var body: some View {
         TabView {
             NavigationView {
-                FrontHubView()
+                FrontHubView(frontGamesDataStore: FrontGamesDataStore(), followGamesDataStore: FollowGamesDataStore(), visitedGamesDataStore: VisitedGamesDataStore())
                     .navigationBarTitle("Front")
                     .navigationBarHidden(true)
-                
             }
             .tabItem {
                 Image(systemName: "square.stack.3d.up.fill")
                 Text("Front")
             }
+            .background(self.assetsDataStore.colors["darkButNotBlack"])
             
             NavigationView {
                 PopularGamesView()
                     .navigationBarTitle("Popular")
                     .navigationBarHidden(true)
-                
             }
             .tabItem {
                 Image(systemName: "flame.fill")
                 Text("Popular")
             }
+            .background(self.assetsDataStore.colors["darkButNotBlack"])
             
             NavigationView {
                 TimelineGamesView()
                     .navigationBarTitle("Upcoming")
                     .navigationBarHidden(true)
-                
             }
             .tabItem {
                 Image(systemName: "hourglass.bottomhalf.fill")
                 Text("Upcoming")
             }
+            .background(self.assetsDataStore.colors["darkButNotBlack"])
             
             NavigationView {
                 UserProfileView(blockHiddenDataStore: BlockHiddenDataStore())
                     .navigationBarTitle("Profile")
                     .navigationBarHidden(true)
             }
-                
             .tabItem {
                 Image(systemName: "person.fill")
                 Text("Profile")
             }
+            .background(self.assetsDataStore.colors["darkButNotBlack"])
             
-        }
-        .onAppear() {
-            self.assetsDataStore.loadEmojis()
-            self.assetsDataStore.loadColors()
-            self.assetsDataStore.loadLeadingLineColors()
         }
         .navigationViewStyle(StackNavigationViewStyle())
         .background(self.assetsDataStore.colors["darkButNotBlack"])

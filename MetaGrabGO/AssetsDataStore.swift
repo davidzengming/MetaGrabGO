@@ -10,9 +10,12 @@ import Foundation
 import SwiftUI
 
 class AssetsDataStore: ObservableObject {
+    
+
+    
     // Emojis
-    @Published var emojiArray = [Int]()
-    @Published var emojis = [Int: UIImage]()
+    var emojiArray = [Int]()
+    var emojis = [Int: UIImage]()
     
     let emojiNames = [
         ":thumbs_up:",
@@ -28,6 +31,12 @@ class AssetsDataStore: ObservableObject {
         ":belgium:",
         ":lemon:"
     ]
+    
+    init() {
+        self.loadEmojis()
+        self.loadColors()
+        self.loadLeadingLineColors()
+    }
     
     func loadEmojis() {
         emojiArray = []

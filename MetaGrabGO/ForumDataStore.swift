@@ -19,20 +19,20 @@ class ForumDataStore: ObservableObject {
     
     //    private var childThreadSubs = [Int: AnyCancellable]()
     
-    @Published var game: Game
+    var game: Game
     @Published var forumNextPageStartIndex : Int?
     @Published var isLoaded: Bool
     @Published var isLoadingNextPage: Bool = false
     
     let API = APIClient()
     
-    init(game: Game, isFollowed: Bool) {
+    init(game: Game) {
         self.threadsList = []
         self.threadDataStores = [:]
         self.game = game
         self.forumNextPageStartIndex = nil
         self.isLoaded = false
-        self.isFollowed = isFollowed
+        self.isFollowed = game.isFollowed == nil ? false : true
         
         print("created forum for game: " + String(game.id))
     }

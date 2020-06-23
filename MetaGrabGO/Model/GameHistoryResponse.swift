@@ -9,5 +9,5 @@
 import Foundation
 
 struct GameHistoryResponse: Hashable, Codable {
-    var gameHistory: [Int]
+    var gameHistory: [Game]
 }

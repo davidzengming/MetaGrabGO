@@ -18,6 +18,11 @@ struct TimelineGamesView: View {
     
     private let months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
     
+    init() {
+        print("timeline view created")
+    }
+    
+    
     private func calcRangeStartMonth() -> Int {
         return (calendar.component(.month, from: date) - 2)
     }

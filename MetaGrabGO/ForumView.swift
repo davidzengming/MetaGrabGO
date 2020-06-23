@@ -121,6 +121,7 @@ struct ForumView: View {
     @EnvironmentObject var blockHiddenDataStore: BlockHiddenDataStore
     @EnvironmentObject var userDataStore: UserDataStore
     @EnvironmentObject var assetsDataStore: AssetsDataStore
+    @EnvironmentObject var recentFollowDataStore: RecentFollowDataStore
     
     @ObservedObject var forumDataStore: ForumDataStore
     @ObservedObject var gameIconLoader: ImageLoader
@@ -186,10 +187,12 @@ struct ForumView: View {
     
     private func followGame() {
         self.forumDataStore.followGame(access: userDataStore.token!.access, gameId: self.forumDataStore.game.id)
+        self.recentFollowDataStore.followGames.insert(self.forumDataStore.game.id)
     }
     
     private func unfollowGame() {
         self.forumDataStore.unfollowGame(access: userDataStore.token!.access, gameId: self.forumDataStore.game.id)
+        self.recentFollowDataStore.followGames.remove(self.forumDataStore.game.id)
     }
     
     var body: some View {
@@ -325,6 +328,8 @@ struct ForumView: View {
                             self.forumDataStore.fetchThreads(access: self.userDataStore.token!.access, userId: self.userDataStore.token!.userId, containerWidth: a.size.width * 0.81)
                             self.forumDataStore.insertGameHistory(access: self.userDataStore.token!.access, gameId: self.forumDataStore.game.id)
                         }
+                        
+                        self.recentFollowDataStore.insertVisitGame(gameId: self.forumDataStore.game.id)
                     }
                     
                     NavigationLink(destination: NewThreadView(forumDataStore: self.forumDataStore, containerWidth: a.size.width * 0.81)) {

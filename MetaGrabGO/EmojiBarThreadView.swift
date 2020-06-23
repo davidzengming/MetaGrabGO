@@ -19,8 +19,8 @@ struct EmojiBarThreadView: View {
     var togglePickedThreadId: (Int, CGFloat) -> Void
     
     func onClickAddEmojiBubble() {
-        self.toggleBottomBarState(.addEmoji)
         self.togglePickedThreadId(self.threadDataStore.thread.id, CGFloat(0))
+        self.toggleBottomBarState(.addEmoji)
         self.turnBottomPopup(true)
     }
     

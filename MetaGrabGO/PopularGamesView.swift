@@ -20,6 +20,10 @@ struct PopularGamesView: View {
     
     private let imageSizeHeightRatio: CGFloat = 0.55
     
+    init() {
+        print("popular games view created")
+    }
+    
     var body: some View {
         ZStack {
             self.assetsDataStore.colors["darkButNotBlack"].edgesIgnoringSafeArea(.all)
