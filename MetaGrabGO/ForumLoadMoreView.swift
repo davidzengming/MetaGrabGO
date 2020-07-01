@@ -14,20 +14,21 @@ struct ForumLoadMoreView: View {
     @EnvironmentObject var userDataStore: UserDataStore
     
     @ObservedObject var forumDataStore: ForumDataStore
+    @ObservedObject var forumOtherDataStore: ForumOtherDataStore
     var containerWidth: CGFloat
     
     private func fetchNextPage() {
-        if self.forumDataStore.isLoadingNextPage == true {
+        if self.forumOtherDataStore.isLoadingNextPage == true {
             return
         }
         
-        self.forumDataStore.fetchThreads(access: self.userDataStore.token!.access, start: self.forumDataStore.forumNextPageStartIndex!, userId: self.userDataStore.token!.userId, containerWidth: self.containerWidth)
+        self.forumDataStore.fetchThreads(access: self.userDataStore.token!.access, start: self.forumOtherDataStore.forumNextPageStartIndex!, userId: self.userDataStore.token!.userId, containerWidth: self.containerWidth, forumOtherDataStore: self.forumOtherDataStore)
     }
     
     var body: some View {
         GeometryReader { a in
             ZStack(alignment: .top) {
-                if self.forumDataStore.isLoaded && self.forumDataStore.forumNextPageStartIndex != nil && self.forumDataStore.forumNextPageStartIndex != -1 {
+                if self.forumOtherDataStore.isLoaded && self.forumOtherDataStore.forumNextPageStartIndex != nil && self.forumOtherDataStore.forumNextPageStartIndex != -1 {
                     VStack {
                         Rectangle()
                             .frame(height: a.size.height * 0.25)
@@ -35,7 +36,7 @@ struct ForumLoadMoreView: View {
 
                         Spacer()
 
-                        if !self.forumDataStore.isLoadingNextPage {
+                        if !self.forumOtherDataStore.isLoadingNextPage {
                             HStack(alignment: .center) {
                                 Spacer()
                                 Image(systemName: "chevron.compact.down")

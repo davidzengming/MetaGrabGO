@@ -29,10 +29,22 @@ enum Resource: String, CodingKey {
 
 enum EndPoint: String, CodingKey {
     
+    // forum stats
+    case getForumStats = "get_forum_stats"
+    
+    // genre endpoints
+    case getGenresByRange = "get_genres_by_range"
+    
     // game endpoints
     case getGameHistoryByUserId = "get_game_history_by_user_id"
     case getRecentGames = "get_recent_games"
     case insertGameHistoryByUserId = "insert_game_history_by_user_id"
+    
+    case getGamesByGenreId = "get_games_by_genre_id"
+    
+    case getGamesBeforeEpochTime = "get_games_before_epoch_time"
+    case getGamesAfterEpochTime = "get_games_after_epoch_time"
+    case getGamesAtEpochTime = "get_games_at_epoch_time"
     
     // get threads
     case getThreadsByGameId = "get_threads_by_game_id"

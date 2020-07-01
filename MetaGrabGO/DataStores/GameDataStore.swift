@@ -96,10 +96,11 @@ class GameDataStore: ObservableObject {
         let request = API.generateRequest(url: url!, method: .GET, json: nil)
         let session = API.generateSession(access: access)
         
+        taskGroup.enter()
+        
         session.dataTask(with: request) { (data, response, error) in
             if let data = data {
                 if let jsonString = String(data: data, encoding: .utf8) {
-                    
                     let tempGames: [Game] = load(jsonData: jsonString.data(using: .utf8)!)
                     let calendar = Calendar.current
                     

@@ -11,18 +11,86 @@ import SwiftUI
 import Combine
 import Cloudinary
 
-class ForumDataStore: ObservableObject {
-    @Environment(\.imageCache) var cache: ImageCache
-    @Published var threadsList: [Int]
-    @Published var threadDataStores: [Int: ThreadDataStore]
-    @Published var isFollowed: Bool
-    
-    //    private var childThreadSubs = [Int: AnyCancellable]()
-    
-    var game: Game
-    @Published var forumNextPageStartIndex : Int?
+class ForumOtherDataStore: ObservableObject {
+    var gameId: Int
+    @Published var forumNextPageStartIndex: Int?
     @Published var isLoaded: Bool
     @Published var isLoadingNextPage: Bool = false
+    @Published var isFollowed: Bool?
+    @Published var threadCount: Int?
+    @Published var followerCount: Int?
+    
+    let API = APIClient()
+    
+    init(access: String, gameId: Int) {
+        self.gameId = gameId
+        self.forumNextPageStartIndex = nil
+        self.isLoaded = false
+        self.isFollowed = nil
+        self.threadCount = nil
+        self.followerCount = nil
+        
+        self.fetchForumStats(access: access)
+    }
+    
+    func fetchForumStats(access: String) {
+        let params = ["game_id": String(self.gameId)]
+        let url = API.generateURL(resource: Resource.forums, endPoint: EndPoint.getForumStats, params: params)
+        let request = API.generateRequest(url: url!, method: .GET)
+        let session = API.generateSession(access: access)
+        
+        session.dataTask(with: request) { (data, response, error) in
+            if let data = data {
+                if let jsonString = String(data: data, encoding: .utf8) {
+                    
+                    let tempForumStatsResponse: ForumStatsResponse = load(jsonData: jsonString.data(using: .utf8)!)
+                    
+                    DispatchQueue.main.async {
+                        self.isFollowed = tempForumStatsResponse.isFollowed
+                        self.threadCount = tempForumStatsResponse.threadCount
+                        self.followerCount = tempForumStatsResponse.followerCount
+                    }
+                }
+            }
+        }.resume()
+    }
+    
+    func followGame(access: String, gameId: Int) {
+        let url = API.generateURL(resource: Resource.games, endPoint: EndPoint.followGameByGameId, detail: String(gameId))
+        let request = API.generateRequest(url: url!, method: .POST)
+        let session = API.generateSession(access: access)
+        
+        session.dataTask(with: request) { (data, response, error) in
+            if error == nil {
+                DispatchQueue.main.async {
+                    self.isFollowed = true
+                    self.followerCount! += 1
+                }
+            }
+        }.resume()
+    }
+    
+    func unfollowGame(access: String, gameId: Int) {
+        let url = API.generateURL(resource: Resource.games, endPoint: EndPoint.unfollowGameByGameId, detail: String(gameId))
+        let request = API.generateRequest(url: url!, method: .POST)
+        let session = API.generateSession(access: access)
+        
+        session.dataTask(with: request) { (data, response, error) in
+            if error == nil {
+                DispatchQueue.main.async {
+                    self.isFollowed = false
+                    self.followerCount! -= 1
+                }
+            }
+        }.resume()
+    }
+}
+
+class ForumDataStore: ObservableObject {
+    @Published var threadsList: [Int]
+    
+    var threadDataStores: [Int: ThreadDataStore]
+    var game: Game
     
     let API = APIClient()
     
@@ -30,10 +98,7 @@ class ForumDataStore: ObservableObject {
         self.threadsList = []
         self.threadDataStores = [:]
         self.game = game
-        self.forumNextPageStartIndex = nil
-        self.isLoaded = false
-        self.isFollowed = game.isFollowed == nil ? false : true
-        
+        //
         print("created forum for game: " + String(game.id))
     }
     
@@ -41,7 +106,8 @@ class ForumDataStore: ObservableObject {
         print("destroyed forum for game: " + String(game.id))
     }
     
-    func insertGameHistory(access: String, gameId: Int) {
+    func insertGameHistory(access: String) {
+        let gameId = self.game.id
         //        if self.myGameVisitHistory.count > 0 && self.myGameVisitHistory[0] == gameId {
         //            return
         //        }
@@ -61,51 +127,22 @@ class ForumDataStore: ObservableObject {
         }.resume()
     }
     
-    func followGame(access: String, gameId: Int) {
-        let url = API.generateURL(resource: Resource.games, endPoint: EndPoint.followGameByGameId, detail: String(gameId))
-        let request = API.generateRequest(url: url!, method: .POST)
-        let session = API.generateSession(access: access)
-        
-        session.dataTask(with: request) { (data, response, error) in
-            if error == nil {
-                DispatchQueue.main.async {
-                    self.isFollowed = true
-                    self.game.followerCount += 1
-                }
-            }
-        }.resume()
-    }
-    
-    func unfollowGame(access: String, gameId: Int) {
-        let url = API.generateURL(resource: Resource.games, endPoint: EndPoint.unfollowGameByGameId, detail: String(gameId))
-        let request = API.generateRequest(url: url!, method: .POST)
-        let session = API.generateSession(access: access)
-        
-        session.dataTask(with: request) { (data, response, error) in
-            if error == nil {
-                DispatchQueue.main.async {
-                    self.isFollowed = false
-                    self.game.followerCount -= 1
-                }
-            }
-        }.resume()
-    }
-    
-    func fetchThreads(access: String, start:Int = 0, count:Int = 10, refresh: Bool = false, userId: Int, containerWidth: CGFloat) {
-        if self.isLoadingNextPage == true {
+    func fetchThreads(access: String, start:Int = 0, count:Int = 10, refresh: Bool = false, userId: Int, containerWidth: CGFloat, forumOtherDataStore: ForumOtherDataStore) {
+        if forumOtherDataStore.isLoadingNextPage == true {
             return
         }
         
         DispatchQueue.main.async {
             if refresh == true {
+                forumOtherDataStore.isLoaded = false
                 self.threadDataStores = [:]
                 self.threadsList = []
-                self.forumNextPageStartIndex = nil
+                forumOtherDataStore.forumNextPageStartIndex = nil
             }
         }
         
         if start != 0 {
-            self.isLoadingNextPage = true
+            forumOtherDataStore.isLoadingNextPage = true
         }
         
         let params = ["start": String(start), "count": String(count), "game": String(game.id)]
@@ -120,15 +157,15 @@ class ForumDataStore: ObservableObject {
                     let tempThreadsResponse: ThreadsResponse = load(jsonData: jsonString.data(using: .utf8)!)
                     
                     
-                    if tempThreadsResponse.threadsResponse.count == 0 && self.forumNextPageStartIndex == nil {
+                    if tempThreadsResponse.threadsResponse.count == 0 && forumOtherDataStore.forumNextPageStartIndex == nil {
                         DispatchQueue.main.async {
-                            self.forumNextPageStartIndex = -1
-                            self.isLoaded = true
+                            forumOtherDataStore.forumNextPageStartIndex = -1
+                            forumOtherDataStore.isLoaded = true
                         }
                         return
                     }
                     
-                    var newThreadsList: [Int] = []
+                    var newThreadsList = [Int]()
                     for thread in tempThreadsResponse.threadsResponse {
                         if self.threadDataStores[thread.id] != nil {
                             continue
@@ -143,30 +180,32 @@ class ForumDataStore: ObservableObject {
                         
                         let author = thread.users[0]
                         
+                        let threadDataStore = ThreadDataStore(gameId: self.game.id, thread: thread, vote: myVote, author: author, emojiArr: thread.emojis!.emojisIdArr, emojiReactionCount: thread.emojis!.emojiReactionCountDict, userArrPerEmoji: thread.emojis!.userArrPerEmojiDict, didReactToEmojiDict: thread.emojis!.didReactToEmojiDict, containerWidth: containerWidth)
                         
-                        let threadDataStore = ThreadDataStore(gameId: self.game.id, thread: thread, vote: myVote, author: author, cache: self.cache, emojiArr: thread.emojis!.emojisIdArr, emojiReactionCount: thread.emojis!.emojiReactionCountDict, userArrPerEmoji: thread.emojis!.userArrPerEmojiDict, didReactToEmojiDict: thread.emojis!.didReactToEmojiDict, containerWidth: containerWidth)
-                        
+                        self.threadDataStores[thread.id] = threadDataStore
+                    }
+                    
+                    if tempThreadsResponse.hasNextPage == true {
                         DispatchQueue.main.async {
-                            self.threadDataStores[thread.id] = threadDataStore
+                            forumOtherDataStore.forumNextPageStartIndex = start + count
                         }
-                        
-                        //                            self.childThreadSubs[thread.id] = self.threadDataStores[thread.id]!.objectWillChange.receive(on: DispatchQueue.main).sink(receiveValue: {[weak self] _ in self?.objectWillChange.send()
-                        //                            })
+                    } else {
+                        DispatchQueue.main.async {
+                            forumOtherDataStore.forumNextPageStartIndex = -1
+                        }
                     }
                     
                     DispatchQueue.main.async {
-                        self.threadsList += newThreadsList
-                        
-                        if tempThreadsResponse.hasNextPage == true {
-                            self.forumNextPageStartIndex = start + count
-                        } else {
-                            self.forumNextPageStartIndex = -1
+                        if newThreadsList.count == 0 {
+                            return
                         }
                         
+                        self.threadsList += newThreadsList
+
                         if start == 0 {
-                            self.isLoaded = true
+                            forumOtherDataStore.isLoaded = true
                         } else {
-                            self.isLoadingNextPage = false
+                            forumOtherDataStore.isLoadingNextPage = false
                         }
                     }
                 }
@@ -175,7 +214,7 @@ class ForumDataStore: ObservableObject {
     }
     
     func submitThread(forumDataStore: ForumDataStore, access: String, title: String, flair: Int, content: NSTextStorage, imageData: [UUID: Data], imagesArray: [UUID], userId:
-        Int, containerWidth: CGFloat) {
+        Int, containerWidth: CGFloat, forumOtherDataStore: ForumOtherDataStore) {
         
         let cloudinary = CLDCloudinary(configuration: CLDConfiguration(cloudName: "dzengcdn", apiKey: "348513889264333", secure: true))
         let taskGroup = DispatchGroup()
@@ -218,13 +257,13 @@ class ForumDataStore: ObservableObject {
                         let vote = tempNewThreadResponse.voteResponse
                         
                         DispatchQueue.main.async {
-                            self.threadDataStores[tempThread.id] = ThreadDataStore(gameId: forumDataStore.game.id, thread: tempThread, vote: vote, author: tempThread.users[0], cache: self.cache, emojiArr: tempThread.emojis!.emojisIdArr, emojiReactionCount: tempThread.emojis!.emojiReactionCountDict, userArrPerEmoji: tempThread.emojis!.userArrPerEmojiDict, didReactToEmojiDict: tempThread.emojis!.didReactToEmojiDict, containerWidth: containerWidth)
+                            self.threadDataStores[tempThread.id] = ThreadDataStore(gameId: forumDataStore.game.id, thread: tempThread, vote: vote, author: tempThread.users[0], emojiArr: tempThread.emojis!.emojisIdArr, emojiReactionCount: tempThread.emojis!.emojiReactionCountDict, userArrPerEmoji: tempThread.emojis!.userArrPerEmojiDict, didReactToEmojiDict: tempThread.emojis!.didReactToEmojiDict, containerWidth: containerWidth)
                             
                             //                            self.childThreadSubs[tempThread.id] = self.threadDataStores[tempThread.id]!.objectWillChange.receive(on: DispatchQueue.main).sink(receiveValue: {[weak self] _ in self?.objectWillChange.send()
                             //                            })
                             //
                             self.threadsList.insert(tempThread.id, at: 0)
-                            self.game.threadCount += 1
+                            forumOtherDataStore.threadCount! += 1
                         }
                     }
                 }
@@ -274,9 +313,8 @@ class ThreadDataStore: ObservableObject {
     
     @Published var areCommentsLoaded: Bool = false
     @Published var isLoadingNextPage: Bool = false
-    
+    @Environment(\.imageCache) var cache: ImageCache
     var threadImagesHeight: CGFloat = 0
-    var cache: ImageCache
     var gameId: Int
     var thread: Thread
     var vote: Vote?
@@ -284,7 +322,7 @@ class ThreadDataStore: ObservableObject {
     
     let API = APIClient()
     
-    init(gameId: Int, thread: Thread, vote: Vote?, author: User, cache: ImageCache, emojiArr: [Int], emojiReactionCount: [Int: Int], userArrPerEmoji: [Int: [User]], didReactToEmojiDict: [Int: Bool], containerWidth: CGFloat) {
+    init(gameId: Int, thread: Thread, vote: Vote?, author: User, emojiArr: [Int], emojiReactionCount: [Int: Int], userArrPerEmoji: [Int: [User]], didReactToEmojiDict: [Int: Bool], containerWidth: CGFloat) {
         self.relativeDateString = RelativeDateTimeFormatter().localizedString(for: thread.created, relativeTo: Date())
         let textStorage = generateTextStorageFromJson(contentString: thread.contentString, contentAttributes: thread.contentAttributes)
         
@@ -298,7 +336,6 @@ class ThreadDataStore: ObservableObject {
         self.childCommentList = []
         self.childComments = [:]
         
-        self.cache = cache
         self.emojis = EmojiDataStore(serializedEmojiArr: emojiArr, emojiReactionCount: emojiReactionCount, userArrPerEmoji: userArrPerEmoji, didReactToEmojiDict: didReactToEmojiDict)
         self.emojisSub = emojis.objectWillChange.receive(on: DispatchQueue.main).sink(receiveValue: {[weak self] _ in self?.objectWillChange.send()
         })
@@ -838,16 +875,14 @@ class ThreadDataStore: ObservableObject {
 class CommentDataStore: ObservableObject {
     @Published var childCommentList: [Int]
     @Published var childComments: [Int: CommentDataStore]
+    
     @Published var relativeDateString: String?
     @Published var textStorage: NSTextStorage
     @Published var isHidden: Bool = false
     @Published var desiredHeight: CGFloat
-    
     @Published var isLoadingNextPage: Bool = false
-    
     @Published var comment: Comment
     @Published var vote: Vote?
-    
     @Published var isVoting: Bool = false
     
     var ancestorThreadId: Int
@@ -1230,9 +1265,6 @@ class CommentDataStore: ObservableObject {
                     }
                     
                     for commentId in firstLevelArr {
-                        //                            self.childCommentSubs[commentId] = firstLevelStore[commentId]!.objectWillChange.receive(on: DispatchQueue.main).sink(receiveValue: {[weak self] _ in self?.objectWillChange.send()
-                        //                            })
-                        
                         DispatchQueue.main.async {
                             self.childComments[commentId] = firstLevelStore[commentId]!
                         }

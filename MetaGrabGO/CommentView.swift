@@ -184,13 +184,13 @@ struct CommentView : View {
                                     }
                                     .padding(.vertical, 5)
                                     
-                                    FancyPantsEditorView(existedTextStorage: self.$commentDataStore.textStorage, desiredHeight: self.$commentDataStore.desiredHeight, newTextStorage: .constant(NSTextStorage(string: "")), isEditable: self.$isEditable, isFirstResponder: .constant(false), didBecomeFirstResponder: .constant(false), showFancyPantsEditorBar: .constant(false), isNewContent: false, isThread: false, isOmniBar: false, width: self.width, height: self.height)
-                                        
-                                        .frame(height: self.commentDataStore.desiredHeight + (self.isEditable ? 20 : 0), alignment: .leading)
-                                        .onTapGesture {
-                                            self.togglePickedCommentId(self.commentDataStore, self.width - self.leadPadding - self.staticPadding * 2 - 10 - self.leadLineWidth - 20)
-                                            self.toggleDidBecomeFirstResponder()
+                                    Button(action: {self.togglePickedCommentId(self.commentDataStore, self.width - self.leadPadding - self.staticPadding * 2 - 10 - self.leadLineWidth - 20)
+                                        self.toggleDidBecomeFirstResponder()}) {
+                                            FancyPantsEditorView(existedTextStorage: self.$commentDataStore.textStorage, desiredHeight: self.$commentDataStore.desiredHeight, newTextStorage: .constant(NSTextStorage(string: "")), isEditable: self.$isEditable, isFirstResponder: .constant(false), didBecomeFirstResponder: .constant(false), showFancyPantsEditorBar: .constant(false), isNewContent: false, isThread: false, isOmniBar: false, width: self.width, height: self.height)
+                                            
+                                            .frame(height: self.commentDataStore.desiredHeight + (self.isEditable ? 20 : 0), alignment: .leading)
                                     }
+
                                     
                                     HStack {
                                         HStack {
@@ -208,7 +208,6 @@ struct CommentView : View {
                                                 }
                                             }
                                         }
-                                        
                                         
                                         HStack {
                                             Text("Report")

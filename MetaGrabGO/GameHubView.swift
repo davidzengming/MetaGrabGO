@@ -43,7 +43,7 @@ struct GameHubView: View {
             .background(self.assetsDataStore.colors["darkButNotBlack"])
             
             NavigationView {
-                PopularGamesView()
+                PopularGamesView(popularListDataStore: PopularListDataStore(access: self.userDataStore.token!.access))
                     .navigationBarTitle("Popular")
                     .navigationBarHidden(true)
             }
@@ -54,7 +54,7 @@ struct GameHubView: View {
             .background(self.assetsDataStore.colors["darkButNotBlack"])
             
             NavigationView {
-                TimelineGamesView()
+                TimelineGamesView(timelineDataStore: TimelineDataStore())
                     .navigationBarTitle("Upcoming")
                     .navigationBarHidden(true)
             }

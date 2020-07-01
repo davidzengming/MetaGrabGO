@@ -9,7 +9,6 @@
 import SwiftUI
 
 struct GameModalView: View {
-    @EnvironmentObject var gameDataStore: GameDataStore
     @EnvironmentObject var userDataStore: UserDataStore
     @EnvironmentObject var assetsDataStore: AssetsDataStore
     @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
@@ -17,12 +16,10 @@ struct GameModalView: View {
     @Environment(\.imageCache) var cache: ImageCache
     @ObservedObject private var imageLoader: ImageLoader
     var game: Game
-    var placeholder: Image = Image(systemName: "photo")
+    let placeholder = Image(systemName: "rectangle.fill")
     
-    
-    init(game: Game, placeholder: Image = Image(systemName: "photo"), imageLoader: ImageLoader) {
+    init(game: Game, imageLoader: ImageLoader) {
         self.game = game
-        self.placeholder = placeholder
         self.imageLoader = imageLoader
     }
     
@@ -69,7 +66,6 @@ struct GameModalView: View {
                                             .scaledToFill()
                                             .shadow(radius: 5)
                                     }
-                                    
                                 }
                                 .frame(width: a.size.width * 0.9, height: a.size.height * 0.15)
                                 .background(self.assetsDataStore.colors["notQuiteBlack"]!)
@@ -142,8 +138,7 @@ struct GameModalView: View {
                                     
                                     Spacer()
                                     HStack {
-                                        NavigationLink(destination: LazyView { ForumView(forumDataStore: ForumDataStore(game: self.game)
-                                            , gameIconLoader: ImageLoader(url: self.game.icon, cache: self.cache, whereIsThisFrom: "modal to forum view, game:" + String(self.game.id)))
+                                        NavigationLink(destination: LazyView { ForumView(forumDataStore: ForumDataStore(game: self.game), forumOtherDataStore: ForumOtherDataStore(access: self.userDataStore.token!.access, gameId: self.game.id) , gameIconLoader: ImageLoader(url: self.game.icon, cache: self.cache, whereIsThisFrom: "modal to forum view, game:" + String(self.game.id)))
                                             .onAppear(perform: {
                                                 Global.tabBar!.isHidden = true
                                             })

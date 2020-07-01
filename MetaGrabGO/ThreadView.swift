@@ -65,7 +65,7 @@ struct ThreadView : View {
         if self.pickedThreadId == threadId {
             return
         }
-        
+        self.pickedCommentId = nil
         self.bottomBarState = .inActive
         self.isBottomPopupOn = false
         
@@ -78,6 +78,7 @@ struct ThreadView : View {
             return
         }
         
+        self.pickedThreadId = -1
         self.bottomBarState = .inActive
         self.isBottomPopupOn = false
         
@@ -180,104 +181,110 @@ struct ThreadView : View {
                 ZStack(alignment: .bottom) {
                     VStack {
                         List {
-                            HStack(spacing: 0) {
-                                VStack(spacing: 0) {
-                                    Image(systemName: "person.circle.fill")
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fit)
-                                        .foregroundColor(Color.orange)
-                                }
-                                .frame(width: 30, height: 30)
-                                .padding(.trailing, 10)
-                                
-                                VStack(alignment: .leading, spacing: 0) {
-                                    HStack(spacing: 0) {
-                                        Text(self.threadDataStore.thread.users[0].username)
-                                            .font(.system(size: 16))
-                                        Spacer()
+                            VStack(alignment: .leading) {
+                                HStack(spacing: 0) {
+                                    VStack(spacing: 0) {
+                                        Image(systemName: "person.circle.fill")
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fit)
+                                            .foregroundColor(Color.orange)
                                     }
-                                    .onTapGesture {
-                                        self.onClickUser()
+                                    .frame(width: 30, height: 30)
+                                    .padding(.trailing, 10)
+                                    
+                                    VStack(alignment: .leading, spacing: 0) {
+                                        HStack(spacing: 0) {
+                                            Text(self.threadDataStore.thread.users[0].username)
+                                                .font(.system(size: 16))
+                                            Spacer()
+                                        }
+                                        .onTapGesture {
+                                            self.onClickUser()
+                                        }
+                                        
+                                        Text(self.threadDataStore.relativeDateString!)
+                                            .foregroundColor(Color(.darkGray))
+                                            .font(.system(size: 14))
+                                            .padding(.bottom, 5)
+                                    }
+                                }
+                                .padding(.top, 20)
+                                
+                                Button(action: {self.togglePickedThreadId(threadId: self.threadDataStore.thread.id, futureContainerWidth: 0)
+                                    self.toggleDidBecomeFirstResponder()}) {
+                                        FancyPantsEditorView(existedTextStorage: self.$threadDataStore.textStorage, desiredHeight: self.$threadDataStore.desiredHeight,  newTextStorage: .constant(NSTextStorage(string: "")), isEditable: .constant(false), isFirstResponder: .constant(false), didBecomeFirstResponder: .constant(false), showFancyPantsEditorBar: .constant(false), isNewContent: false, isThread: true, threadId: self.threadDataStore.thread.id, isOmniBar: false, width: a.size.width, height: a.size.height)
+                                        .frame(width: a.size.width - self.outerPadding * 2, height: self.threadDataStore.desiredHeight + (self.isEditable ? 20 : 0))
+                                        .padding(.bottom, 10)
+                                }
+                                
+                                HStack(spacing: 10) {
+                                    ForEach(self.threadDataStore.imageArr, id: \.self) { index in
+                                        Group {
+                                            if self.threadDataStore.imageLoaders[index]!.downloadedImage != nil {
+                                                Image(uiImage: self.threadDataStore.imageLoaders[index]!.downloadedImage!)
+                                                    .resizable()
+                                                    .aspectRatio(contentMode: .fit)
+                                                    .cornerRadius(5)
+                                                    .frame(minWidth: a.size.width * 0.05, maxWidth: a.size.width * 0.25, minHeight: a.size.height * 0.1, maxHeight: a.size.height * 0.15, alignment: .center)
+                                            } else {
+                                                self.placeholder
+                                                    .resizable()
+                                                    .aspectRatio(contentMode: .fit)
+                                                    .cornerRadius(5)
+                                                    .frame(minWidth: a.size.width * 0.05, maxWidth: a.size.width * 0.25, minHeight: a.size.height * 0.1, maxHeight: a.size.height * 0.15, alignment: .center)
+                                            }
+                                        }
+                                    }
+                                }
+                                .padding(.vertical, 10)
+                                
+                                HStack(spacing: 10) {
+                                    HStack(spacing: 5) {
+                                        Image(systemName: "bubble.right.fill")
+                                        Text(String(self.threadDataStore.thread.numSubtreeNodes))
+                                            .font(.system(size: 16))
+                                            .bold()
+                                        Text("Comments")
+                                            .bold()
                                     }
                                     
-                                    Text(self.threadDataStore.relativeDateString!)
-                                        .foregroundColor(Color(.darkGray))
-                                        .font(.system(size: 14))
-                                        .padding(.bottom, 5)
-                                }
-                            }
-                            .padding(.top, 20)
-                            
-                            FancyPantsEditorView(existedTextStorage: self.$threadDataStore.textStorage, desiredHeight: self.$threadDataStore.desiredHeight,  newTextStorage: .constant(NSTextStorage(string: "")), isEditable: .constant(false), isFirstResponder: .constant(false), didBecomeFirstResponder: .constant(false), showFancyPantsEditorBar: .constant(false), isNewContent: false, isThread: true, threadId: self.threadDataStore.thread.id, isOmniBar: false, width: a.size.width, height: a.size.height)
-                                .frame(width: a.size.width - self.outerPadding * 2, height: self.threadDataStore.desiredHeight + (self.isEditable ? 20 : 0))
-                                .padding(.bottom, 10)
-
-                            HStack(spacing: 10) {
-                                ForEach(self.threadDataStore.imageArr, id: \.self) { index in
-                                    Group {
-                                        if self.threadDataStore.imageLoaders[index]!.downloadedImage != nil {
-                                            Image(uiImage: self.threadDataStore.imageLoaders[index]!.downloadedImage!)
-                                                .resizable()
-                                                .aspectRatio(contentMode: .fit)
-                                                .cornerRadius(5)
-                                                .frame(minWidth: a.size.width * 0.05, maxWidth: a.size.width * 0.25, minHeight: a.size.height * 0.1, maxHeight: a.size.height * 0.15, alignment: .center)
+                                    HStack {
+                                        if self.threadDataStore.isHidden == true {
+                                            Text("Unhide")
+                                                .bold()
+                                                .onTapGesture {
+                                                    self.threadDataStore.unhideThread(access: self.userDataStore.token!.access, threadId: self.threadDataStore.thread.id)
+                                            }
                                         } else {
-                                            self.placeholder
-                                                .resizable()
-                                                .aspectRatio(contentMode: .fit)
-                                                .cornerRadius(5)
-                                                .frame(minWidth: a.size.width * 0.05, maxWidth: a.size.width * 0.25, minHeight: a.size.height * 0.1, maxHeight: a.size.height * 0.15, alignment: .center)
+                                            Text("Hide")
+                                                .bold()
+                                                .onTapGesture {
+                                                    self.threadDataStore.hideThread(access: self.userDataStore.token!.access, threadId: self.threadDataStore.thread.id)
+                                            }
                                         }
                                     }
-                                }
-                            }
-                            .padding(.vertical, 10)
-                            
-                            HStack(spacing: 10) {
-                                HStack(spacing: 5) {
-                                    Image(systemName: "bubble.right.fill")
-                                    Text(String(self.threadDataStore.thread.numSubtreeNodes))
-                                        .font(.system(size: 16))
-                                        .bold()
-                                    Text("Comments")
-                                        .bold()
-                                }
-                                
-                                HStack {
-                                    if self.threadDataStore.isHidden == true {
-                                        Text("Unhide")
+                                    
+                                    HStack {
+                                        Text("Report")
                                             .bold()
                                             .onTapGesture {
-                                                self.threadDataStore.unhideThread(access: self.userDataStore.token!.access, threadId: self.threadDataStore.thread.id)
-                                        }
-                                    } else {
-                                        Text("Hide")
-                                            .bold()
-                                            .onTapGesture {
-                                                self.threadDataStore.hideThread(access: self.userDataStore.token!.access, threadId: self.threadDataStore.thread.id)
+                                                self.togglePickedThreadId(threadId: self.threadDataStore.thread.id, futureContainerWidth: CGFloat(0))
+                                                self.toggleBottomBarState(state: .reportThread)
+                                                self.turnBottomPopup(state: true)
                                         }
                                     }
+                                    
+                                    Spacer()
                                 }
+                                .frame(width: a.size.width - self.outerPadding * 2, height: 20)
+                                .foregroundColor(.gray)
                                 
-                                HStack {
-                                    Text("Report")
-                                        .bold()
-                                        .onTapGesture {
-                                            self.togglePickedThreadId(threadId: self.threadDataStore.thread.id, futureContainerWidth: CGFloat(0))
-                                            self.toggleBottomBarState(state: .reportThread)
-                                            self.turnBottomPopup(state: true)
-                                    }
-                                }
-                                
-                                Spacer()
+                                EmojiBarThreadView(threadDataStore: self.threadDataStore, turnBottomPopup: { state in self.turnBottomPopup(state: state) }, toggleBottomBarState: { state in self.toggleBottomBarState(state: state)}, togglePickedUser: { user in self.togglePickedUser(user: user)}, togglePickedThreadId: { (threadId, futureContainerWidth) in self.togglePickedThreadId(threadId: threadId, futureContainerWidth: futureContainerWidth) })
                             }
-                            .frame(width: a.size.width - self.outerPadding * 2, height: 20)
-                            .foregroundColor(.gray)
-                            
-                            EmojiBarThreadView(threadDataStore: self.threadDataStore, turnBottomPopup: { state in self.turnBottomPopup(state: state) }, toggleBottomBarState: { state in self.toggleBottomBarState(state: state)}, togglePickedUser: { user in self.togglePickedUser(user: user)}, togglePickedThreadId: { (threadId, futureContainerWidth) in self.togglePickedThreadId(threadId: threadId, futureContainerWidth: futureContainerWidth) })
                             
                             if self.threadDataStore.areCommentsLoaded {
                                 if !self.threadDataStore.childCommentList.isEmpty {
+                                    Divider()
                                     ForEach(self.threadDataStore.childCommentList, id: \.self) { commentId in
                                         CommentView(commentDataStore: self.threadDataStore.childComments[commentId]!, ancestorThreadId: self.threadDataStore.thread.id, width: a.size.width - self.outerPadding * 2, height: a.size.height, leadPadding: 0, level: 0, turnBottomPopup: { state in self.turnBottomPopup(state: state) }, toggleBottomBarState: { state in self.toggleBottomBarState(state: state) }, togglePickedUser: { user in self.togglePickedUser(user: user) }, togglePickedCommentId: { (commentId, futureContainerWidth) in self.togglePickedCommentId(commentId: commentId, futureContainerWidth: futureContainerWidth) }, toggleDidBecomeFirstResponder: self.toggleDidBecomeFirstResponder)
                                     }

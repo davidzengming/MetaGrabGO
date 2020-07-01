@@ -20,6 +20,7 @@ struct NewThreadView: View {
     @EnvironmentObject var assetsDataStore: AssetsDataStore
     
     @ObservedObject var forumDataStore: ForumDataStore
+    @ObservedObject var forumOtherDataStore: ForumOtherDataStore
     
     var containerWidth: CGFloat
     
@@ -41,10 +42,10 @@ struct NewThreadView: View {
     func submitThread() {
         if self.showImagePicker == true {
             self.showImagePicker = false
-            self.forumDataStore.submitThread(forumDataStore: self.forumDataStore, access:self.userDataStore.token!.access, title: self.title, flair: self.flair, content: self.content, imageData: self.dataDict, imagesArray: self.imagesArray, userId: self.userDataStore.token!.userId, containerWidth: self.containerWidth)
+            self.forumDataStore.submitThread(forumDataStore: self.forumDataStore, access:self.userDataStore.token!.access, title: self.title, flair: self.flair, content: self.content, imageData: self.dataDict, imagesArray: self.imagesArray, userId: self.userDataStore.token!.userId, containerWidth: self.containerWidth, forumOtherDataStore: self.forumOtherDataStore)
             self.presentationMode.wrappedValue.dismiss()
         } else {
-            self.forumDataStore.submitThread(forumDataStore: self.forumDataStore, access:self.userDataStore.token!.access, title: self.title, flair: self.flair, content: self.content, imageData: self.dataDict, imagesArray: self.imagesArray, userId: self.userDataStore.token!.userId, containerWidth: self.containerWidth)
+            self.forumDataStore.submitThread(forumDataStore: self.forumDataStore, access:self.userDataStore.token!.access, title: self.title, flair: self.flair, content: self.content, imageData: self.dataDict, imagesArray: self.imagesArray, userId: self.userDataStore.token!.userId, containerWidth: self.containerWidth, forumOtherDataStore: self.forumOtherDataStore)
             self.presentationMode.wrappedValue.dismiss()
         }
     }
@@ -91,7 +92,7 @@ struct NewThreadView: View {
                                     self.clickedImageIndex = self.imagesArray.firstIndex(of: id)!
                                     self.removeImage()
                                 }) {
-                                    Image(uiImage: UIImage(systemName: "minus.circle.fill")!)
+                                    Image(systemName: "minus.circle.fill")
                                         .resizable()
                                         .frame(width: 25, height: 25)
                                 }

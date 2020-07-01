@@ -15,14 +15,13 @@ class UserDataStore: ObservableObject {
     @Published var isAuthenticated: Bool = false
     
     var user: User? = nil
-    
     var password: String? = nil
     var token: Token? = nil
     
     let API = APIClient()
     
     func onStart() {
-        if let usernameData = KeyChain.load(key: "metagrabusername"), let passwordData = KeyChain.load(key: "metagrabpassword"), let tokenaccessData = KeyChain.load(key: "metagrabtokenaccess"), let tokenrefreshData = KeyChain.load(key: "metagrabtokenrefresh"), let userId = KeyChain.load(key: "userid") {
+        if let usernameData = KeyChain.load(key: "metagrab.username"), let passwordData = KeyChain.load(key: "metagrab.password"), let tokenaccessData = KeyChain.load(key: "metagrab.tokenaccess"), let tokenrefreshData = KeyChain.load(key: "metagrab.tokenrefresh"), let userId = KeyChain.load(key: "metagrab.userid") {
             self.username = String(data: usernameData, encoding: String.Encoding.utf8) as String?
             self.password = String(data: passwordData, encoding: String.Encoding.utf8) as String?
             self.token = Token(refresh: String(data: tokenrefreshData, encoding: String.Encoding.utf8)!, access: String(data: tokenaccessData, encoding: String.Encoding.utf8)!, userId: Int(String(data: userId, encoding: String.Encoding.utf8)!)!)
@@ -44,16 +43,15 @@ class UserDataStore: ObservableObject {
         
         taskGroup.notify(queue: DispatchQueue.global()) {
             print("saved to keychain credentials")
-            let status1 = KeyChain.save(key: "metagrabusername", data: username.data(using: String.Encoding.utf8)!)
-            let status2 = KeyChain.save(key: "metagrabpassword", data: password.data(using: String.Encoding.utf8)!)
-            let status3 = KeyChain.save(key: "metagrabtokenaccess", data: self.token!.access.data(using: String.Encoding.utf8)!)
-            let status4 = KeyChain.save(key: "metagrabtokenrefresh", data: self.token!.refresh.data(using: String.Encoding.utf8)!)
-            let status5 = KeyChain.save(key: "userid", data: String(self.token!.userId).data(using: String.Encoding.utf8)!)
+            let status1 = KeyChain.save(key: "metagrab.username", data: username.data(using: String.Encoding.utf8)!)
+            let status2 = KeyChain.save(key: "metagrab.password", data: password.data(using: String.Encoding.utf8)!)
+            let status3 = KeyChain.save(key: "metagrab.tokenaccess", data: self.token!.access.data(using: String.Encoding.utf8)!)
+            let status4 = KeyChain.save(key: "metagrab.tokenrefresh", data: self.token!.refresh.data(using: String.Encoding.utf8)!)
+            let status5 = KeyChain.save(key: "metagrab.userid", data: String(self.token!.userId).data(using: String.Encoding.utf8)!)
         }
     }
     
     func refreshToken(queryGroup: DispatchGroup) {
-        
         let url = API.generateURL(resource: Resource.api, endPoint: EndPoint.refreshToken)
         let request = API.generateRequest(url: url!, method: .POST, json: nil)
         

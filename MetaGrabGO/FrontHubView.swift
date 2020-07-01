@@ -62,21 +62,17 @@ struct FrontHubView: View {
                                                 ForEach(self.visitedGamesDataStore.visitedGamesId, id: \.self) { gameId in
                                                     VStack {
                                                         GameFeedIcon(imageLoader: ImageLoader(url: self.globalGamesDataStore.games[gameId]!.icon, cache: self.cache, whereIsThisFrom: "front view, game:" + String(gameId)), game: self.globalGamesDataStore.games[gameId]!)
-                                                            .frame(width: a.size.width * self.gameIconWidthMultiplier, height: a.size.width * self.gameIconWidthMultiplier * 1 / self.widthToHeightRatio / self.imageSizeHeightRatio)
+                                                            .frame(width: a.size.width * self.gameIconWidthMultiplier, height: a.size.width * self.gameIconWidthMultiplier * 1 / self.widthToHeightRatio / self.imageSizeHeightRatio * 0.8)
                                                             .shadow(radius: 5)
-                                                        
-                                                        Text(self.globalGamesDataStore.games[gameId]!.isFollowed != nil ? "followed" : "not - followed")
                                                     }
                                                 }
                                             }
                                         }
-                                        .frame(height: a.size.width * self.gameIconWidthMultiplier * 1 / self.widthToHeightRatio / self.imageSizeHeightRatio + 50)
+                                        .frame(height: a.size.width * self.gameIconWidthMultiplier * 1 / self.widthToHeightRatio / self.imageSizeHeightRatio)
                                     }
-                                    .padding(.horizontal, 5)
                                 }
-                                .padding(.bottom, 10)
+                                .padding(.bottom, 50)
                             }
-                            
                             
                             Text("FOLLOWED GAMES")
                                 .foregroundColor(Color.white)
@@ -92,28 +88,23 @@ struct FrontHubView: View {
                                                 ForEach(self.followGamesDataStore.followedGamesId, id: \.self) { gameId in
                                                     VStack {
                                                         GameFeedIcon(imageLoader: ImageLoader(url: self.globalGamesDataStore.games[gameId]!.icon, cache: self.cache, whereIsThisFrom: "front view, game:" + String(gameId)), game: self.globalGamesDataStore.games[gameId]!)
-                                                            .frame(width: a.size.width * self.gameIconWidthMultiplier, height: a.size.width * self.gameIconWidthMultiplier * 1 / self.widthToHeightRatio / self.imageSizeHeightRatio)
+                                                            .frame(width: a.size.width * self.gameIconWidthMultiplier, height: a.size.width * self.gameIconWidthMultiplier * 1 / self.widthToHeightRatio / self.imageSizeHeightRatio * 0.8)
                                                             .shadow(radius: 5)
-                                                        Text(self.globalGamesDataStore.games[gameId]!.isFollowed != nil ? "followed" : "not - followed")
-                                                            .onTapGesture {
-                                                                self.globalGamesDataStore.games[gameId]!.isFollowed = nil
-                                                        }
                                                     }
                                                 }
                                             }
                                             
                                         }
-                                        .frame(height: a.size.width * self.gameIconWidthMultiplier * 1 / self.widthToHeightRatio / self.imageSizeHeightRatio + 50)
+                                        .frame(height: a.size.width * self.gameIconWidthMultiplier * 1 / self.widthToHeightRatio / self.imageSizeHeightRatio)
                                     }
-                                    .padding(.horizontal, 5)
                                 }
                             }
-                            
                         }
+                        .padding(.horizontal, 10)
                     }
                 }
                 .padding(.vertical, a.size.height * 0.05)
-                .padding(.horizontal, 10)
+                
                 .onAppear() {
                     Global.tabBar!.isHidden = false
                     

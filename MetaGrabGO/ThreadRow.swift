@@ -160,7 +160,8 @@ struct ThreadRow : View {
         }
         .padding(.all, 20)
         .frame(width: self.width)
-        .background(Color.white)
+//        .background(Color.white)
+        .buttonStyle(PlainButtonStyle())
     }
 }
 
