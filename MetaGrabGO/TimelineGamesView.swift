@@ -8,6 +8,28 @@
 
 import SwiftUI
 
+extension String {
+    func index(from: Int) -> Index {
+        return self.index(startIndex, offsetBy: from)
+    }
+
+    func substring(from: Int) -> String {
+        let fromIndex = index(from: from)
+        return String(self[fromIndex...])
+    }
+
+    func substring(to: Int) -> String {
+        let toIndex = index(from: to)
+        return String(self[..<toIndex])
+    }
+
+    func substring(with r: Range<Int>) -> String {
+        let startIndex = index(from: r.lowerBound)
+        let endIndex = index(from: r.upperBound)
+        return String(self[startIndex..<endIndex])
+    }
+}
+
 struct TimelineGamesView: View {
     @EnvironmentObject var globalGamesDataStore: GlobalGamesDataStore
     @EnvironmentObject var userDataStore: UserDataStore
@@ -72,36 +94,51 @@ struct TimelineGamesView: View {
                             if self.timelineDataStore.gamesCalendars[gameId]!.isShowingYear {
                                 HStack {
                                     Text(String(self.timelineDataStore.gamesCalendars[gameId]!.year))
-                                        .font(.system(size: 100))
+                                        .tracking(5)
+                                        .font(.system(size: 50, weight: .regular, design: .rounded))
                                         .foregroundColor(Color.white)
                                         .shadow(radius: 5)
-                                        .padding(.bottom, 10)
+                                        .padding(.horizontal, 20)
+                                    
                                     Spacer()
                                 }
                             }
                             
                             if self.timelineDataStore.gamesCalendars[gameId]!.isShowingMonth {
-                                HStack {
-                                    Text(self.timelineDataStore.monthDict[self.timelineDataStore.gamesCalendars[gameId]!.month]!)
-                                        .font(.system(size: 50))
+                                HStack(spacing: 0) {
+                                    Text(self.timelineDataStore.monthDict[self.timelineDataStore.gamesCalendars[gameId]!.month]!.substring(with: 0..<3).uppercased())
+                                        .font(.system(size: 30, weight: .regular, design: .rounded))
+                                        .tracking(1)
                                         .foregroundColor(Color.white)
                                         .shadow(radius: 5)
+                                        .padding(.leading, 20)
                                         .padding(.bottom, 10)
+                                    
+                                    Text(self.timelineDataStore.monthDict[self.timelineDataStore.gamesCalendars[gameId]!.month]!.substring(with: 3..<self.timelineDataStore.monthDict[self.timelineDataStore.gamesCalendars[gameId]!.month]!.count).uppercased())
+                                        .font(.system(size: 30, weight: .regular, design: .rounded))
+                                        .tracking(1)
+                                        .foregroundColor(Color.gray)
+                                        .shadow(radius: 5)
+                                        .padding(.bottom, 10)
+                                        .padding(.trailing, 20)
                                     
                                     Spacer()
                                 }
                             }
                             
                             HStack {
+                                Spacer()
                                 VStack(alignment: .center) {
                                     if self.timelineDataStore.gamesCalendars[gameId]!.isShowingDay {
                                         Text(String(self.timelineDataStore.gamesCalendars[gameId]!.day))
-                                            .font(.system(size: 30))
+                                            .font(.system(size: 22, weight: .regular, design: .rounded))
+                                            .tracking(1)
                                             .frame(width: a.size.width * 0.2)
                                             .foregroundColor(Color.white)
+                                        
                                     }
                                 }
-                                .frame(width: 100)
+                                .frame(width: 50)
                                 
                                 GeometryReader { b in
                                     ZStack {
@@ -136,18 +173,27 @@ struct TimelineGamesView: View {
                                                 .fill(self.assetsDataStore.colors["darkButNotBlack"]!)
                                                 .frame(width: 10, height: 10)
                                                 .position(x: b.size.width * 0.5, y: b.size.height * 0.5)
+                                                .shadow(radius: 5)
                                         }
                                         Spacer()
                                     }
                                 }
                                 .frame(width: 50)
                                 
+                                
+                                Rectangle()
+                                    .fill(Color.gray)
+                                    .frame(width: a.size.width * 0.1, height: 1)
+                                .shadow(radius: 5)
+                                
                                 Spacer()
                                 
                                 GameFeedTimelineIcon(imageLoader: ImageLoader(url: self.globalGamesDataStore.games[gameId]!.icon, cache: self.cache, whereIsThisFrom: "timeline view, game:" + String(gameId)), game: self.globalGamesDataStore.games[gameId]!)
                                     .frame(width: a.size.width * self.gameIconWidthMultiplier, height: a.size.width * self.gameIconWidthMultiplier * 1 / self.widthToHeightRatio / self.imageSizeHeightRatio * 0.8)
-                                    .shadow(radius: 5)
-                                    .padding(.vertical, 20)
+                                    .padding(.vertical, 10)
+                                .shadow(radius: 5)
+                                
+                                Spacer()
                             }
                             .buttonStyle(PlainButtonStyle())
                         }

@@ -154,7 +154,7 @@ struct FollowerStatsView: View {
             Spacer()
             
             if self.forumOtherDataStore.isFollowed != nil {
-                Text("Follow")
+                Text("SUB")
                     .font(.system(size: self.width * 0.04))
                     .padding(.horizontal, self.width * 0.05)
                     .padding(.vertical, self.width * 0.025)

@@ -12,4 +12,5 @@ import SwiftUI
 struct Genre: Hashable, Codable, Identifiable {
     var id: Int
     var name: String
+    var longName: String
 }

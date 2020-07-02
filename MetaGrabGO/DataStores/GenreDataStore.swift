@@ -87,9 +87,7 @@ class GenreDataStore: ObservableObject {
                     let gamesPageResponse: GamesPageResponse = load(jsonData: jsonString.data(using: .utf8)!)
                     
                     var gamesIdArr: [Int] = []
-                    
-                    print(gamesPageResponse.hasNextPage)
-                    
+
                     if gamesPageResponse.hasNextPage == true {
                         self.nextPageStartIndex = start + count
                     } else {

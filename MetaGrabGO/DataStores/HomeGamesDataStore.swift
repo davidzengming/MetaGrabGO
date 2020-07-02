@@ -1,5 +1,5 @@
 //
-//  FrontGamesDataStore.swift
+//  HomeGamesDataStore.swift
 //  MetaGrabGO
 //
 //  Created by David Zeng on 2020-06-19.
@@ -40,7 +40,7 @@ class RecentFollowDataStore: ObservableObject {
 }
 
 
-class FrontGamesDataStore: ObservableObject {
+class HomeGamesDataStore: ObservableObject {
     @Published var isLoaded: Bool
     
     let API = APIClient()

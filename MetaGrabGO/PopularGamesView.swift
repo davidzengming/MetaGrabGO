@@ -35,8 +35,8 @@ struct PopularGamesView: View {
             GeometryReader { a in
                 List {
                     VStack {
-                        Text("POPULAR")
-                            .font(.title)
+                        Text("POPULAR TITLES")
+                            .font(.system(size: 30, weight: .regular, design: .rounded))
                             .tracking(2)
                             .foregroundColor(Color.white)
                             .shadow(radius: 5)
@@ -48,19 +48,29 @@ struct PopularGamesView: View {
                     
                     ForEach(self.popularListDataStore.genresIdArr, id: \.self) { genreId in
                         Group {
-                            Text(self.popularListDataStore.genres[genreId]!.name)
-                                .foregroundColor(Color.white)
-                                .tracking(1)
-                                .padding(.top, 10)
-                                .shadow(radius: 5)
-                            
+                            HStack {
+                                Text(self.popularListDataStore.genres[genreId]!.name)
+                                    .foregroundColor(Color.white)
+                                    .font(.system(size: 20, weight: .regular, design: .rounded))
+                                    .tracking(2)
+                                    .padding(.top, 10)
+                                    .shadow(radius: 5)
+                                
+                                Text("(" + self.popularListDataStore.genres[genreId]!.longName + ")")
+                                    .foregroundColor(Color.white)
+                                    .font(.system(size: 20, weight: .regular, design: .rounded))
+                                    .tracking(2)
+                                    .padding(.top, 10)
+                                    .shadow(radius: 5)
+                            }
+
                             GenreRowView(access: self.userDataStore.token!.access, genre: self.popularListDataStore.genres[genreId]!, globalGamesDataStore: self.globalGamesDataStore, width: a.size.width - 10)
                         }
                         .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
                         .padding(.horizontal, 10)
                     }
                 }
-                .padding(.vertical, a.size.height * 0.05)
+                .padding(.vertical, a.size.height * 0.01)
                 
             }
         }
