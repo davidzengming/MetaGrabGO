@@ -42,10 +42,10 @@ struct NewThreadView: View {
     func submitThread() {
         if self.showImagePicker == true {
             self.showImagePicker = false
-            self.forumDataStore.submitThread(forumDataStore: self.forumDataStore, access:self.userDataStore.token!.access, title: self.title, flair: self.flair, content: self.content, imageData: self.dataDict, imagesArray: self.imagesArray, userId: self.userDataStore.token!.userId, containerWidth: self.containerWidth, forumOtherDataStore: self.forumOtherDataStore)
+            self.forumDataStore.submitThread(forumDataStore: self.forumDataStore, title: self.title, flair: self.flair, content: self.content, imageData: self.dataDict, imagesArray: self.imagesArray, userId: self.userDataStore.token!.userId, containerWidth: self.containerWidth, forumOtherDataStore: self.forumOtherDataStore, userDataStore: self.userDataStore)
             self.presentationMode.wrappedValue.dismiss()
         } else {
-            self.forumDataStore.submitThread(forumDataStore: self.forumDataStore, access:self.userDataStore.token!.access, title: self.title, flair: self.flair, content: self.content, imageData: self.dataDict, imagesArray: self.imagesArray, userId: self.userDataStore.token!.userId, containerWidth: self.containerWidth, forumOtherDataStore: self.forumOtherDataStore)
+            self.forumDataStore.submitThread(forumDataStore: self.forumDataStore, title: self.title, flair: self.flair, content: self.content, imageData: self.dataDict, imagesArray: self.imagesArray, userId: self.userDataStore.token!.userId, containerWidth: self.containerWidth, forumOtherDataStore: self.forumOtherDataStore, userDataStore: self.userDataStore)
             self.presentationMode.wrappedValue.dismiss()
         }
     }

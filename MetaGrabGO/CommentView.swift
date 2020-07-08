@@ -83,28 +83,28 @@ struct CommentView : View {
     func onClickUpvoteButton() {
         if self.commentDataStore.vote != nil {
             if self.commentDataStore.vote!.direction == 1 {
-                self.commentDataStore.deleteVote(access: self.userDataStore.token!.access, user: self.userDataStore.user!)
+                self.commentDataStore.deleteVote(user: self.userDataStore.user!, userDataStore: self.userDataStore)
             } else if self.commentDataStore.vote!.direction == 0 {
-                self.commentDataStore.upvoteByExistingVoteId(access: self.userDataStore.token!.access, user: self.userDataStore.user!)
+                self.commentDataStore.upvoteByExistingVoteId(user: self.userDataStore.user!, userDataStore: self.userDataStore)
             } else {
-                self.commentDataStore.switchUpvote(access: self.userDataStore.token!.access, user: self.userDataStore.user!)
+                self.commentDataStore.switchUpvote(user: self.userDataStore.user!, userDataStore: self.userDataStore)
             }
         } else {
-            self.commentDataStore.addNewUpvote(access: self.userDataStore.token!.access, user: self.userDataStore.user!)
+            self.commentDataStore.addNewUpvote(user: self.userDataStore.user!, userDataStore: self.userDataStore)
         }
     }
     
     func onClickDownvoteButton() {
         if self.commentDataStore.vote != nil {
             if self.commentDataStore.vote!.direction == -1 {
-                self.commentDataStore.deleteVote(access: self.userDataStore.token!.access, user: self.userDataStore.user!)
+                self.commentDataStore.deleteVote(user: self.userDataStore.user!, userDataStore: self.userDataStore)
             } else if self.commentDataStore.vote!.direction == 0 {
-                self.commentDataStore.downvoteByExistingVoteId(access: self.userDataStore.token!.access, user: self.userDataStore.user!)
+                self.commentDataStore.downvoteByExistingVoteId(user: self.userDataStore.user!, userDataStore: self.userDataStore)
             } else {
-                self.commentDataStore.switchDownvote(access: self.userDataStore.token!.access, user: self.userDataStore.user!)
+                self.commentDataStore.switchDownvote(user: self.userDataStore.user!, userDataStore: self.userDataStore)
             }
         } else {
-            self.commentDataStore.addNewDownvote(access: self.userDataStore.token!.access, user: self.userDataStore.user!)
+            self.commentDataStore.addNewDownvote(user: self.userDataStore.user!, userDataStore: self.userDataStore)
         }
     }
     
@@ -117,7 +117,7 @@ struct CommentView : View {
                         if self.level > 0 {
                             RoundedRectangle(cornerRadius: 25, style: .continuous)
                                 .fill(self.assetsDataStore.leadingLineColors[self.level % self.assetsDataStore.leadingLineColors.count])
-                                .frame(width: self.leadLineWidth, height: 30 + self.commentDataStore.desiredHeight + (self.isEditable ? 20 : 0) + 30)
+                                .frame(width: self.leadLineWidth, height: 30 + self.commentDataStore.desiredHeight + (self.isEditable ? 20 : 0) + 30 + 20)
                                 .padding(.trailing, 10)
                         }
                         
@@ -198,13 +198,13 @@ struct CommentView : View {
                                                 Text("Unhide")
                                                     .bold()
                                                     .onTapGesture {
-                                                        self.commentDataStore.unhideComment(access: self.userDataStore.token!.access)
+                                                        self.commentDataStore.unhideComment(userDataStore: self.userDataStore)
                                                 }
                                             } else {
                                                 Text("Hide")
                                                     .bold()
                                                     .onTapGesture {
-                                                        self.commentDataStore.hideComment(access: self.userDataStore.token!.access)
+                                                        self.commentDataStore.hideComment(userDataStore: self.userDataStore)
                                                 }
                                             }
                                         }

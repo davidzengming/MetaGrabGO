@@ -30,45 +30,45 @@ struct EmojiBarThreadView: View {
             if self.threadDataStore.vote != nil {
                 switch self.threadDataStore.vote!.direction {
                 case 1:
-                    self.threadDataStore.deleteVote(access: self.userDataStore.token!.access, user: userDataStore.user!)
+                    self.threadDataStore.deleteVote(user: userDataStore.user!, userDataStore: self.userDataStore)
                     break
                 case 0:
-                    self.threadDataStore.upvoteByExistingVoteId(access: self.userDataStore.token!.access, user: userDataStore.user!)
+                    self.threadDataStore.upvoteByExistingVoteId(user: userDataStore.user!, userDataStore: self.userDataStore)
                     break
                 case -1:
-                    self.threadDataStore.switchUpvote(access: self.userDataStore.token!.access, user: userDataStore.user!)
+                    self.threadDataStore.switchUpvote(user: userDataStore.user!, userDataStore: self.userDataStore)
                     break
                 default:
                     print("Invalid vote direction.")
                 }
             } else {
-                self.threadDataStore.addNewUpvote(access: self.userDataStore.token!.access, user: userDataStore.user!)
+                self.threadDataStore.addNewUpvote(user: userDataStore.user!, userDataStore: self.userDataStore)
             }
             break
         case 1:
             if self.threadDataStore.vote != nil {
                 switch self.threadDataStore.vote!.direction {
                 case -1:
-                    self.threadDataStore.deleteVote(access: self.userDataStore.token!.access, user: userDataStore.user!)
+                    self.threadDataStore.deleteVote(user: userDataStore.user!, userDataStore: self.userDataStore)
                     break
                 case 0:
-                    self.threadDataStore.downvoteByExistingVoteId(access: self.userDataStore.token!.access, user: userDataStore.user!)
+                    self.threadDataStore.downvoteByExistingVoteId(user: userDataStore.user!, userDataStore: self.userDataStore)
                     break
                 case 1:
-                    self.threadDataStore.switchDownvote(access: self.userDataStore.token!.access, user: userDataStore.user!)
+                    self.threadDataStore.switchDownvote(user: userDataStore.user!, userDataStore: self.userDataStore)
                     break
                 default:
                     print("Invalid vote direction.")
                 }
             } else {
-                self.threadDataStore.addNewDownvote(access: self.userDataStore.token!.access, user: userDataStore.user!)
+                self.threadDataStore.addNewDownvote(user: userDataStore.user!, userDataStore: self.userDataStore)
             }
             break
         default:
             if self.threadDataStore.emojis.didReactToEmoji[emojiId] == true {
-                self.threadDataStore.removeEmojiByThreadId(access: self.userDataStore.token!.access, emojiId: emojiId, user: userDataStore.user!)
+                self.threadDataStore.removeEmojiByThreadId(emojiId: emojiId, user: userDataStore.user!, userDataStore: self.userDataStore)
             } else {
-                self.threadDataStore.addEmojiByThreadId(access: self.userDataStore.token!.access, emojiId: emojiId, user: userDataStore.user!)
+                self.threadDataStore.addEmojiByThreadId(emojiId: emojiId, user: userDataStore.user!, userDataStore: self.userDataStore)
             }
         }
     }

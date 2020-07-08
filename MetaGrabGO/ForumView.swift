@@ -189,6 +189,10 @@ struct ForumView: View {
     @State var pickedThreadId: Int = -1
     @State var pickedUser: User = User(id: -1, username: "placeholder")
     
+    @State var isImageModalOn = false
+    @State var currentImageModalIndex: Int? = nil
+    @State var imageModalSelectedThreadStore: ThreadDataStore? = nil
+    
     func turnBottomPopup(state: Bool) {
         if self.isBottomPopupOn != state {
             self.isBottomPopupOn = state
@@ -214,6 +218,18 @@ struct ForumView: View {
             return
         }
         self.pickedUser = user
+    }
+    
+    func toggleImageModal(threadDataStore: ThreadDataStore?, currentImageModalIndex: Int?) {
+        if threadDataStore != nil {
+            self.imageModalSelectedThreadStore = threadDataStore
+            self.currentImageModalIndex = currentImageModalIndex
+            self.isImageModalOn = true
+        } else {
+            self.isImageModalOn = false
+            self.currentImageModalIndex = nil
+            self.imageModalSelectedThreadStore = nil
+        }
     }
     
     init(forumDataStore: ForumDataStore, forumOtherDataStore: ForumOtherDataStore, gameIconLoader: ImageLoader) {
@@ -245,12 +261,12 @@ struct ForumView: View {
     }
     
     private func followGame() {
-        self.forumOtherDataStore.followGame(access: userDataStore.token!.access, gameId: self.forumDataStore.game.id)
+        self.forumOtherDataStore.followGame(gameId: self.forumDataStore.game.id, userDataStore: self.userDataStore)
         self.recentFollowDataStore.followGames.insert(self.forumDataStore.game.id)
     }
     
     private func unfollowGame() {
-        self.forumOtherDataStore.unfollowGame(access: userDataStore.token!.access, gameId: self.forumDataStore.game.id)
+        self.forumOtherDataStore.unfollowGame(gameId: self.forumDataStore.game.id, userDataStore: self.userDataStore)
         self.recentFollowDataStore.followGames.remove(self.forumDataStore.game.id)
     }
     
@@ -314,7 +330,7 @@ struct ForumView: View {
                                 ForEach(self.forumDataStore.threadsList, id: \.self) { threadId in
                                     VStack(spacing: 0) {
                                         Divider()
-                                        ThreadRow(threadDataStore: self.forumDataStore.threadDataStores[threadId]!, turnBottomPopup: { state in self.turnBottomPopup(state: state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state: state)}, togglePickedUser: { pickedUser in self.togglePickedUser(user: pickedUser)}, togglePickedThreadId: { (pickedThreadId, futureContainerWidth) in self.togglePickedThreadId(threadId: pickedThreadId, futureContainerWidth: futureContainerWidth)}, width: a.size.width * 0.9, height: a.size.height)
+                                        ThreadRow(threadDataStore: self.forumDataStore.threadDataStores[threadId]!, turnBottomPopup: { state in self.turnBottomPopup(state: state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state: state)}, togglePickedUser: { pickedUser in self.togglePickedUser(user: pickedUser)}, togglePickedThreadId: { (pickedThreadId, futureContainerWidth) in self.togglePickedThreadId(threadId: pickedThreadId, futureContainerWidth: futureContainerWidth)}, width: a.size.width * 0.9, height: a.size.height, toggleImageModal : { (threadDataStore, currentImageModalIndex) in self.toggleImageModal(threadDataStore: threadDataStore, currentImageModalIndex: currentImageModalIndex) })
                                             .frame(width: a.size.width, height:
                                                 ceil (a.size.height * 0.045 + 10 + 10 + (self.forumDataStore.threadDataStores[threadId]!.thread.title.isEmpty == false ? 16 : 0) + min(self.forumDataStore.threadDataStores[threadId]!.desiredHeight, 200)
                                                     + 10
@@ -357,8 +373,8 @@ struct ForumView: View {
                     .navigationBarTitle(Text(self.forumDataStore.game.name), displayMode: .inline)
                     .onAppear() {
                         if self.forumOtherDataStore.isLoaded == false {
-                            self.forumDataStore.fetchThreads(access: self.userDataStore.token!.access, userId: self.userDataStore.token!.userId, containerWidth: a.size.width * 0.81, forumOtherDataStore: self.forumOtherDataStore)
-                            self.forumDataStore.insertGameHistory(access: self.userDataStore.token!.access)
+                            self.forumDataStore.fetchThreads(userId: self.userDataStore.token!.userId, containerWidth: a.size.width * 0.81, forumOtherDataStore: self.forumOtherDataStore, userDataStore: self.userDataStore)
+                            self.forumDataStore.insertGameHistory(userDataStore: self.userDataStore)
                         }
                         
                         self.recentFollowDataStore.insertVisitGame(gameId: self.forumDataStore.game.id)
@@ -372,6 +388,8 @@ struct ForumView: View {
                     .position(x: a.size.width * 0.88, y: a.size.height * 0.88)
                     
                     BottomBarView(forumDataStore: self.forumDataStore, isBottomPopupOn: self.$isBottomPopupOn, bottomBarState: self.$bottomBarState, pickedThreadId: self.$pickedThreadId, pickedUser: self.$pickedUser, width: a.size.width, height: a.size.height * 0.25, turnBottomPopup: { state in self.turnBottomPopup(state: state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state: state)}, togglePickedUser: { pickedUser in self.togglePickedUser(user: pickedUser)}, togglePickedThreadId: { (pickedThreadId, futureContainerWidth) in self.togglePickedThreadId(threadId: pickedThreadId, futureContainerWidth: futureContainerWidth)})
+                    
+                    DummyImageModalView(isImageModalOn: self.$isImageModalOn, threadDataStore: self.$imageModalSelectedThreadStore, currentImageModalIndex: self.$currentImageModalIndex)
                 }
             }
             .edgesIgnoringSafeArea(.bottom)

@@ -116,7 +116,7 @@ struct FrontHubView: View {
                                 .padding(.bottom, 50)
                             }
                             
-                            Text("FOLLOWED GAMES")
+                            Text("FOLLOWING GAMES")
                                 .foregroundColor(Color.white)
                                 .font(.system(size: 20, weight: .regular, design: .rounded))
                                 .tracking(1)
@@ -194,8 +194,8 @@ struct FrontHubView: View {
                         print("Fetching follow and visited games history...")
                         
                         let taskGroup = DispatchGroup()
-                        self.homeGamesDataStore.fetchFollowGames(globalGamesDataStore: self.globalGamesDataStore, followGamesDataStore: self.followGamesDataStore, access: self.userDataStore.token!.access, userDataStore: self.userDataStore, recentFollowDataStore: self.recentFollowDataStore, taskGroup: taskGroup)
-                        self.homeGamesDataStore.getGameHistory(globalGamesDataStore: self.globalGamesDataStore, visitedGamesDataStore: self.visitedGamesDataStore, access: self.userDataStore.token!.access, recentFollowDataStore: self.recentFollowDataStore, taskGroup: taskGroup)
+                        self.homeGamesDataStore.fetchFollowGames(globalGamesDataStore: self.globalGamesDataStore, followGamesDataStore: self.followGamesDataStore, userDataStore: self.userDataStore, recentFollowDataStore: self.recentFollowDataStore, taskGroup: taskGroup)
+                        self.homeGamesDataStore.getGameHistory(globalGamesDataStore: self.globalGamesDataStore, visitedGamesDataStore: self.visitedGamesDataStore, recentFollowDataStore: self.recentFollowDataStore, taskGroup: taskGroup, userDataStore: self.userDataStore)
                         
                         taskGroup.notify(queue: .main) {
                             self.homeGamesDataStore.isLoaded = true

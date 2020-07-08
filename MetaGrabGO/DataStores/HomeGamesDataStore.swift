@@ -22,7 +22,7 @@ class RecentFollowDataStore: ObservableObject {
     }
     
     func insertVisitGame(gameId: Int) {
-        var addedGameId = gameId
+        let addedGameId = gameId
         var newVisitGameList: [Int] = []
         newVisitGameList.append(addedGameId)
         var seenGameId: Set<Int> = []
@@ -34,7 +34,7 @@ class RecentFollowDataStore: ObservableObject {
                 newVisitGameList.append(gameId)
             }
         }
-            
+        
         self.recentVisitGames = Array(newVisitGameList[0...min(9, newVisitGameList.count - 1)])
     }
 }
@@ -58,7 +58,7 @@ class HomeGamesDataStore: ObservableObject {
     }
     
     func updateFollowGames(followGamesDataStore: FollowGamesDataStore, recentFollowDataStore: RecentFollowDataStore) {
-
+        
         if followGamesDataStore.followGamesIdSet != recentFollowDataStore.followGames {
             followGamesDataStore.followGamesIdSet = recentFollowDataStore.followGames
             var newFollowGamesList: [Int] = []
@@ -72,81 +72,75 @@ class HomeGamesDataStore: ObservableObject {
         }
     }
     
-    func fetchFollowGames(globalGamesDataStore: GlobalGamesDataStore, followGamesDataStore: FollowGamesDataStore, access: String, userDataStore: UserDataStore, start:Int = 0, count:Int = 10, recentFollowDataStore: RecentFollowDataStore, taskGroup: DispatchGroup?) {
+    func fetchFollowGames(globalGamesDataStore: GlobalGamesDataStore, followGamesDataStore: FollowGamesDataStore, userDataStore: UserDataStore, start:Int = 0, count:Int = 10, recentFollowDataStore: RecentFollowDataStore, taskGroup: DispatchGroup?) {
         
         taskGroup?.enter()
         let params = ["start": String(start), "count": String(count)]
         let url = API.generateURL(resource: Resource.games, endPoint: EndPoint.getFollowGameByUserId, params: params)
         let request = API.generateRequest(url: url!, method: .GET, json: nil)
-        let session = API.generateSession(access: access)
         
-        session.dataTask(with: request) { (data, response, error) in
-            if let data = data {
-                if let jsonString = String(data: data, encoding: .utf8) {
-                    let followGames: [Game] = load(jsonData: jsonString.data(using: .utf8)!)
+        API.sessionHandler(request: request, userDataStore: userDataStore) { data in
+            if let jsonString = String(data: data, encoding: .utf8) {
+                let followGames: [Game] = load(jsonData: jsonString.data(using: .utf8)!)
+                
+                var newFollowGamesIdArr: [Int] = []
+                
+                for game in followGames {
+                    newFollowGamesIdArr.append(game.id)
                     
-                    var newFollowGamesIdArr: [Int] = []
+                    recentFollowDataStore.followGames.insert(game.id)
+                    followGamesDataStore.followGamesIdSet.insert(game.id)
                     
-                    for game in followGames {
-                        newFollowGamesIdArr.append(game.id)
-                        
-                        recentFollowDataStore.followGames.insert(game.id)
-                        followGamesDataStore.followGamesIdSet.insert(game.id)
-                        
-                        // could optimize a bit further by putting this in same background queue as visited API call, but will create crash if same resource used by different threads - race condition
-                        globalGamesQueue.async {
-                            if globalGamesDataStore.games[game.id] == nil {
-                                globalGamesDataStore.games[game.id] = game
-                            }
+                    // could optimize a bit further by putting this in same background queue as visited API call, but will create crash if same resource used by different threads - race condition
+                    globalGamesQueue.async {
+                        if globalGamesDataStore.games[game.id] == nil {
+                            globalGamesDataStore.games[game.id] = game
                         }
                     }
-                    
-                    if followGamesDataStore.followedGamesId != newFollowGamesIdArr {
-                        DispatchQueue.main.async {
-                            followGamesDataStore.followedGamesId = newFollowGamesIdArr
-                        }
-                    }
-                    
-                    taskGroup?.leave()
                 }
+                
+                if followGamesDataStore.followedGamesId != newFollowGamesIdArr {
+                    DispatchQueue.main.async {
+                        followGamesDataStore.followedGamesId = newFollowGamesIdArr
+                    }
+                }
+                
+                taskGroup?.leave()
             }
-        }.resume()
+        }
     }
     
-    func getGameHistory(globalGamesDataStore: GlobalGamesDataStore, visitedGamesDataStore: VisitedGamesDataStore, access: String, recentFollowDataStore: RecentFollowDataStore, taskGroup: DispatchGroup?) {
+    func getGameHistory(globalGamesDataStore: GlobalGamesDataStore, visitedGamesDataStore: VisitedGamesDataStore, recentFollowDataStore: RecentFollowDataStore, taskGroup: DispatchGroup?, userDataStore: UserDataStore) {
         taskGroup?.enter()
         
         let url = API.generateURL(resource: Resource.games, endPoint: EndPoint.getGameHistoryByUserId)
         let request = API.generateRequest(url: url!, method: .GET, json: nil)
-        let session = API.generateSession(access: access)
         
-        session.dataTask(with: request) { (data, response, error) in
-            if let data = data {
-                if let jsonString = String(data: data, encoding: .utf8) {
-                    let gameHistoryResponse: GameHistoryResponse = load(jsonData: jsonString.data(using: .utf8)!)
+        API.sessionHandler(request: request, userDataStore: userDataStore) { data in
+            if let jsonString = String(data: data, encoding: .utf8) {
+                let gameHistoryResponse: GameHistoryResponse = load(jsonData: jsonString.data(using: .utf8)!)
+                
+                var newVisitedGamesIdArr: [Int] = []
+                
+                for game in gameHistoryResponse.gameHistory  {
+                    newVisitedGamesIdArr.append(game.id)
                     
-                    var newVisitedGamesIdArr: [Int] = []
-                    
-                    for game in gameHistoryResponse.gameHistory  {
-                        newVisitedGamesIdArr.append(game.id)
-                        
-                        // could optimize a bit further by putting this in same background queue as visited API call, but will create crash if same resource used by different threads - race condition
-                        globalGamesQueue.async {
-                            if globalGamesDataStore.games[game.id] == nil {
-                                globalGamesDataStore.games[game.id] = game
-                            }
+                    // could optimize a bit further by putting this in same background queue as visited API call, but will create crash if same resource used by different threads - race condition
+                    globalGamesQueue.async {
+                        if globalGamesDataStore.games[game.id] == nil {
+                            globalGamesDataStore.games[game.id] = game
                         }
                     }
-                    
-                    recentFollowDataStore.recentVisitGames = newVisitedGamesIdArr
-                    
-                    DispatchQueue.main.async {
-                        visitedGamesDataStore.visitedGamesId = newVisitedGamesIdArr
-                    }
-                    taskGroup?.leave()
                 }
+                
+                recentFollowDataStore.recentVisitGames = newVisitedGamesIdArr
+                
+                DispatchQueue.main.async {
+                    visitedGamesDataStore.visitedGamesId = newVisitedGamesIdArr
+                }
+                taskGroup?.leave()
             }
-        }.resume()
+        }
     }
 }
 

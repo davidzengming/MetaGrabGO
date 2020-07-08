@@ -138,7 +138,7 @@ struct GameModalView: View {
                                     
                                     Spacer()
                                     HStack {
-                                        NavigationLink(destination: LazyView { ForumView(forumDataStore: ForumDataStore(game: self.game), forumOtherDataStore: ForumOtherDataStore(access: self.userDataStore.token!.access, gameId: self.game.id) , gameIconLoader: ImageLoader(url: self.game.icon, cache: self.cache, whereIsThisFrom: "modal to forum view, game:" + String(self.game.id)))
+                                        NavigationLink(destination: LazyView { ForumView(forumDataStore: ForumDataStore(game: self.game), forumOtherDataStore: ForumOtherDataStore(gameId: self.game.id, userDataStore: self.userDataStore) , gameIconLoader: ImageLoader(url: self.game.icon, cache: self.cache, whereIsThisFrom: "modal to forum view, game:" + String(self.game.id)))
                                             .onAppear(perform: {
                                                 Global.tabBar!.isHidden = true
                                             })

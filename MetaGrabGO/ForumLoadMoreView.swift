@@ -22,7 +22,7 @@ struct ForumLoadMoreView: View {
             return
         }
         
-        self.forumDataStore.fetchThreads(access: self.userDataStore.token!.access, start: self.forumOtherDataStore.forumNextPageStartIndex!, userId: self.userDataStore.token!.userId, containerWidth: self.containerWidth, forumOtherDataStore: self.forumOtherDataStore)
+        self.forumDataStore.fetchThreads(start: self.forumOtherDataStore.forumNextPageStartIndex!, userId: self.userDataStore.token!.userId, containerWidth: self.containerWidth, forumOtherDataStore: self.forumOtherDataStore, userDataStore: self.userDataStore)
     }
     
     var body: some View {

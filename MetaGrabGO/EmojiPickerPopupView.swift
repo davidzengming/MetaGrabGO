@@ -38,16 +38,16 @@ struct EmojiPickerPopupView: View {
                     print("hello")
                     break
                 case 0:
-                    self.forumDataStore.threadDataStores[self.pickedThreadId]!.upvoteByExistingVoteId(access: self.userDataStore.token!.access, user: self.userDataStore.user!, taskGroup: taskGroup)
+                    self.forumDataStore.threadDataStores[self.pickedThreadId]!.upvoteByExistingVoteId(user: self.userDataStore.user!, taskGroup: taskGroup, userDataStore: self.userDataStore)
                     break
                 case -1:
-                    self.forumDataStore.threadDataStores[self.pickedThreadId]!.switchUpvote(access: self.userDataStore.token!.access, user: self.userDataStore.user!, taskGroup: taskGroup)
+                    self.forumDataStore.threadDataStores[self.pickedThreadId]!.switchUpvote(user: self.userDataStore.user!,taskGroup: taskGroup, userDataStore: self.userDataStore)
                     break
                 default:
                     print("Vote direction is invalid.")
                 }
             } else {
-                self.forumDataStore.threadDataStores[self.pickedThreadId]!.addNewUpvote(access: self.userDataStore.token!.access, user: self.userDataStore.user!, taskGroup: taskGroup)
+                self.forumDataStore.threadDataStores[self.pickedThreadId]!.addNewUpvote(user: self.userDataStore.user!,taskGroup: taskGroup, userDataStore: self.userDataStore)
             }
             
             break
@@ -57,16 +57,16 @@ struct EmojiPickerPopupView: View {
                 case -1:
                     return
                 case 0:
-                    self.forumDataStore.threadDataStores[self.pickedThreadId]!.downvoteByExistingVoteId(access: self.userDataStore.token!.access, user: self.userDataStore.user!, taskGroup: taskGroup)
+                    self.forumDataStore.threadDataStores[self.pickedThreadId]!.downvoteByExistingVoteId(user: self.userDataStore.user!, taskGroup: taskGroup, userDataStore: self.userDataStore)
                     break
                 case 1:
-                    self.forumDataStore.threadDataStores[self.pickedThreadId]!.switchDownvote(access: self.userDataStore.token!.access, user: self.userDataStore.user!, taskGroup: taskGroup)
+                    self.forumDataStore.threadDataStores[self.pickedThreadId]!.switchDownvote(user: self.userDataStore.user!, taskGroup: taskGroup, userDataStore: self.userDataStore)
                     break
                 default:
                     print("Vote direction is invalid.")
                 }
             } else {
-                self.forumDataStore.threadDataStores[self.pickedThreadId]!.addNewDownvote(access: self.userDataStore.token!.access, user: self.userDataStore.user!, taskGroup: taskGroup)
+                self.forumDataStore.threadDataStores[self.pickedThreadId]!.addNewDownvote(user: self.userDataStore.user!, taskGroup: taskGroup, userDataStore: self.userDataStore)
             }
             break
         default:
@@ -89,7 +89,7 @@ struct EmojiPickerPopupView: View {
                 }
             }
             
-            self.forumDataStore.threadDataStores[self.pickedThreadId]!.addEmojiByThreadId(access: self.userDataStore.token!.access, emojiId: emojiId, user: self.userDataStore.user!, taskGroup: taskGroup)
+            self.forumDataStore.threadDataStores[self.pickedThreadId]!.addEmojiByThreadId( emojiId: emojiId, user: self.userDataStore.user!, taskGroup: taskGroup, userDataStore: self.userDataStore)
         }
         
         taskGroup.notify(queue: .global()) {
@@ -167,16 +167,16 @@ struct EmojiPickerPopupViewThreadVer: View {
                     print("hello")
                     break
                 case 0:
-                    self.threadDataStore.upvoteByExistingVoteId(access: self.userDataStore.token!.access, user: self.userDataStore.user!, taskGroup: taskGroup)
+                    self.threadDataStore.upvoteByExistingVoteId(user: self.userDataStore.user!, taskGroup: taskGroup, userDataStore: self.userDataStore)
                     break
                 case -1:
-                    self.threadDataStore.switchUpvote(access: self.userDataStore.token!.access, user: self.userDataStore.user!, taskGroup: taskGroup)
+                    self.threadDataStore.switchUpvote(user: self.userDataStore.user!, taskGroup: taskGroup, userDataStore: self.userDataStore)
                     break
                 default:
                     print("Vote direction is invalid.")
                 }
             } else {
-                self.threadDataStore.addNewUpvote(access: self.userDataStore.token!.access, user: self.userDataStore.user!, taskGroup: taskGroup)
+                self.threadDataStore.addNewUpvote(user: self.userDataStore.user!, taskGroup: taskGroup, userDataStore: self.userDataStore)
             }
             
             break
@@ -186,16 +186,16 @@ struct EmojiPickerPopupViewThreadVer: View {
                 case -1:
                     return
                 case 0:
-                    self.threadDataStore.downvoteByExistingVoteId(access: self.userDataStore.token!.access, user: self.userDataStore.user!, taskGroup: taskGroup)
+                    self.threadDataStore.downvoteByExistingVoteId(user: self.userDataStore.user!, taskGroup: taskGroup, userDataStore: self.userDataStore)
                     break
                 case 1:
-                    self.threadDataStore.switchDownvote(access: self.userDataStore.token!.access, user: self.userDataStore.user!, taskGroup: taskGroup)
+                    self.threadDataStore.switchDownvote(user: self.userDataStore.user!, taskGroup: taskGroup, userDataStore: self.userDataStore)
                     break
                 default:
                     print("Vote direction is invalid.")
                 }
             } else {
-                self.threadDataStore.addNewDownvote(access: self.userDataStore.token!.access, user: self.userDataStore.user!, taskGroup: taskGroup)
+                self.threadDataStore.addNewDownvote(user: self.userDataStore.user!, taskGroup: taskGroup, userDataStore: self.userDataStore)
             }
             break
         default:
@@ -218,7 +218,7 @@ struct EmojiPickerPopupViewThreadVer: View {
                 }
             }
             
-            self.threadDataStore.addEmojiByThreadId(access: self.userDataStore.token!.access, emojiId: emojiId, user: self.userDataStore.user!, taskGroup: taskGroup)
+            self.threadDataStore.addEmojiByThreadId(emojiId: emojiId, user: self.userDataStore.user!, taskGroup: taskGroup, userDataStore: self.userDataStore)
         }
         
         taskGroup.notify(queue: .global()) {

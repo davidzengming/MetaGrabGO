@@ -30,7 +30,7 @@ struct ReportPopupView: View {
     func submitReport() {
         self.isSendingReport = true
         let taskGroup = DispatchGroup()
-        self.forumDataStore.threadDataStores[self.pickedThreadId]!.sendReportByThreadId(access: self.userDataStore.token!.access, reason: reportReason, taskGroup: taskGroup)
+        self.forumDataStore.threadDataStores[self.pickedThreadId]!.sendReportByThreadId(reason: self.reportReason, taskGroup: taskGroup, userDataStore: self.userDataStore)
         
         taskGroup.notify(queue: .global()) {
             self.isSendingReport = false
@@ -119,9 +119,9 @@ struct ReportPopupViewThreadVer: View {
         let taskGroup = DispatchGroup()
         
         if pickedCommentId == nil {
-            self.threadDataStore.sendReportByThreadId(access: self.userDataStore.token!.access, reason: reportReason, taskGroup: taskGroup)
+            self.threadDataStore.sendReportByThreadId(reason: reportReason, taskGroup: taskGroup, userDataStore: self.userDataStore)
         } else {
-            self.threadDataStore.childComments[pickedCommentId!.comment.id]!.sendReportByCommentId(access: self.userDataStore.token!.access, reason: reportReason, taskGroup: taskGroup)
+            self.threadDataStore.childComments[pickedCommentId!.comment.id]!.sendReportByCommentId(reason: reportReason, taskGroup: taskGroup, userDataStore: self.userDataStore)
         }
         
         taskGroup.notify(queue: .global()) {

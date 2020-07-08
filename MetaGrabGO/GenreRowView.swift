@@ -22,8 +22,8 @@ struct GenreRowView: View {
     
     var width: CGFloat
     
-    init(access: String, genre: Genre, globalGamesDataStore: GlobalGamesDataStore, width: CGFloat) {
-        self.genreDataStore = GenreDataStore(access: access, genre: genre, globalGamesDataStore: globalGamesDataStore)
+    init(access: String, genre: Genre, globalGamesDataStore: GlobalGamesDataStore, width: CGFloat, userDataStore: UserDataStore) {
+        self.genreDataStore = GenreDataStore(genre: genre, globalGamesDataStore: globalGamesDataStore, userDataStore: userDataStore)
         self.width = width
     }
     
@@ -37,7 +37,7 @@ struct GenreRowView: View {
                 }
                 if self.genreDataStore.nextPageStartIndex != -1 {
                     Button(action: {
-                        self.genreDataStore.fetchGamesByGenrePage(access: self.userDataStore.token!.access, start: self.genreDataStore.nextPageStartIndex, count: 5, refresh: false, globalGamesDataStore: self.globalGamesDataStore)
+                        self.genreDataStore.fetchGamesByGenrePage(start: self.genreDataStore.nextPageStartIndex, count: 5, refresh: false, globalGamesDataStore: self.globalGamesDataStore, userDataStore: self.userDataStore)
                     }) {
                         LoadMoreGamesIcon(isLoadingGames: self.$genreDataStore.isLoadingGames)
                         .frame(width: self.width * self.gameIconWidthMultiplier, height: self.width * self.gameIconWidthMultiplier * 1 / self.widthToHeightRatio / self.imageSizeHeightRatio * 0.8)
@@ -49,7 +49,6 @@ struct GenreRowView: View {
         }
     }
 }
-
 
 struct LoadMoreGamesIcon: View {
     @Binding var isLoadingGames: Bool

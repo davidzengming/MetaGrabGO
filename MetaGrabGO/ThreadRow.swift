@@ -19,6 +19,7 @@ struct ThreadRow : View {
     var togglePickedThreadId: (Int, CGFloat) -> Void
     var width: CGFloat
     var height: CGFloat
+    var toggleImageModal: (ThreadDataStore?, Int?) -> Void
     
     let placeholder = Image(systemName: "rectangle.fill")
     let formatter = RelativeDateTimeFormatter()
@@ -26,7 +27,7 @@ struct ThreadRow : View {
     let threadsFromBottomToGetReadyToLoadNextPage = 1
     let threadsPerNewPageCount = 10
     
-    init(threadDataStore: ThreadDataStore, turnBottomPopup: @escaping (Bool) -> Void, toggleBottomBarState: @escaping (BottomBarState) -> Void, togglePickedUser: @escaping (User) -> Void, togglePickedThreadId: @escaping (Int, CGFloat) -> Void, width: CGFloat, height: CGFloat) {
+    init(threadDataStore: ThreadDataStore, turnBottomPopup: @escaping (Bool) -> Void, toggleBottomBarState: @escaping (BottomBarState) -> Void, togglePickedUser: @escaping (User) -> Void, togglePickedThreadId: @escaping (Int, CGFloat) -> Void, width: CGFloat, height: CGFloat, toggleImageModal: @escaping (ThreadDataStore?, Int?) -> Void) {
         self.threadDataStore = threadDataStore
         self.turnBottomPopup = turnBottomPopup
         self.toggleBottomBarState = toggleBottomBarState
@@ -34,7 +35,7 @@ struct ThreadRow : View {
         self.togglePickedThreadId = togglePickedThreadId
         self.width = width
         self.height = height
-        
+        self.toggleImageModal = toggleImageModal
         print("remaking thread row: ", threadDataStore.thread.id)
     }
 
@@ -99,11 +100,17 @@ struct ThreadRow : View {
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                             .cornerRadius(5)
+                                .onTapGesture {
+                                    self.toggleImageModal(self.threadDataStore, index)
+                            }
                         } else {
                             self.placeholder
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                             .cornerRadius(5)
+                            .onTapGesture {
+                                    self.toggleImageModal(self.threadDataStore, index)
+                            }
                         }
                     }.frame(minWidth: self.width * 0.05, maxWidth: self.width * 0.25, minHeight: self.height * 0.1, maxHeight: self.height * 0.15, alignment: .center)
                 }
@@ -128,13 +135,13 @@ struct ThreadRow : View {
                             Text("Unhide")
                                 .bold()
                                 .onTapGesture {
-                                    self.threadDataStore.unhideThread(access: self.userDataStore.token!.access, threadId: self.threadDataStore.thread.id)
+                                    self.threadDataStore.unhideThread(threadId: self.threadDataStore.thread.id, userDataStore: self.userDataStore)
                             }
                         } else {
                             Text("Hide")
                                 .bold()
                                 .onTapGesture {
-                                    self.threadDataStore.hideThread(access: self.userDataStore.token!.access, threadId: self.threadDataStore.thread.id)
+                                    self.threadDataStore.hideThread(threadId: self.threadDataStore.thread.id, userDataStore: self.userDataStore)
                             }
                         }
                     }

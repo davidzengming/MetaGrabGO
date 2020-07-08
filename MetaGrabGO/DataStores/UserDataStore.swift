@@ -21,10 +21,10 @@ class UserDataStore: ObservableObject {
     let API = APIClient()
     
     func onStart() {
-        if let usernameData = KeyChain.load(key: "metagrab.username"), let passwordData = KeyChain.load(key: "metagrab.password"), let tokenaccessData = KeyChain.load(key: "metagrab.tokenaccess"), let tokenrefreshData = KeyChain.load(key: "metagrab.tokenrefresh"), let userId = KeyChain.load(key: "metagrab.userid") {
+        if let usernameData = KeyChain.load(key: "metagrab.username"), let passwordData = KeyChain.load(key: "metagrab.password"), let tokenaccessData = KeyChain.load(key: "metagrab.tokenaccess"), let tokenrefreshData = KeyChain.load(key: "metagrab.tokenrefresh"), let userId = KeyChain.load(key: "metagrab.userid"), let expDateEpoch = KeyChain.load(key: "metagrab.expDateEpoch") {
             self.username = String(data: usernameData, encoding: String.Encoding.utf8) as String?
             self.password = String(data: passwordData, encoding: String.Encoding.utf8) as String?
-            self.token = Token(refresh: String(data: tokenrefreshData, encoding: String.Encoding.utf8)!, access: String(data: tokenaccessData, encoding: String.Encoding.utf8)!, userId: Int(String(data: userId, encoding: String.Encoding.utf8)!)!)
+            self.token = Token(refresh: String(data: tokenrefreshData, encoding: String.Encoding.utf8)!, access: String(data: tokenaccessData, encoding: String.Encoding.utf8)!, userId: Int(String(data: userId, encoding: String.Encoding.utf8)!)!, expDateEpoch:  Int(String(data: expDateEpoch, encoding: String.Encoding.utf8)!)!)
             self.user = User(id: self.token!.userId, username: self.username!)
         }
     }
@@ -42,12 +42,13 @@ class UserDataStore: ObservableObject {
         self.acquireToken(taskGroup: taskGroup)
         
         taskGroup.notify(queue: DispatchQueue.global()) {
+            _ = KeyChain.save(key: "metagrab.username", data: username.data(using: String.Encoding.utf8)!)
+            _ = KeyChain.save(key: "metagrab.password", data: password.data(using: String.Encoding.utf8)!)
+            _ = KeyChain.save(key: "metagrab.tokenaccess", data: self.token!.access.data(using: String.Encoding.utf8)!)
+            _ = KeyChain.save(key: "metagrab.tokenrefresh", data: self.token!.refresh.data(using: String.Encoding.utf8)!)
+            _ = KeyChain.save(key: "metagrab.userid", data: String(self.token!.userId).data(using: String.Encoding.utf8)!)
+            _ = KeyChain.save(key: "metagrab.expDateEpoch", data: String(self.token!.expDateEpoch).data(using: String.Encoding.utf8)!)
             print("saved to keychain credentials")
-            let status1 = KeyChain.save(key: "metagrab.username", data: username.data(using: String.Encoding.utf8)!)
-            let status2 = KeyChain.save(key: "metagrab.password", data: password.data(using: String.Encoding.utf8)!)
-            let status3 = KeyChain.save(key: "metagrab.tokenaccess", data: self.token!.access.data(using: String.Encoding.utf8)!)
-            let status4 = KeyChain.save(key: "metagrab.tokenrefresh", data: self.token!.refresh.data(using: String.Encoding.utf8)!)
-            let status5 = KeyChain.save(key: "metagrab.userid", data: String(self.token!.userId).data(using: String.Encoding.utf8)!)
         }
     }
     
@@ -72,6 +73,10 @@ class UserDataStore: ObservableObject {
         let request = API.generateRequest(url: url!, method: .POST, json: nil, bodyData: "username=\(self.username!)&password=\(self.password!)")
         
         URLSession.shared.dataTask(with: request) { (data, response, error) in
+//            if let httpResponse = response as? HTTPURLResponse {
+//                httpResponse.statusCode
+//            }
+            
             if let data = data {
                 if let jsonString = String(data: data, encoding: .utf8) {
                     DispatchQueue.main.async {

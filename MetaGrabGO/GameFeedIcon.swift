@@ -60,7 +60,7 @@ struct GameFeedIcon : View {
                     }
                     
                     
-                    NavigationLink(destination: LazyView { ForumView(forumDataStore: ForumDataStore(game: self.game), forumOtherDataStore: ForumOtherDataStore(access: self.userDataStore.token!.access, gameId: self.game.id), gameIconLoader: self.imageLoader).onAppear(perform: {
+                    NavigationLink(destination: LazyView { ForumView(forumDataStore: ForumDataStore(game: self.game), forumOtherDataStore: ForumOtherDataStore(gameId: self.game.id, userDataStore: self.userDataStore), gameIconLoader: self.imageLoader).onAppear(perform: {
                         Global.tabBar!.isHidden = true
                     })
                     }) {
@@ -138,7 +138,7 @@ struct GameFeedTimelineIcon : View {
                         
                         .frame(width: a.size.width / 2, height: a.size.height * 0.25)
                         
-                        NavigationLink(destination: LazyView { ForumView(forumDataStore: ForumDataStore(game: self.game), forumOtherDataStore: ForumOtherDataStore(access: self.userDataStore.token!.access, gameId: self.game.id), gameIconLoader: self.imageLoader).onAppear(perform: {
+                        NavigationLink(destination: LazyView { ForumView(forumDataStore: ForumDataStore(game: self.game), forumOtherDataStore: ForumOtherDataStore(gameId: self.game.id, userDataStore: self.userDataStore), gameIconLoader: self.imageLoader).onAppear(perform: {
                             Global.tabBar!.isHidden = true
                         })
                         }) {

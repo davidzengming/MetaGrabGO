@@ -39,8 +39,13 @@ struct ThreadView : View {
     @State var keyboardHeight: CGFloat = 0
     @State var replyFutureContainerWidth: CGFloat = 0
     
+    @State var isImageModalOn = false
+    @State var currentImageModalIndex: Int? = nil
+    @State var imageModalSelectedThreadStore: ThreadDataStore? = nil
+    
     @State var isFirstResponder: Bool = false
     @State var didBecomeFirstResponder: Bool = false
+    
     
     init(threadDataStore: ThreadDataStore) {
         self.threadDataStore = threadDataStore
@@ -126,7 +131,19 @@ struct ThreadView : View {
     }
     
     func fetchNextPage(containerWidth: CGFloat) {
-        self.threadDataStore.fetchCommentTreeByThreadId(access: self.userDataStore.token!.access, start: self.threadDataStore.childCommentList.count, refresh: true, userId: self.userDataStore.token!.userId, containerWidth: containerWidth, leadPadding: 20)
+        self.threadDataStore.fetchCommentTreeByThreadId(start: self.threadDataStore.childCommentList.count, refresh: true, userId: self.userDataStore.token!.userId, containerWidth: containerWidth, leadPadding: 20, userDataStore: self.userDataStore)
+    }
+    
+    func toggleImageModal(threadDataStore: ThreadDataStore?, currentImageModalIndex: Int?) {
+        if threadDataStore != nil {
+            self.imageModalSelectedThreadStore = threadDataStore
+            self.currentImageModalIndex = currentImageModalIndex
+            self.isImageModalOn = true
+        } else {
+            self.isImageModalOn = false
+            self.currentImageModalIndex = nil
+            self.imageModalSelectedThreadStore = nil
+        }
     }
     
     //    func toggleEditMode() {
@@ -159,9 +176,9 @@ struct ThreadView : View {
         print("submitted")
 
         if pickedCommentId != nil {
-            self.pickedCommentId!.postChildComment(access: self.userDataStore.token!.access, content: self.replyContent, containerWidth: self.replyFutureContainerWidth)
+            self.pickedCommentId!.postChildComment(content: self.replyContent, containerWidth: self.replyFutureContainerWidth, userDataStore: self.userDataStore)
         } else {
-            self.threadDataStore.postMainComment(access: self.userDataStore.token!.access, content: self.replyContent, containerWidth: mainCommentContainerWidth)
+            self.threadDataStore.postMainComment(content: self.replyContent, containerWidth: mainCommentContainerWidth, userDataStore: self.userDataStore)
         }
         self.endEditing()
         self.pickedCommentId = nil
@@ -226,12 +243,18 @@ struct ThreadView : View {
                                                     .aspectRatio(contentMode: .fit)
                                                     .cornerRadius(5)
                                                     .frame(minWidth: a.size.width * 0.05, maxWidth: a.size.width * 0.25, minHeight: a.size.height * 0.1, maxHeight: a.size.height * 0.15, alignment: .center)
+                                                .onTapGesture {
+                                                    self.toggleImageModal(threadDataStore: self.threadDataStore, currentImageModalIndex: index)
+                                                }
                                             } else {
                                                 self.placeholder
                                                     .resizable()
                                                     .aspectRatio(contentMode: .fit)
                                                     .cornerRadius(5)
                                                     .frame(minWidth: a.size.width * 0.05, maxWidth: a.size.width * 0.25, minHeight: a.size.height * 0.1, maxHeight: a.size.height * 0.15, alignment: .center)
+                                                .onTapGesture {
+                                                    self.toggleImageModal(threadDataStore: self.threadDataStore, currentImageModalIndex: index)
+                                                }
                                             }
                                         }
                                     }
@@ -253,13 +276,13 @@ struct ThreadView : View {
                                             Text("Unhide")
                                                 .bold()
                                                 .onTapGesture {
-                                                    self.threadDataStore.unhideThread(access: self.userDataStore.token!.access, threadId: self.threadDataStore.thread.id)
+                                                    self.threadDataStore.unhideThread( threadId: self.threadDataStore.thread.id, userDataStore: self.userDataStore)
                                             }
                                         } else {
                                             Text("Hide")
                                                 .bold()
                                                 .onTapGesture {
-                                                    self.threadDataStore.hideThread(access: self.userDataStore.token!.access, threadId: self.threadDataStore.thread.id)
+                                                    self.threadDataStore.hideThread(threadId: self.threadDataStore.thread.id, userDataStore: self.userDataStore)
                                             }
                                         }
                                     }
@@ -305,9 +328,13 @@ struct ThreadView : View {
                                     .frame(width: a.size.width - self.outerPadding * 2, height: a.size.height / 2)
                                 }
                             } else {
-                                ActivityIndicator()
+                                VStack {
+                                    ActivityIndicator()
                                     .frame(width: a.size.width, height: a.size.height * 0.20)
                                     .foregroundColor(self.assetsDataStore.colors["darkButNotBlack"]!)
+                                }
+                                .frame(width: a.size.width - self.outerPadding * 2, height: a.size.height / 2)
+                                
                             }
                             
                             if self.threadDataStore.childCommentList.count < self.threadDataStore.thread.numChilds {
@@ -332,7 +359,7 @@ struct ThreadView : View {
                         .frame(width: a.size.width, height: a.size.height - (20 + 20 + 40))
                         .onAppear() {
                             if self.threadDataStore.areCommentsLoaded == false {
-                                self.threadDataStore.fetchCommentTreeByThreadId(access: self.userDataStore.token!.access, refresh: true, userId: self.userDataStore.token!.userId, containerWidth: a.size.width - self.outerPadding * 2, leadPadding: 20)
+                                self.threadDataStore.fetchCommentTreeByThreadId(refresh: true, userId: self.userDataStore.token!.userId, containerWidth: a.size.width - self.outerPadding * 2, leadPadding: 20, userDataStore: self.userDataStore)
                             }
                         }
                         
@@ -348,6 +375,7 @@ struct ThreadView : View {
                     BottomBarViewThreadVer(threadDataStore: self.threadDataStore, isBottomPopupOn: self.$isBottomPopupOn, bottomBarState: self.$bottomBarState, pickedThreadId: self.$pickedThreadId,  pickedCommentId: self.$pickedCommentId, pickedUser: self.$pickedUser, width: a.size.width, height: a.size.height * 0.25, turnBottomPopup: { state in self.turnBottomPopup(state: state) }, toggleBottomBarState: { state in self.toggleBottomBarState(state: state)}, togglePickedUser: { user in self.togglePickedUser(user: user)}, togglePickedThreadId: { (threadId, futureContainerWidth) in self.togglePickedThreadId(threadId: threadId, futureContainerWidth: futureContainerWidth) }, togglePickedCommentId: { (commentId, futureContainerWidth) in self.togglePickedCommentId(commentId: commentId, futureContainerWidth: futureContainerWidth) })
                 }
                 
+                DummyImageModalView(isImageModalOn: self.$isImageModalOn, threadDataStore: self.$imageModalSelectedThreadStore, currentImageModalIndex: self.$currentImageModalIndex)
             }
             .edgesIgnoringSafeArea(.bottom)
         }

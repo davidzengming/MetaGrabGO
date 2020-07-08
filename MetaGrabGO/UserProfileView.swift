@@ -17,29 +17,29 @@ struct UserProfileView: View {
     @State private var loadedHiddenComments = false
 
     private func unblockUser(unblockUser: User) {
-        self.blockHiddenDataStore.unblockUser(access: self.userDataStore.token!.access, targetUnblockUser: unblockUser)
+        self.blockHiddenDataStore.unblockUser(targetUnblockUser: unblockUser, userDataStore: self.userDataStore)
     }
     
     private func unhideThread(threadId: Int) {
-        self.blockHiddenDataStore.unhideThread(access: self.userDataStore.token!.access, threadId: threadId)
+        self.blockHiddenDataStore.unhideThread(threadId: threadId, userDataStore: self.userDataStore)
     }
     
     private func unhideComment(commentId: Int) {
-        self.blockHiddenDataStore.unhideComment(access: self.userDataStore.token!.access, commentId: commentId)
+        self.blockHiddenDataStore.unhideComment(commentId: commentId, userDataStore: self.userDataStore)
     }
     
     private func fetchBlacklistedUsers() {
-        self.blockHiddenDataStore.fetchBlacklistedUsers(access: self.userDataStore.token!.access, userId: self.userDataStore.token!.userId)
+        self.blockHiddenDataStore.fetchBlacklistedUsers(userId: self.userDataStore.token!.userId, userDataStore: self.userDataStore)
         self.loadedBlacklist = true
     }
     
     private func fetchHiddenThreads() {
-        self.blockHiddenDataStore.fetchHiddenThreads(access: self.userDataStore.token!.access, userId: self.userDataStore.token!.userId)
+        self.blockHiddenDataStore.fetchHiddenThreads(userId: self.userDataStore.token!.userId, userDataStore: self.userDataStore)
         self.loadedHiddenThreads = true
     }
     
     private func fetchHiddenComments() {
-        self.blockHiddenDataStore.fetchHiddenComments(access: self.userDataStore.token!.access, userId: self.userDataStore.token!.userId)
+        self.blockHiddenDataStore.fetchHiddenComments(userId: self.userDataStore.token!.userId, userDataStore: self.userDataStore)
         self.loadedHiddenComments = true
     }
     

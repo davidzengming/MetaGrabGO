@@ -64,7 +64,7 @@ struct PopularGamesView: View {
                                     .shadow(radius: 5)
                             }
 
-                            GenreRowView(access: self.userDataStore.token!.access, genre: self.popularListDataStore.genres[genreId]!, globalGamesDataStore: self.globalGamesDataStore, width: a.size.width - 10)
+                            GenreRowView(access: self.userDataStore.token!.access, genre: self.popularListDataStore.genres[genreId]!, globalGamesDataStore: self.globalGamesDataStore, width: a.size.width - 10, userDataStore: self.userDataStore)
                         }
                         .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
                         .padding(.horizontal, 10)

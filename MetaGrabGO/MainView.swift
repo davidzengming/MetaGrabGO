@@ -17,7 +17,6 @@ struct MainView: View {
                     GameHubView()
                         .environmentObject(RecentFollowDataStore())
                         .environmentObject(GlobalGamesDataStore())
-                        .environmentObject(GameDataStore())
                 }
             }
         }

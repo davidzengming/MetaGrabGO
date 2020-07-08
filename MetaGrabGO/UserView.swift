@@ -76,7 +76,7 @@ struct LoginUserView: View {
                     Text("Login")
                     .bold()
                         .frame(width: a.size.width * 0.6, height: a.size.height * 0.06)
-                    .background(self.assetsDataStore.colors["blurple"]!)
+                        .background(Color.blue)
                     .foregroundColor(Color.white)
                     .cornerRadius(5)
                     .shadow(radius: 5)
@@ -94,7 +94,7 @@ struct LoginUserView: View {
                     Button(action: {self.isRegisterPage.toggle()}) {
                         Text("Register")
                         .bold()
-                        .foregroundColor(self.assetsDataStore.colors["blurple"]!)
+                            .foregroundColor(Color.white)
                     }
                 }
             }
@@ -175,7 +175,7 @@ struct RegisterUserView : View {
                     Text("Continue")
                     .bold()
                         .frame(width: a.size.width * 0.6, height: a.size.height * 0.06)
-                    .background(self.assetsDataStore.colors["blurple"]!)
+                        .background(Color.blue)
                     .foregroundColor(Color.white)
                     .cornerRadius(5)
                     .shadow(radius: 5)
@@ -186,7 +186,7 @@ struct RegisterUserView : View {
                     Button(action: {self.isRegisterPage.toggle()}) {
                         Text("Already have an account?")
                         .bold()
-                        .foregroundColor(self.assetsDataStore.colors["blurple"]!)
+                        .foregroundColor(Color.white)
                     }
                 }
             }

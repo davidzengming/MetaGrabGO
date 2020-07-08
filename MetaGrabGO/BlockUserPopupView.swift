@@ -26,7 +26,7 @@ struct BlockUserPopupView: View {
 
     func blockUser() {
         let taskGroup = DispatchGroup()
-        self.blockHiddenDataStore.blockUser(access: self.userDataStore.token!.access, targetBlockUser: self.pickedUser, taskGroup: taskGroup)
+        self.blockHiddenDataStore.blockUser(targetBlockUser: self.pickedUser, taskGroup: taskGroup, userDataStore: self.userDataStore)
         
         taskGroup.notify(queue: .global()) {
             self.dismissView()

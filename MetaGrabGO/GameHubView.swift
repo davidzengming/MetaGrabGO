@@ -9,7 +9,6 @@
 import SwiftUI
 
 struct GameHubView: View {
-    @EnvironmentObject var gameDataStore: GameDataStore
     @EnvironmentObject var userDataStore: UserDataStore
     @EnvironmentObject var assetsDataStore: AssetsDataStore
     
@@ -46,7 +45,7 @@ struct GameHubView: View {
             .background(self.assetsDataStore.colors["darkButNotBlack"])
             
             NavigationView {
-                PopularGamesView(popularListDataStore: PopularListDataStore(access: self.userDataStore.token!.access))
+                PopularGamesView(popularListDataStore: PopularListDataStore(userDataStore: self.userDataStore))
                     .navigationBarTitle("Popular")
                     .navigationBarHidden(true)
             }

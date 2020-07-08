@@ -65,14 +65,14 @@ struct TimelineGamesView: View {
         if self.timelineDataStore.isLoadingPrev == true {
             return
         }
-        self.timelineDataStore.fetchGamesByBeforeEpochTime(access: self.userDataStore.token!.access, globalGamesDataStore: self.globalGamesDataStore)
+        self.timelineDataStore.fetchGamesByBeforeEpochTime(globalGamesDataStore: self.globalGamesDataStore, userDataStore: self.userDataStore)
     }
     
     func loadNextPage() {
         if self.timelineDataStore.isLoadingAfter == true {
             return
         }
-        self.timelineDataStore.fetchGamesByAfterEpochTime(access: self.userDataStore.token!.access, globalGamesDataStore: self.globalGamesDataStore)
+        self.timelineDataStore.fetchGamesByAfterEpochTime(globalGamesDataStore: self.globalGamesDataStore, userDataStore: self.userDataStore)
     }
     
     // Lists recent games is past 2 months and upcoming games 1 year down the road
@@ -135,7 +135,6 @@ struct TimelineGamesView: View {
                                             .tracking(1)
                                             .frame(width: a.size.width * 0.2)
                                             .foregroundColor(Color.white)
-                                        
                                     }
                                 }
                                 .frame(width: 50)
@@ -214,7 +213,7 @@ struct TimelineGamesView: View {
             Global.tabBar!.isHidden = false
             if self.timelineDataStore.fetchFirstLoad == false {
                 self.timelineDataStore.fetchFirstLoad = true
-                self.timelineDataStore.fetchFirstLoadAtEpochTime(access: self.userDataStore.token!.access, globalGamesDataStore: self.globalGamesDataStore)
+                self.timelineDataStore.fetchFirstLoadAtEpochTime(globalGamesDataStore: self.globalGamesDataStore, userDataStore: self.userDataStore)
             }
         }
     }

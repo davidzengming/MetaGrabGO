@@ -13,4 +13,5 @@ struct Token: Hashable, Codable {
     var refresh: String
     var access: String
     var userId: Int
+    var expDateEpoch: Int
 }

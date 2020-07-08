@@ -121,9 +121,9 @@ enum HttpMethod: String, CodingKey {
 struct APIClient {
     private let cloudinary = CLDCloudinary(configuration: CLDConfiguration(cloudName: "dzengcdn", apiKey: "348513889264333", secure: true))
     
-    //68.183.105.7
+    //134.122.31.85
     //127.0.0.1
-    private let baseUrl: URL? = URL(string: "http://127.0.0.1:8000/")
+    private let baseUrl: URL? = URL(string: "http://134.122.31.85:8000/")
     
     func generateURL(resource: Resource, endPoint: EndPoint, detail: String? = nil, params: [String: String]? = nil) -> URL? {
         
@@ -178,6 +178,60 @@ struct APIClient {
         let session = URLSession(configuration: sessionConfig, delegate: nil, delegateQueue: nil)
         return session
     }
+    
+    func getData(request: URLRequest, completion: @escaping(Data) -> Void, userDataStore: UserDataStore) {
+        processingRequestsTaskGroup.enter()
+        let session = self.generateSession(access: userDataStore.token!.access)
+        
+        session.dataTask(with: request) { (data, response, error) in
+            if let data = data {
+                completion(data)
+            }
+            
+            processingRequestsTaskGroup.leave()
+        }.resume()
+    }
+    
+    func sessionHandler(request: URLRequest, userDataStore: UserDataStore, completion: @escaping(Data) -> Void) {
+        let count = refreshingRequestTaskGroup.debugDescription.components(separatedBy: ",").filter({$0.contains("count")}).first?.components(separatedBy: CharacterSet.decimalDigits.inverted).compactMap{Int($0)}.first
+        
+        if count != 0 {
+            refreshingRequestTaskGroup.notify(queue: .global()) {
+                self.getData(request: request, completion: completion, userDataStore: userDataStore)
+            }
+        } else {
+            let curDateEpoch = Date().secondsSince1970
+
+            if curDateEpoch >= userDataStore.token!.expDateEpoch - 300 {
+                refreshingRequestTaskGroup.enter()
+                
+                processingRequestsTaskGroup.notify(queue: .global()) {
+                    let url = self.generateURL(resource: Resource.users, endPoint: EndPoint.empty)
+                    let request = self.generateRequest(url: url!, method: .POST, bodyData: "refresh=\(userDataStore.token!.refresh)")
+                    
+                    URLSession.shared.dataTask(with: request) { (data, response, error) in
+                        if let data = data {
+                            if let jsonString = String(data: data, encoding: .utf8) {
+                                let accessTokenResponse: AccessToken = load(jsonData: jsonString.data(using: .utf8)!)
+                                
+                                DispatchQueue.main.async {
+                                    userDataStore.token!.access = accessTokenResponse.access
+                                    refreshingRequestTaskGroup.leave()
+                                }
+                            }
+                        }
+                    }.resume()
+                }
+                
+                refreshingRequestTaskGroup.notify(queue: .global()) {
+                    self.getData(request: request, completion: completion, userDataStore: userDataStore)
+                }
+            } else {
+                self.getData(request: request, completion: completion, userDataStore: userDataStore)
+            }
+        }
+    }
 }
 
-
+let processingRequestsTaskGroup = DispatchGroup()
+let refreshingRequestTaskGroup = DispatchGroup()
