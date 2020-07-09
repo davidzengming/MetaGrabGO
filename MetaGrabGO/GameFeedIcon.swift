@@ -59,7 +59,6 @@ struct GameFeedIcon : View {
                             .environmentObject(self.recentFollowDataStore)
                     }
                     
-                    
                     NavigationLink(destination: LazyView { ForumView(forumDataStore: ForumDataStore(game: self.game), forumOtherDataStore: ForumOtherDataStore(gameId: self.game.id, userDataStore: self.userDataStore), gameIconLoader: self.imageLoader).onAppear(perform: {
                         Global.tabBar!.isHidden = true
                     })

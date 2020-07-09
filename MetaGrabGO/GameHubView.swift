@@ -34,7 +34,8 @@ struct GameHubView: View {
         TabView(selection: $selectedTab) {
             NavigationView {
                 FrontHubView(homeGamesDataStore: HomeGamesDataStore(), followGamesDataStore: FollowGamesDataStore(), visitedGamesDataStore: VisitedGamesDataStore(), selectedTab: self.$selectedTab)
-                    .navigationBarTitle("")
+                    // hack for adding some additional space for back button since < is a bit thin
+                    .navigationBarTitle("          ")
                     .navigationBarHidden(true)
             }
             .tabItem {
@@ -46,7 +47,7 @@ struct GameHubView: View {
             
             NavigationView {
                 PopularGamesView(popularListDataStore: PopularListDataStore(userDataStore: self.userDataStore))
-                    .navigationBarTitle("")
+                    .navigationBarTitle("          ")
                     .navigationBarHidden(true)
             }
             .tabItem {
@@ -58,7 +59,7 @@ struct GameHubView: View {
             
             NavigationView {
                 TimelineGamesView(timelineDataStore: TimelineDataStore())
-                    .navigationBarTitle("")
+                    .navigationBarTitle("          ")
                     .navigationBarHidden(true)
             }
             .tabItem {
@@ -70,7 +71,7 @@ struct GameHubView: View {
             
             NavigationView {
                 UserProfileView(blockHiddenDataStore: BlockHiddenDataStore())
-                    .navigationBarTitle("")
+                    .navigationBarTitle("          ")
                     .navigationBarHidden(true)
             }
             .tabItem {

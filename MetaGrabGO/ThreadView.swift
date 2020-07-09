@@ -217,7 +217,7 @@ struct ThreadView : View {
                                                     .resizable()
                                                     .aspectRatio(contentMode: .fit)
                                                     .cornerRadius(5)
-                                                    .frame(minWidth: a.size.width * 0.05, maxWidth: a.size.width * 0.25, minHeight: a.size.height * 0.1, maxHeight: a.size.height * 0.15, alignment: .center)
+                                                    
                                                 .onTapGesture {
                                                     self.toggleImageModal(threadDataStore: self.threadDataStore, currentImageModalIndex: index)
                                                 }
@@ -234,6 +234,7 @@ struct ThreadView : View {
                                         }
                                     }
                                 }
+                                .frame(minWidth: 0, maxWidth: a.size.width * 0.9, minHeight: 0, maxHeight: a.size.height * 0.15, alignment: .leading)
                                 .padding(.vertical, 10)
                                 
                                 HStack(spacing: 10) {

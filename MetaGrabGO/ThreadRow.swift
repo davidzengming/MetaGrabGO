@@ -92,30 +92,40 @@ struct ThreadRow : View {
             .buttonStyle(PlainButtonStyle())
             .padding(.bottom, 10)
             
-            HStack(spacing: 10) {
-                ForEach(self.threadDataStore.imageArr, id: \.self) { index in
-                    VStack {
-                        if self.threadDataStore.imageLoaders[index]!.downloadedImage != nil {
-                            Image(uiImage: self.threadDataStore.imageLoaders[index]!.downloadedImage!)
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .cornerRadius(5)
+            if self.threadDataStore.imageArr.count > 0 {
+                HStack(spacing: 10) {
+                    ForEach(self.threadDataStore.imageArr, id: \.self) { index in
+                        VStack {
+                            if self.threadDataStore.imageLoaders[index]!.downloadedImage != nil {
+                                Image(uiImage: self.threadDataStore.imageLoaders[index]!.downloadedImage!)
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .cornerRadius(5)
+                                    .onTapGesture {
+                                        self.toggleImageModal(self.threadDataStore, index)
+                                }
+                            } else {
+                                self.placeholder
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .cornerRadius(5)
                                 .onTapGesture {
-                                    self.toggleImageModal(self.threadDataStore, index)
-                            }
-                        } else {
-                            self.placeholder
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .cornerRadius(5)
-                            .onTapGesture {
-                                    self.toggleImageModal(self.threadDataStore, index)
+                                        self.toggleImageModal(self.threadDataStore, index)
+                                }
                             }
                         }
-                    }.frame(minWidth: self.width * 0.05, maxWidth: self.width * 0.25, minHeight: self.height * 0.1, maxHeight: self.height * 0.15, alignment: .center)
+                        
+                    }
                 }
+                .frame(minWidth: 0, maxWidth: self.width * 0.9, minHeight: self.height * 0.15, maxHeight: self.height * 0.15, alignment: .leading)
+                .padding(.vertical, 10)
+//                    .overlay(
+//                        GeometryReader { proxy in
+//                            Text("\(proxy.size.width) x \(proxy.size.height)")
+//                        }
+//                    )
+//                .background(Color.red)
             }
-            .padding(.vertical, 10)
             
             VStack(alignment: .leading, spacing: 20) {
                 HStack(spacing: 10) {
@@ -165,8 +175,14 @@ struct ThreadRow : View {
             .padding(.top, 10)
         }
         .padding(.all, 20)
-        .frame(width: self.width)
+        .frame(width: self.width, height:
+        ceil(self.height * 0.045 + 10 + 10 + (self.threadDataStore.thread.title.isEmpty == false ? 16 : 0) + min(self.threadDataStore.desiredHeight, 200)
+            + 10
+            + (self.threadDataStore.imageLoaders.count > 0 ? (self.height * 0.15) : 0) + 40
+            + self.height * 0.025 + CGFloat(self.threadDataStore.emojis.emojiArr.count) * 40
+            + 40 + 20 + 20)
 //        .background(Color.white)
+            , alignment: .top)
         .buttonStyle(PlainButtonStyle())
     }
 }

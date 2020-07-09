@@ -330,13 +330,6 @@ struct ForumView: View {
                                     VStack(spacing: 0) {
                                         Divider()
                                         ThreadRow(threadDataStore: self.forumDataStore.threadDataStores[threadId]!, turnBottomPopup: { state in self.turnBottomPopup(state: state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state: state)}, togglePickedUser: { pickedUser in self.togglePickedUser(user: pickedUser)}, togglePickedThreadId: { (pickedThreadId, futureContainerWidth) in self.togglePickedThreadId(threadId: pickedThreadId, futureContainerWidth: futureContainerWidth)}, width: a.size.width * 0.9, height: a.size.height, toggleImageModal : { (threadDataStore, currentImageModalIndex) in self.toggleImageModal(threadDataStore: threadDataStore, currentImageModalIndex: currentImageModalIndex) })
-//                                            .frame(width: a.size.width, height:
-//                                                ceil (a.size.height * 0.045 + 10 + 10 + (self.forumDataStore.threadDataStores[threadId]!.thread.title.isEmpty == false ? 16 : 0) + min(self.forumDataStore.threadDataStores[threadId]!.desiredHeight, 200)
-//                                                    + 10
-//                                                    + (self.forumDataStore.threadDataStores[threadId]!.imageLoaders.count > 0 ? (a.size.height * 0.15) : 0)  + 30
-//                                                    + a.size.height * 0.025 + CGFloat(self.forumDataStore.threadDataStores[threadId]!.emojis.emojiArr.count) * 40
-//                                                    + 40 + 20 + 20)
-//                                        )
                                     }
                                     .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
                                     .listRowBackground(Color.white)
