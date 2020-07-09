@@ -34,7 +34,7 @@ struct GameHubView: View {
         TabView(selection: $selectedTab) {
             NavigationView {
                 FrontHubView(homeGamesDataStore: HomeGamesDataStore(), followGamesDataStore: FollowGamesDataStore(), visitedGamesDataStore: VisitedGamesDataStore(), selectedTab: self.$selectedTab)
-                    .navigationBarTitle("Home")
+                    .navigationBarTitle("")
                     .navigationBarHidden(true)
             }
             .tabItem {
@@ -46,7 +46,7 @@ struct GameHubView: View {
             
             NavigationView {
                 PopularGamesView(popularListDataStore: PopularListDataStore(userDataStore: self.userDataStore))
-                    .navigationBarTitle("Popular")
+                    .navigationBarTitle("")
                     .navigationBarHidden(true)
             }
             .tabItem {
@@ -58,7 +58,7 @@ struct GameHubView: View {
             
             NavigationView {
                 TimelineGamesView(timelineDataStore: TimelineDataStore())
-                    .navigationBarTitle("Upcoming")
+                    .navigationBarTitle("")
                     .navigationBarHidden(true)
             }
             .tabItem {
@@ -70,7 +70,7 @@ struct GameHubView: View {
             
             NavigationView {
                 UserProfileView(blockHiddenDataStore: BlockHiddenDataStore())
-                    .navigationBarTitle("Profile")
+                    .navigationBarTitle("")
                     .navigationBarHidden(true)
             }
             .tabItem {

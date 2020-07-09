@@ -119,7 +119,6 @@ struct ThreadRow : View {
             
             VStack(alignment: .leading, spacing: 20) {
                 HStack(spacing: 10) {
-                    
                     HStack(spacing: 5) {
                         Image(systemName: "bubble.right.fill")
                         Text(String(self.threadDataStore.thread.numSubtreeNodes))

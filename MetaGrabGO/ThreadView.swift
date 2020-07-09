@@ -45,7 +45,7 @@ struct ThreadView : View {
     
     @State var isFirstResponder: Bool = false
     @State var didBecomeFirstResponder: Bool = false
-    
+
     
     init(threadDataStore: ThreadDataStore) {
         self.threadDataStore = threadDataStore
@@ -146,32 +146,6 @@ struct ThreadView : View {
         }
     }
     
-    //    func toggleEditMode() {
-    //        self.isEditable = !self.isEditable
-    //    }
-    //
-    //    func toggleReplyBarActive() {
-    //        self.didBecomeFirstResponder = true
-    //    }
-    //
-    //    func setReplyTargetToThread() {
-    //        self.gameDataStore.isReplyBarReplyingToThreadByThreadId[threadId] = true
-    //        self.gameDataStore.replyTargetCommentIdByThreadId[threadId] = -1
-    //        self.toggleReplyBarActive()
-    //    }
-    
-    //    func submit() {
-    //        if self.gameDataStore.isReplyBarReplyingToThreadByThreadId[threadId]  == true {
-    //            self.gameDataStore.postMainComment(access: self.userDataStore.token!.access, threadId: threadId, content: replyContent)
-    //        } else {
-    //            self.gameDataStore.postChildComment(access: self.userDataStore.token!.access, parentCommentId: self.gameDataStore.replyTargetCommentIdByThreadId[threadId]!, content: replyContent)
-    //        }
-    //
-    //        self.replyContent.replaceCharacters(in: NSMakeRange(0, replyContent.mutableString.length), with: "")
-    //        self.gameDataStore.threadViewReplyBarDesiredHeight[self.threadId] = 20
-    //        self.endEditing()
-    //    }
-    
     func submit(mainCommentContainerWidth: CGFloat) {
         print("submitted")
 
@@ -180,10 +154,11 @@ struct ThreadView : View {
         } else {
             self.threadDataStore.postMainComment(content: self.replyContent, containerWidth: mainCommentContainerWidth, userDataStore: self.userDataStore)
         }
-        self.endEditing()
-        self.pickedCommentId = nil
+        
+        self.togglePickedCommentId(commentId: nil, futureContainerWidth: CGFloat(0))
         self.replyContent.setAttributedString(NSAttributedString(string: ""))
-        self.replyFutureContainerWidth = CGFloat(0)
+        self.didBecomeFirstResponder = false
+        self.endEditing()
     }
     
     var body: some View {
@@ -343,9 +318,7 @@ struct ThreadView : View {
                                         .frame(width: a.size.width, height: a.size.height * 0.20)
                                         .foregroundColor(self.assetsDataStore.colors["darkButNotBlack"]!)
                                 } else {
-                                    
                                     HStack {
-                                        
                                         Spacer()
                                         Text("Load more comments (\(self.threadDataStore.thread.numChilds - self.threadDataStore.childCommentList.count) replies)")
                                             .frame(width: a.size.width - self.outerPadding * 2 - 5, height: a.size.height * 0.05, alignment: .leading)

@@ -200,7 +200,10 @@ struct FancyPantsEditorView: View {
                                     .padding(.horizontal, 10)
                             }
                             
-                            Button(action: { self.submit!(self.mainCommentContainerWidth!) }) {
+                            Button(action: {
+                                self.submit!(self.mainCommentContainerWidth!)
+                                self.isFirstResponder = false
+                            }) {
                                 Text("Submit")
                                     .bold()
                                     .padding(.horizontal, 5)

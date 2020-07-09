@@ -61,17 +61,13 @@ struct ImageModalView: View {
                     .onEnded { value in
                         if value.translation.width < 20 {
                             if self.currentImageModalIndex! < self.threadDataStore!.imageLoaders.count - 1 {
-                                withAnimation(.spring()) {
-                                    self.currentImageModalIndex! += 1
-                                }
+                                self.currentImageModalIndex! += 1
                             }
                         }
                         
                         if value.translation.width > 20 {
                             if self.currentImageModalIndex! > 0 {
-                                withAnimation(.spring()) {
                                 self.currentImageModalIndex! -= 1
-                                }
                             }
                         }
                     }

@@ -141,11 +141,11 @@ struct CommentView : View {
                                                     .onTapGesture {
                                                         self.onClickUser()
                                                 }
-                                                Text(String(self.commentDataStore.comment.id))
-                                                    .onAppear() {
-                                                        print("hi comment", self.commentDataStore.comment.id)
-                                                }
-                                                .foregroundColor(.black)
+//                                                Text(String(self.commentDataStore.comment.id))
+//                                                    .onAppear() {
+//                                                        print("hi comment", self.commentDataStore.comment.id)
+//                                                }
+//                                                .foregroundColor(.black)
                                                 
                                                 Spacer()
                                                 
