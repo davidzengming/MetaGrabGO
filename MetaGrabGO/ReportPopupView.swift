@@ -40,7 +40,7 @@ struct ReportPopupView: View {
     
     var body: some View {
         GeometryReader { a in
-            VStack {
+            VStack(spacing: 10) {
                 HStack {
                     ZStack {
                         HStack {
@@ -57,16 +57,14 @@ struct ReportPopupView: View {
                         
                         HStack {
                             Spacer()
-                            Text("Submit a report")
+                            Text("Submit report")
                                 .foregroundColor(Color.white)
                             Spacer()
                         }
                     }
-
-
                 }
                  
-                TextField("Enter the reason", text: self.$reportReason)
+                TextField("Please enter the reason", text: self.$reportReason)
                     .frame(width: a.size.width * 0.9)
                     .padding(10)
                     .background(Color.white)
@@ -79,7 +77,7 @@ struct ReportPopupView: View {
                             .background(Color.red)
                             .foregroundColor(Color.white)
                         .cornerRadius(10)
-                        .padding()
+                        .padding(.horizontal)
                     }
                 } else {
                     ActivityIndicator()
@@ -132,7 +130,7 @@ struct ReportPopupViewThreadVer: View {
     
     var body: some View {
         GeometryReader { a in
-            VStack {
+            VStack(spacing: 10) {
                 HStack {
                     ZStack {
                         HStack {
@@ -154,8 +152,6 @@ struct ReportPopupViewThreadVer: View {
                             Spacer()
                         }
                     }
-
-
                 }
                  
                 TextField("Enter the reason", text: self.$reportReason)
@@ -164,6 +160,7 @@ struct ReportPopupViewThreadVer: View {
                     .background(Color.white)
                     .cornerRadius(10)
                 
+                Spacer()
                 if !self.isSendingReport {
                     Button(action: self.submitReport) {
                         Text("Submit")
@@ -171,7 +168,7 @@ struct ReportPopupViewThreadVer: View {
                             .background(Color.red)
                             .foregroundColor(Color.white)
                         .cornerRadius(10)
-                        .padding()
+                            .padding(.horizontal)
                     }
                 } else {
                     ActivityIndicator()

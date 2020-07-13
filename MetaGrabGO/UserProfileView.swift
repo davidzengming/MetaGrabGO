@@ -11,6 +11,7 @@ import SwiftUI
 struct UserProfileView: View {
     @EnvironmentObject var userDataStore: UserDataStore
     @EnvironmentObject var assetsDataStore: AssetsDataStore
+    @EnvironmentObject var recentFollowDataStore: RecentFollowDataStore
     @ObservedObject var blockHiddenDataStore: BlockHiddenDataStore
     @State private var loadedBlacklist = false
     @State private var loadedHiddenThreads = false
@@ -41,6 +42,12 @@ struct UserProfileView: View {
     private func fetchHiddenComments() {
         self.blockHiddenDataStore.fetchHiddenComments(userId: self.userDataStore.token!.userId, userDataStore: self.userDataStore)
         self.loadedHiddenComments = true
+    }
+    
+    private func logout() {
+        self.userDataStore.isAutologinEnabled = false
+        self.recentFollowDataStore.shouldRefreshDataStore = true
+        self.userDataStore.isAuthenticated = false
     }
     
     var body: some View {
@@ -165,7 +172,6 @@ struct UserProfileView: View {
                                             .cornerRadius(10)
                                     }
                                     .padding()
-                                    
                                 } else if self.loadedHiddenComments == true && self.blockHiddenDataStore.hiddenCommentIdArr.isEmpty {
                                     Text("There are no hidden comments.")
                                     .padding()
@@ -188,7 +194,16 @@ struct UserProfileView: View {
                             .background(self.assetsDataStore.colors["notQuiteBlack"])
                             .padding()
                             
-                            Spacer()
+                            VStack {
+                                Button(action: self.logout) {
+                                    Text("LOGOUT")
+                                    .padding()
+                                    .background(Color.red)
+                                    .foregroundColor(Color.white)
+                                    .cornerRadius(10)
+                                }
+                            }
+                            .padding(50)
                         }
                         .frame(width: a.size.width, height: a.size.height)
                         .foregroundColor(Color.white)

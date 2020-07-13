@@ -90,11 +90,11 @@ class ForumDataStore: ObservableObject {
         self.threadDataStores = [:]
         self.game = game
         //
-        print("created forum for game: " + String(game.id))
+//        print("created forum for game: " + String(game.id))
     }
     
     deinit {
-        print("destroyed forum for game: " + String(game.id))
+//        print("destroyed forum for game: " + String(game.id))
     }
     
     func insertGameHistory(userDataStore: UserDataStore) {
@@ -108,7 +108,7 @@ class ForumDataStore: ObservableObject {
         let request = API.generateRequest(url: url!, method: .POST)
         
         API.sessionHandler(request: request, userDataStore: userDataStore) { data in
-            print("Successfully updated game history - (Backend only, no states updated)")
+//            print("Successfully updated game history - (Backend only, no states updated)")
         }
     }
     
@@ -656,7 +656,7 @@ class ThreadDataStore: ObservableObject {
         }
     }
     
-    func fetchCommentTreeByThreadId(start:Int = 0, count:Int = 10, size:Int = 50, refresh: Bool = false, userId: Int, containerWidth: CGFloat, leadPadding: CGFloat, userDataStore: UserDataStore) {
+    func fetchCommentTreeByThreadId(start:Int = 0, count:Int = 100, size:Int = 250, refresh: Bool = false, userId: Int, containerWidth: CGFloat, leadPadding: CGFloat, userDataStore: UserDataStore) {
         
         //        if refresh == true {
         //            self.childCommentSubs = [:]

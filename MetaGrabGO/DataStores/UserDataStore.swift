@@ -17,20 +17,23 @@ class UserDataStore: ObservableObject {
     var user: User? = nil
     var password: String? = nil
     var token: Token? = nil
-    
     let API = APIClient()
     
+    var isAutologinEnabled = true
+    
     func onStart() {
-        if let usernameData = KeyChain.load(key: "metagrab.username"), let passwordData = KeyChain.load(key: "metagrab.password"), let tokenaccessData = KeyChain.load(key: "metagrab.tokenaccess"), let tokenrefreshData = KeyChain.load(key: "metagrab.tokenrefresh"), let userId = KeyChain.load(key: "metagrab.userid"), let expDateEpoch = KeyChain.load(key: "metagrab.expDateEpoch") {
+        if let usernameData = KeyChain.load(key: "metagrab.username"), let passwordData = KeyChain.load(key: "metagrab.password"), let tokenaccessData = KeyChain.load(key: "metagrab.tokenaccess"), let tokenrefreshData = KeyChain.load(key: "metagrab.tokenrefresh"), let userId = KeyChain.load(key: "metagrab.userid"), let accessExpDateEpoch = KeyChain.load(key: "metagrab.accessExpDateEpoch"), let refreshExpDateEpoch = KeyChain.load(key: "metagrab.refreshExpDateEpoch") {
             self.username = String(data: usernameData, encoding: String.Encoding.utf8) as String?
             self.password = String(data: passwordData, encoding: String.Encoding.utf8) as String?
-            self.token = Token(refresh: String(data: tokenrefreshData, encoding: String.Encoding.utf8)!, access: String(data: tokenaccessData, encoding: String.Encoding.utf8)!, userId: Int(String(data: userId, encoding: String.Encoding.utf8)!)!, expDateEpoch:  Int(String(data: expDateEpoch, encoding: String.Encoding.utf8)!)!)
+            self.token = Token(refresh: String(data: tokenrefreshData, encoding: String.Encoding.utf8)!, access: String(data: tokenaccessData, encoding: String.Encoding.utf8)!, userId: Int(String(data: userId, encoding: String.Encoding.utf8)!)!, refreshExpDateEpoch: Int(String(data: refreshExpDateEpoch, encoding: String.Encoding.utf8)!)!, accessExpDateEpoch: Int(String(data: accessExpDateEpoch, encoding: String.Encoding.utf8)!)!)
             self.user = User(id: self.token!.userId, username: self.username!)
         }
     }
     
     func autologin() {
-        acquireToken()
+        if self.isAutologinEnabled == true {
+            acquireToken()
+        }
     }
     
     func login(username: String, password: String) {
@@ -41,13 +44,15 @@ class UserDataStore: ObservableObject {
         taskGroup.enter()
         self.acquireToken(taskGroup: taskGroup)
         
+        
         taskGroup.notify(queue: DispatchQueue.global()) {
             _ = KeyChain.save(key: "metagrab.username", data: username.data(using: String.Encoding.utf8)!)
             _ = KeyChain.save(key: "metagrab.password", data: password.data(using: String.Encoding.utf8)!)
             _ = KeyChain.save(key: "metagrab.tokenaccess", data: self.token!.access.data(using: String.Encoding.utf8)!)
             _ = KeyChain.save(key: "metagrab.tokenrefresh", data: self.token!.refresh.data(using: String.Encoding.utf8)!)
             _ = KeyChain.save(key: "metagrab.userid", data: String(self.token!.userId).data(using: String.Encoding.utf8)!)
-            _ = KeyChain.save(key: "metagrab.expDateEpoch", data: String(self.token!.expDateEpoch).data(using: String.Encoding.utf8)!)
+            _ = KeyChain.save(key: "metagrab.accessExpDateEpoch", data: String(self.token!.accessExpDateEpoch).data(using: String.Encoding.utf8)!)
+            _ = KeyChain.save(key: "metagrab.refreshExpDateEpoch", data: String(self.token!.refreshExpDateEpoch).data(using: String.Encoding.utf8)!)
             print("saved to keychain credentials")
         }
     }
@@ -77,12 +82,25 @@ class UserDataStore: ObservableObject {
 //                httpResponse.statusCode
 //            }
             
+            if error != nil {
+                print("auto login failed")
+                self.isAutologinEnabled = false
+                
+                if taskGroup != nil {
+                    taskGroup!.leave()
+                }
+                
+                return
+            }
+            
+            
             if let data = data {
                 if let jsonString = String(data: data, encoding: .utf8) {
                     DispatchQueue.main.async {
                         self.token = load(jsonData: jsonString.data(using: .utf8)!)
                         self.isAuthenticated = true
                         if taskGroup != nil {
+                            self.user = User(id: self.token!.userId, username: self.username!)
                             taskGroup!.leave()
                         }
                     }

@@ -11,16 +11,11 @@ struct MainView: View {
                 .edgesIgnoringSafeArea(.all)
             
             VStack {
-                if self.userDataStore.isAuthenticated == false {
-                    UserView()
-                } else {
-                    GameHubView()
-                        .environmentObject(RecentFollowDataStore())
-                        .environmentObject(GlobalGamesDataStore())
-                }
+                GameHubView()
+                    .environmentObject(RecentFollowDataStore())
+                    .environmentObject(GlobalGamesDataStore())
             }
         }
-        
     }
 }
 

@@ -31,11 +31,10 @@ struct ForumLoadMoreView: View {
                 if self.forumOtherDataStore.isLoaded && self.forumOtherDataStore.forumNextPageStartIndex != nil && self.forumOtherDataStore.forumNextPageStartIndex != -1 {
                     VStack {
                         Rectangle()
+                        .fill(self.assetsDataStore.colors["darkButNotBlack"]!)
                             .frame(height: a.size.height * 0.25)
-                            .background(self.assetsDataStore.colors["darkButNotBlack"]!)
-
+                            
                         Spacer()
-
                         if !self.forumOtherDataStore.isLoadingNextPage {
                             HStack(alignment: .center) {
                                 Spacer()
@@ -66,20 +65,18 @@ struct ForumLoadMoreView: View {
                                 .frame(width: a.size.height * 0.5, height: a.size.height * 0.5)
                                 .foregroundColor(Color.white)
                         }
-
                         Spacer()
                     }
                     .frame(width: a.size.width, height: a.size.height)
                     .background(self.assetsDataStore.colors["darkButNotBlack"]!)
                     .cornerRadius(15, corners: [.bottomLeft, .bottomRight])
-
                 }
 
-                self.assetsDataStore.colors["darkButNotBlack"]!
+                Color(.clear)
                     .frame(width: a.size.width, height: a.size.height * 0.25)
 
                 VStack {
-                    Color.white
+                    Color(.tertiarySystemBackground)
                         .frame(width: a.size.width, height: a.size.height * 0.25)
                         .cornerRadius(15, corners: [.bottomLeft, .bottomRight])
                     Spacer()

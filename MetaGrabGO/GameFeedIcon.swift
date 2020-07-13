@@ -127,7 +127,6 @@ struct GameFeedTimelineIcon : View {
                             .environmentObject(self.recentFollowDataStore)
                     }
                     
-                    
                     ZStack {
                         Image(systemName: "text.bubble.fill")
                         .resizable()
@@ -143,6 +142,8 @@ struct GameFeedTimelineIcon : View {
                         }) {
                             EmptyView()
                         }
+                        .frame(width: 0)
+                        .opacity(0)
                     }
                     
                 }

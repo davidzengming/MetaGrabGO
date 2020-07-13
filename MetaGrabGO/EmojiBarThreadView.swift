@@ -84,7 +84,7 @@ struct EmojiBarThreadView: View {
                                     HStack {
                                         Image(systemName: "plus.bubble.fill")
                                             .resizable()
-                                            .foregroundColor(Color(.darkGray))
+                                            .foregroundColor(Color(.secondaryLabel))
                                             .frame(width: 20, height: 20)
                                             .buttonStyle(PlainButtonStyle())
                                             .cornerRadius(5)
@@ -101,11 +101,11 @@ struct EmojiBarThreadView: View {
 
                                         Text(String(self.threadDataStore.emojis.emojiCount[emojiId]!))
                                         .bold()
-                                            .foregroundColor(Color(.darkGray))
+                                            .foregroundColor(self.threadDataStore.emojis.didReactToEmoji[emojiId]! == true ?  Color(.lightGray) : Color(UIColor(named: "EmojiCountUnpressedColor")!))
                                     }
                                     .frame(width: 40, height: 15)
                                     .padding(5)
-                                    .background(self.threadDataStore.emojis.didReactToEmoji[emojiId]! == true ? Color.gray : Color(.lightGray))
+                                    .background(self.threadDataStore.emojis.didReactToEmoji[emojiId]! == true ? Color(.darkGray) : Color(UIColor(named: "emojiBackgroundColor")!))
                                     .cornerRadius(5)
                                     .onTapGesture {
                                         self.onClickEmoji(emojiId: emojiId)

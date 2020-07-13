@@ -96,10 +96,11 @@ struct TextView: UIViewRepresentable {
         if isNewContent {
             myTextView.font = TextViewHelper.getHelveticaNeueFont(isBold: isBold)
         }
+        myTextView.textColor = UIColor(named: "textColor")!
         myTextView.isScrollEnabled = true
         myTextView.isEditable = true
         myTextView.isUserInteractionEnabled = isEditable ? true : false
-        myTextView.backgroundColor = UIColor.clear
+        myTextView.backgroundColor = .clear
         myTextView.textContainerInset = UIEdgeInsets.zero
         myTextView.textContainer.lineFragmentPadding = 0
         

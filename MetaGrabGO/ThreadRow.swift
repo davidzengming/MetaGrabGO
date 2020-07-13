@@ -36,7 +36,7 @@ struct ThreadRow : View {
         self.width = width
         self.height = height
         self.toggleImageModal = toggleImageModal
-        print("remaking thread row: ", threadDataStore.thread.id)
+//        print("remaking thread row: ", threadDataStore.thread.id)
     }
 
     func onClickUser() {
@@ -62,15 +62,13 @@ struct ThreadRow : View {
                 
                 VStack(alignment: .leading, spacing: 0) {
                     Text(self.threadDataStore.author.username)
-                        .frame(height: self.height * 0.025, alignment: .leading)
                         .onTapGesture {
                             self.onClickUser()
                     }
                     
                     Text(self.threadDataStore.relativeDateString!)
-                        .font(.system(size: 14))
-                        .frame(height: self.height * 0.02, alignment: .leading)
-                        .foregroundColor(Color(.darkGray))
+                        .font(.subheadline)
+                        .foregroundColor(Color(UIColor(named: "darkerLabelColor")!))
                 }
                 
                 Spacer()
@@ -132,7 +130,7 @@ struct ThreadRow : View {
                     HStack(spacing: 5) {
                         Image(systemName: "bubble.right.fill")
                         Text(String(self.threadDataStore.thread.numSubtreeNodes))
-                            .font(.system(size: 16))
+                            .font(.body)
                             .bold()
                         Text("Comments")
                             .bold()
@@ -167,7 +165,7 @@ struct ThreadRow : View {
                     
                     Spacer()
                 }
-                .foregroundColor(Color.gray)
+                .foregroundColor(Color(.secondaryLabel))
                 .frame(width: self.width * 0.9)
                 
                 EmojiBarThreadView(threadDataStore: self.threadDataStore, turnBottomPopup: { state in self.turnBottomPopup(state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state)}, togglePickedUser: { pickedUser in self.togglePickedUser(pickedUser)}, togglePickedThreadId: { (pickedThreadId, futureContainerWidth) in self.togglePickedThreadId(pickedThreadId, futureContainerWidth) })
@@ -176,7 +174,9 @@ struct ThreadRow : View {
         }
         .padding(.all, 20)
         .frame(width: self.width, height:
-        ceil(self.height * 0.045 + 10 + 10 + (self.threadDataStore.thread.title.isEmpty == false ? 16 : 0) + min(self.threadDataStore.desiredHeight, 200)
+            ceil(self.height * 0.045 + 10 + 10 +
+//                (self.threadDataStore.thread.title.isEmpty == false ? self.threadDataStore.thread.title.height : 0) +
+                min(self.threadDataStore.desiredHeight, 200)
             + 10
             + (self.threadDataStore.imageLoaders.count > 0 ? (self.height * 0.15) : 0) + 40
             + self.height * 0.025 + CGFloat(self.threadDataStore.emojis.emojiArr.count) * 40

@@ -9,6 +9,23 @@
 import Foundation
 import SwiftUI
 
+import UIKit
+
+extension UIFont {
+    func withTraits(traits:UIFontDescriptor.SymbolicTraits) -> UIFont {
+        let descriptor = fontDescriptor.withSymbolicTraits(traits)
+        return UIFont(descriptor: descriptor!, size: 0) //size 0 means keep the size as it is
+    }
+
+    func bold() -> UIFont {
+        return withTraits(traits: .traitBold)
+    }
+
+    func italic() -> UIFont {
+        return withTraits(traits: .traitItalic)
+    }
+}
+
 class TextViewHelper {
     static var attrMap : [[NSAttributedString.Key: Bool] : Int]?
     
@@ -239,10 +256,10 @@ class TextViewHelper {
         uiView.selectedRange = NSMakeRange(lineStartIndex + (isNumbered ? getBulletListIndentStr().count + 1 : getDashBulletListIndentStr().count + 1), 0)
     }
     
-    static var boldItalicFont = UIFont(name: "HelveticaNeue-BoldItalic", size: 16)!
-    static var italicFont = UIFont(name: "HelveticaNeue-Italic", size: 16)!
-    static var boldFont = UIFont(name: "HelveticaNeue-Bold", size: 16)!
-    static var normalFont = UIFont(name: "HelveticaNeue", size: 16)!
+    static var boldItalicFont = UIFont.preferredFont(forTextStyle: UIFont.TextStyle.body).bold().italic()
+    static var italicFont = UIFont.preferredFont(forTextStyle: UIFont.TextStyle.body).italic()
+    static var boldFont = UIFont.preferredFont(forTextStyle: UIFont.TextStyle.body).bold()
+    static var normalFont = UIFont.preferredFont(forTextStyle: UIFont.TextStyle.body)
     
     static func getHelveticaNeueFont(isBold: Bool, isItalic: Bool = false) -> UIFont {
         if isItalic == true {

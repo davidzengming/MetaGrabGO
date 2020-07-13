@@ -47,7 +47,7 @@ struct TimelineGamesView: View {
     
     init(timelineDataStore: TimelineDataStore) {
         self.timelineDataStore = timelineDataStore
-        print("timeline view created")
+//        print("timeline view created")
         
         // List related
         UITableView.appearance().backgroundColor = .clear
@@ -95,7 +95,7 @@ struct TimelineGamesView: View {
                                 HStack {
                                     Text(String(self.timelineDataStore.gamesCalendars[gameId]!.year))
                                         .tracking(5)
-                                        .font(.system(size: 50, weight: .regular, design: .rounded))
+                                        .font(.system(size: a.size.width * 0.1, weight: .regular, design: .rounded))
                                         .foregroundColor(Color.white)
                                         .shadow(radius: 5)
                                         .padding(.horizontal, 20)
@@ -107,7 +107,7 @@ struct TimelineGamesView: View {
                             if self.timelineDataStore.gamesCalendars[gameId]!.isShowingMonth {
                                 HStack(spacing: 0) {
                                     Text(self.timelineDataStore.monthDict[self.timelineDataStore.gamesCalendars[gameId]!.month]!.substring(with: 0..<3).uppercased())
-                                        .font(.system(size: 30, weight: .regular, design: .rounded))
+                                        .font(.system(size: a.size.width * 0.07, weight: .regular, design: .rounded))
                                         .tracking(1)
                                         .foregroundColor(Color.white)
                                         .shadow(radius: 5)
@@ -115,7 +115,7 @@ struct TimelineGamesView: View {
                                         .padding(.bottom, 10)
                                     
                                     Text(self.timelineDataStore.monthDict[self.timelineDataStore.gamesCalendars[gameId]!.month]!.substring(with: 3..<self.timelineDataStore.monthDict[self.timelineDataStore.gamesCalendars[gameId]!.month]!.count).uppercased())
-                                        .font(.system(size: 30, weight: .regular, design: .rounded))
+                                        .font(.system(size: a.size.width * 0.07, weight: .regular, design: .rounded))
                                         .tracking(1)
                                         .foregroundColor(Color.gray)
                                         .shadow(radius: 5)
@@ -131,7 +131,7 @@ struct TimelineGamesView: View {
                                 VStack(alignment: .center) {
                                     if self.timelineDataStore.gamesCalendars[gameId]!.isShowingDay {
                                         Text(String(self.timelineDataStore.gamesCalendars[gameId]!.day))
-                                            .font(.system(size: 22, weight: .regular, design: .rounded))
+                                            .font(.system(size: a.size.width * 0.05, weight: .regular, design: .rounded))
                                             .tracking(1)
                                             .frame(width: a.size.width * 0.2)
                                             .foregroundColor(Color.white)
@@ -182,7 +182,8 @@ struct TimelineGamesView: View {
                                 
                                 Rectangle()
                                     .fill(Color.gray)
-                                    .frame(width: a.size.width * 0.1, height: 1)
+                                    .frame(width: a.size.width * 0.1, height: a.size.width * 0.005)
+                                .cornerRadius(5)
                                 .shadow(radius: 5)
                                 
                                 Spacer()

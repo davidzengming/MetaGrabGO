@@ -17,7 +17,7 @@ struct PopularGamesView: View {
     
     init(popularListDataStore: PopularListDataStore) {
         self.popularListDataStore = popularListDataStore
-        print("popular games view created")
+//        print("popular games view created")
         // List related
         UITableView.appearance().backgroundColor = .clear
         UITableViewCell.appearance().backgroundColor = .clear
@@ -36,7 +36,7 @@ struct PopularGamesView: View {
                 List {
                     VStack {
                         Text("POPULAR TITLES")
-                            .font(.system(size: 30, weight: .regular, design: .rounded))
+                            .font(.system(size: a.size.width * 0.05, weight: .regular, design: .rounded))
                             .tracking(2)
                             .foregroundColor(Color.white)
                             .shadow(radius: 5)
@@ -51,14 +51,14 @@ struct PopularGamesView: View {
                             HStack {
                                 Text(self.popularListDataStore.genres[genreId]!.name)
                                     .foregroundColor(Color.white)
-                                    .font(.system(size: 20, weight: .regular, design: .rounded))
+                                    .font(.system(size: a.size.width * 0.04, weight: .regular, design: .rounded))
                                     .tracking(2)
                                     .padding(.top, 10)
                                     .shadow(radius: 5)
                                 
                                 Text("(" + self.popularListDataStore.genres[genreId]!.longName + ")")
                                     .foregroundColor(Color.white)
-                                    .font(.system(size: 20, weight: .regular, design: .rounded))
+                                    .font(.system(size: a.size.width * 0.04, weight: .regular, design: .rounded))
                                     .tracking(2)
                                     .padding(.top, 10)
                                     .shadow(radius: 5)

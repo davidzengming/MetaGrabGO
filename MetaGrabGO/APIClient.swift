@@ -202,11 +202,10 @@ struct APIClient {
         } else {
             let curDateEpoch = Date().secondsSince1970
 
-            if curDateEpoch >= userDataStore.token!.expDateEpoch - 300 {
+            if curDateEpoch >= userDataStore.token!.accessExpDateEpoch - 300 {
                 refreshingRequestTaskGroup.enter()
-                
                 processingRequestsTaskGroup.notify(queue: .global()) {
-                    let url = self.generateURL(resource: Resource.users, endPoint: EndPoint.empty)
+                    let url = self.generateURL(resource: Resource.api, endPoint: EndPoint.refreshToken)
                     let request = self.generateRequest(url: url!, method: .POST, bodyData: "refresh=\(userDataStore.token!.refresh)")
                     
                     URLSession.shared.dataTask(with: request) { (data, response, error) in

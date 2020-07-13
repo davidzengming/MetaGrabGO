@@ -49,7 +49,7 @@ struct ThreadView : View {
     
     init(threadDataStore: ThreadDataStore) {
         self.threadDataStore = threadDataStore
-        print("thread view created", threadDataStore.thread.id)
+//        print("thread view created", threadDataStore.thread.id)
         self.pickedThreadId = threadDataStore.thread.id
     }
     
@@ -147,7 +147,7 @@ struct ThreadView : View {
     }
     
     func submit(mainCommentContainerWidth: CGFloat) {
-        print("submitted")
+//        print("submitted")
 
         if pickedCommentId != nil {
             self.pickedCommentId!.postChildComment(content: self.replyContent, containerWidth: self.replyFutureContainerWidth, userDataStore: self.userDataStore)
@@ -166,7 +166,7 @@ struct ThreadView : View {
             self.assetsDataStore.colors["darkButNotBlack"]!
                 .edgesIgnoringSafeArea(.all)
             
-            Color.white
+            Color(UIColor(named: "pseudoTertiaryBackground")!)
                 .edgesIgnoringSafeArea(.bottom)
             
             GeometryReader { a in
@@ -187,7 +187,6 @@ struct ThreadView : View {
                                     VStack(alignment: .leading, spacing: 0) {
                                         HStack(spacing: 0) {
                                             Text(self.threadDataStore.thread.users[0].username)
-                                                .font(.system(size: 16))
                                             Spacer()
                                         }
                                         .onTapGesture {
@@ -195,8 +194,8 @@ struct ThreadView : View {
                                         }
                                         
                                         Text(self.threadDataStore.relativeDateString!)
-                                            .foregroundColor(Color(.darkGray))
-                                            .font(.system(size: 14))
+                                            .foregroundColor(Color(UIColor(named: "darkerLabelColor")!))
+                                            .font(.subheadline)
                                             .padding(.bottom, 5)
                                     }
                                 }
@@ -307,10 +306,8 @@ struct ThreadView : View {
                                 VStack {
                                     ActivityIndicator()
                                     .frame(width: a.size.width, height: a.size.height * 0.20)
-                                    .foregroundColor(self.assetsDataStore.colors["darkButNotBlack"]!)
                                 }
                                 .frame(width: a.size.width - self.outerPadding * 2, height: a.size.height / 2)
-                                
                             }
                             
                             if self.threadDataStore.childCommentList.count < self.threadDataStore.thread.numChilds {
@@ -340,18 +337,22 @@ struct ThreadView : View {
                         Spacer()
                     }
                     .frame(width: a.size.width, height: a.size.height)
-
+                    
+                    
                     FancyPantsEditorView(existedTextStorage: .constant(NSTextStorage(string: "")), desiredHeight: self.$replyBarDesiredHeight, newTextStorage: self.$replyContent, isEditable: .constant(true), isFirstResponder: self.$isFirstResponder, didBecomeFirstResponder: self.$didBecomeFirstResponder, showFancyPantsEditorBar: .constant(true), isNewContent: true, isThread: true, isOmniBar: true, submit: { mainCommentContainerWidth in self.submit(mainCommentContainerWidth: mainCommentContainerWidth)}, width: a.size.width, height: a.size.height, togglePickedCommentId: { (commentId, futureContainerWidth) in self.togglePickedCommentId(commentId: commentId, futureContainerWidth: futureContainerWidth)}, mainCommentContainerWidth: a.size.width - self.outerPadding * 2)
                     .KeyboardAwarePadding()
                     .animation(.spring())
                     .transition(.slide)
                     
+                    
                     BottomBarViewThreadVer(threadDataStore: self.threadDataStore, isBottomPopupOn: self.$isBottomPopupOn, bottomBarState: self.$bottomBarState, pickedThreadId: self.$pickedThreadId,  pickedCommentId: self.$pickedCommentId, pickedUser: self.$pickedUser, width: a.size.width, height: a.size.height * 0.25, turnBottomPopup: { state in self.turnBottomPopup(state: state) }, toggleBottomBarState: { state in self.toggleBottomBarState(state: state)}, togglePickedUser: { user in self.togglePickedUser(user: user)}, togglePickedThreadId: { (threadId, futureContainerWidth) in self.togglePickedThreadId(threadId: threadId, futureContainerWidth: futureContainerWidth) }, togglePickedCommentId: { (commentId, futureContainerWidth) in self.togglePickedCommentId(commentId: commentId, futureContainerWidth: futureContainerWidth) })
+                    
                 }
                 
                 DummyImageModalView(isImageModalOn: self.$isImageModalOn, threadDataStore: self.$imageModalSelectedThreadStore, currentImageModalIndex: self.$currentImageModalIndex)
             }
             .edgesIgnoringSafeArea(.bottom)
+            .background(Color(UIColor(named: "pseudoTertiaryBackground")!))
         }
     }
 }

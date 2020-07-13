@@ -31,7 +31,7 @@ struct FrontHubView: View {
         self.followGamesDataStore = followGamesDataStore
         self.visitedGamesDataStore = visitedGamesDataStore
         self._selectedTab = selectedTab
-        print("front hub view created")
+//        print("front hub view created")
     }
     
     var body: some View {
@@ -43,7 +43,7 @@ struct FrontHubView: View {
                     ScrollView(.vertical, showsIndicators: true) {
                         VStack(alignment: .leading) {
                             Text("HOME PAGE")
-                                .font(.system(size: 30, weight: .regular, design: .rounded))
+                                .font(.system(size: a.size.width * 0.05, weight: .regular, design: .rounded))
                                 .tracking(2)
                                 .foregroundColor(Color.white)
                                 .shadow(radius: 5)
@@ -51,7 +51,7 @@ struct FrontHubView: View {
                             
                             Text("RECENTLY VISITED")
                                 .foregroundColor(Color.white)
-                                .font(.system(size: 20, weight: .regular, design: .rounded))
+                                .font(.system(size: a.size.width * 0.04, weight: .regular, design: .rounded))
                                 .tracking(1)
                             
                             if self.homeGamesDataStore.isLoaded == true && self.visitedGamesDataStore.visitedGamesId.count > 0 {
@@ -118,7 +118,7 @@ struct FrontHubView: View {
                             
                             Text("FOLLOWING GAMES")
                                 .foregroundColor(Color.white)
-                                .font(.system(size: 20, weight: .regular, design: .rounded))
+                                .font(.system(size: a.size.width * 0.04, weight: .regular, design: .rounded))
                                 .tracking(1)
                             
                             if self.homeGamesDataStore.isLoaded == true && self.followGamesDataStore.followedGamesId.count > 0 {
@@ -190,15 +190,16 @@ struct FrontHubView: View {
                 .onAppear() {
                     Global.tabBar!.isHidden = false
                     
-                    if self.homeGamesDataStore.isLoaded == false {
-                        print("Fetching follow and visited games history...")
-                        
+                    if self.recentFollowDataStore.shouldRefreshDataStore == true || self.homeGamesDataStore.isLoaded == false {
+//                        print("Fetching follow and visited games history...")
+//                        
                         let taskGroup = DispatchGroup()
                         self.homeGamesDataStore.fetchFollowGames(globalGamesDataStore: self.globalGamesDataStore, followGamesDataStore: self.followGamesDataStore, userDataStore: self.userDataStore, recentFollowDataStore: self.recentFollowDataStore, taskGroup: taskGroup)
                         self.homeGamesDataStore.getGameHistory(globalGamesDataStore: self.globalGamesDataStore, visitedGamesDataStore: self.visitedGamesDataStore, recentFollowDataStore: self.recentFollowDataStore, taskGroup: taskGroup, userDataStore: self.userDataStore)
                         
                         taskGroup.notify(queue: .main) {
                             self.homeGamesDataStore.isLoaded = true
+                            self.recentFollowDataStore.shouldRefreshDataStore = false
                         }
                         
                     } else {

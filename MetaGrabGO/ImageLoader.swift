@@ -33,8 +33,8 @@ class ImageLoader: ObservableObject {
     }
     
     func load(dispatchGroup: DispatchGroup? = nil) {
-        print("loading", self.whereIsThisFrom)
-        
+//        print("loading", self.whereIsThisFrom)
+//        
         dispatchGroup?.enter()
         
         if let image = cache?[self.url] {
@@ -78,7 +78,7 @@ class ImageLoader: ObservableObject {
     
     deinit {
         cancellable?.cancel()
-        print("image loader being deinit" + self.whereIsThisFrom)
+//        print("image loader being deinit" + self.whereIsThisFrom)
     }
     
     func cancel() {

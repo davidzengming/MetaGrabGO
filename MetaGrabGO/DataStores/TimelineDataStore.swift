@@ -107,7 +107,7 @@ class TimelineDataStore: ObservableObject {
         }
     }
     
-    func fetchGamesByBeforeEpochTime(count: Int = 10, globalGamesDataStore: GlobalGamesDataStore, userDataStore: UserDataStore) {
+    func fetchGamesByBeforeEpochTime(count: Int = 5, globalGamesDataStore: GlobalGamesDataStore, userDataStore: UserDataStore) {
         self.isLoadingPrev = true
         
         let API = APIClient()
@@ -169,7 +169,7 @@ class TimelineDataStore: ObservableObject {
         }
     }
     
-    func fetchGamesByAfterEpochTime(count: Int = 10, globalGamesDataStore: GlobalGamesDataStore, userDataStore: UserDataStore) {
+    func fetchGamesByAfterEpochTime(count: Int = 5, globalGamesDataStore: GlobalGamesDataStore, userDataStore: UserDataStore) {
         self.isLoadingAfter = true
         
         let API = APIClient()

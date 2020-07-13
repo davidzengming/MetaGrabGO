@@ -83,9 +83,11 @@ struct EmojiPickerPopupView: View {
                 let hasDownvote = self.forumDataStore.threadDataStores[self.pickedThreadId]!.emojis.emojiArr[0][0] == 1 || self.forumDataStore.threadDataStores[self.pickedThreadId]!.emojis.emojiArr[0][1] == 1
                 
                 if !hasUpvote && !hasDownvote && (emojiId != 0 && emojiId != 1) {
-                    print("Too many emojis, don't have both upvote or downvotes need 2 spots for them.")
+//                    print("Too many emojis, don't have both upvote or downvotes need 2 spots for them.")
+                    return
                 } else if colCount ==  self.forumDataStore.threadDataStores[self.pickedThreadId]!.emojis.maxEmojiCountPerRow && ((!hasUpvote && emojiId != 0) || (!hasDownvote  && emojiId != 1)) {
-                    print("Too many emojis, don't have upvote or downvote and needs 1 spot for it.")
+//                    print("Too many emojis, don't have upvote or downvote and needs 1 spot for it.")
+                    return
                 }
             }
             
@@ -212,9 +214,11 @@ struct EmojiPickerPopupViewThreadVer: View {
                 let hasDownvote = self.threadDataStore.emojis.emojiArr[0][0] == 1 || self.threadDataStore.emojis.emojiArr[0][1] == 1
                 
                 if !hasUpvote && !hasDownvote && (emojiId != 0 && emojiId != 1) {
-                    print("Too many emojis, don't have both upvote or downvotes need 2 spots for them.")
+//                    print("Too many emojis, don't have both upvote or downvotes need 2 spots for them.")
+                    return
                 } else if colCount ==  self.threadDataStore.emojis.maxEmojiCountPerRow && ((!hasUpvote && emojiId != 0) || (!hasDownvote  && emojiId != 1)) {
-                    print("Too many emojis, don't have upvote or downvote and needs 1 spot for it.")
+//                    print("Too many emojis, don't have upvote or downvote and needs 1 spot for it.")
+                    return
                 }
             }
             

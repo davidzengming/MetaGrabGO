@@ -99,39 +99,33 @@ struct GameModalView: View {
                                 VStack(alignment: .leading) {
                                     HStack {
                                         Text("GENRE: ")
-                                            .font(.system(size: 16))
-                                            .tracking(1)
+                                            .font(.headline)
                                             .foregroundColor(Color.gray)
                                         
                                         Text(self.game.genre.name)
-                                            .font(.system(size: 16))
-                                            .tracking(1)
+                                            .font(.headline)
                                             .foregroundColor(Color(UIColor.systemTeal))
                                     }
                                     .padding(.vertical, 5)
                                     
                                     HStack {
                                         Text("DEVELOPER: ")
-                                            .font(.system(size: 16))
-                                            .tracking(1)
+                                            .font(.headline)
                                             .foregroundColor(Color.gray)
                                         
                                         Text(self.game.developer.name)
-                                            .font(.system(size: 16))
-                                            .tracking(1)
+                                            .font(.headline)
                                             .foregroundColor(Color(UIColor.systemTeal))
                                     }
                                     .padding(.vertical, 5)
                                     
                                     HStack {
                                         Text("PUBLISHER: ")
-                                            .font(.system(size: 16))
-                                            .tracking(1)
+                                            .font(.headline)
                                             .foregroundColor(Color.gray)
                                         
                                         Text(self.game.developer.name)
-                                            .font(.system(size: 16))
-                                            .tracking(1)
+                                            .font(.headline)
                                             .foregroundColor(Color(UIColor.systemTeal))
                                     }
                                     .padding(.vertical, 5)

@@ -27,63 +27,69 @@ struct GameHubView: View {
         //        navBarAppearance.titleTextAttributes = [.foregroundColor: UIColor.white, NSAttributedString.Key.kern: kern]
         //
         
-        print("game hub view created")
+//        print("game hub view created")
     }
     
     var body: some View {
-        TabView(selection: $selectedTab) {
-            NavigationView {
-                FrontHubView(homeGamesDataStore: HomeGamesDataStore(), followGamesDataStore: FollowGamesDataStore(), visitedGamesDataStore: VisitedGamesDataStore(), selectedTab: self.$selectedTab)
-                    // hack for adding some additional space for back button since < is a bit thin
-                    .navigationBarTitle("          ")
-                    .navigationBarHidden(true)
+        Group {
+            if userDataStore.isAuthenticated == false {
+                UserView()
+            } else {
+                TabView(selection: $selectedTab) {
+                    NavigationView {
+                        FrontHubView(homeGamesDataStore: HomeGamesDataStore(), followGamesDataStore: FollowGamesDataStore(), visitedGamesDataStore: VisitedGamesDataStore(), selectedTab: self.$selectedTab)
+                            // hack for adding some additional space for back button since < is a bit thin
+                            .navigationBarTitle("          ")
+                            .navigationBarHidden(true)
+                    }
+                    .tabItem {
+                        Image(systemName: "square.stack.3d.up.fill")
+                        Text("Home")
+                    }
+                        .tag(0)
+                    .background(self.assetsDataStore.colors["darkButNotBlack"])
+                    
+                    NavigationView {
+                        PopularGamesView(popularListDataStore: PopularListDataStore(userDataStore: self.userDataStore))
+                            .navigationBarTitle("          ")
+                            .navigationBarHidden(true)
+                    }
+                    .tabItem {
+                        Image(systemName: "flame.fill")
+                        Text("Popular")
+                    }
+                    .tag(1)
+                    .background(self.assetsDataStore.colors["darkButNotBlack"])
+                    
+                    NavigationView {
+                        TimelineGamesView(timelineDataStore: TimelineDataStore())
+                            .navigationBarTitle("          ")
+                            .navigationBarHidden(true)
+                    }
+                    .tabItem {
+                        Image(systemName: "hourglass.bottomhalf.fill")
+                        Text("Upcoming")
+                    }
+                    .tag(2)
+                    .background(self.assetsDataStore.colors["darkButNotBlack"])
+                    
+                    NavigationView {
+                        UserProfileView(blockHiddenDataStore: BlockHiddenDataStore())
+                            .navigationBarTitle("          ")
+                            .navigationBarHidden(true)
+                    }
+                    .tabItem {
+                        Image(systemName: "person.fill")
+                        Text("Profile")
+                    }
+                    .tag(3)
+                    .background(self.assetsDataStore.colors["darkButNotBlack"])
+                    
+                }
+                .navigationViewStyle(StackNavigationViewStyle())
+                .background(self.assetsDataStore.colors["darkButNotBlack"])
             }
-            .tabItem {
-                Image(systemName: "square.stack.3d.up.fill")
-                Text("Home")
-            }
-                .tag(0)
-            .background(self.assetsDataStore.colors["darkButNotBlack"])
-            
-            NavigationView {
-                PopularGamesView(popularListDataStore: PopularListDataStore(userDataStore: self.userDataStore))
-                    .navigationBarTitle("          ")
-                    .navigationBarHidden(true)
-            }
-            .tabItem {
-                Image(systemName: "flame.fill")
-                Text("Popular")
-            }
-            .tag(1)
-            .background(self.assetsDataStore.colors["darkButNotBlack"])
-            
-            NavigationView {
-                TimelineGamesView(timelineDataStore: TimelineDataStore())
-                    .navigationBarTitle("          ")
-                    .navigationBarHidden(true)
-            }
-            .tabItem {
-                Image(systemName: "hourglass.bottomhalf.fill")
-                Text("Upcoming")
-            }
-            .tag(2)
-            .background(self.assetsDataStore.colors["darkButNotBlack"])
-            
-            NavigationView {
-                UserProfileView(blockHiddenDataStore: BlockHiddenDataStore())
-                    .navigationBarTitle("          ")
-                    .navigationBarHidden(true)
-            }
-            .tabItem {
-                Image(systemName: "person.fill")
-                Text("Profile")
-            }
-            .tag(3)
-            .background(self.assetsDataStore.colors["darkButNotBlack"])
-            
         }
-        .navigationViewStyle(StackNavigationViewStyle())
-        .background(self.assetsDataStore.colors["darkButNotBlack"])
     }
 }
 

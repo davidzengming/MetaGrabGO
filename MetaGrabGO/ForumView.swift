@@ -112,8 +112,6 @@ struct BottomBarViewThreadVer: View {
 }
 
 
-
-
 struct FollowerStatsView: View {
     @ObservedObject var forumOtherDataStore: ForumOtherDataStore
     var gameName: String
@@ -139,7 +137,7 @@ struct FollowerStatsView: View {
                     .bold()
                 
                 if self.forumOtherDataStore.threadCount != nil {
-                    HStack {
+                    HStack(spacing: 10) {
                         Text("Posts " + String(self.forumOtherDataStore.threadCount!))
                             .foregroundColor(Color.white)
                         Text("Follows " + String(self.forumOtherDataStore.followerCount!))
@@ -158,7 +156,7 @@ struct FollowerStatsView: View {
                     .padding(.horizontal, self.width * 0.05)
                     .padding(.vertical, self.width * 0.025)
                     .foregroundColor(self.forumOtherDataStore.isFollowed == true ? Color.white : Color.black)
-                    .background(self.forumOtherDataStore.isFollowed == true ? Color.black : Color.white)
+                    .background(self.forumOtherDataStore.isFollowed == true ? Color.black : Color(UIColor(named: "subBackgroundColor")!))
                     .cornerRadius(self.width * 0.5)
                     .shadow(radius: self.width * 0.05)
                     .onTapGesture {
@@ -191,6 +189,8 @@ struct ForumView: View {
     @State var isImageModalOn = false
     @State var currentImageModalIndex: Int? = nil
     @State var imageModalSelectedThreadStore: ThreadDataStore? = nil
+    
+    @Environment(\.colorScheme) var colorScheme
     
     func turnBottomPopup(state: Bool) {
         if self.isBottomPopupOn != state {
@@ -236,7 +236,7 @@ struct ForumView: View {
         self.forumOtherDataStore = forumOtherDataStore
         self.gameIconLoader = gameIconLoader
         
-        print("creating forum for game:", forumDataStore.game.id)
+//        print("creating forum for game:", forumDataStore.game.id)
         // Navigation related
         // To remove all separators including the actual ones:
         //        UITableView.appearance().separatorStyle = .none
@@ -287,7 +287,7 @@ struct ForumView: View {
                                         .cornerRadius(5, corners: [.topLeft, .topRight, .bottomLeft, .bottomRight])
                                         .overlay(
                                             RoundedRectangle(cornerRadius: 5)
-                                                .stroke(Color.white, lineWidth: 2)
+                                                .stroke(Color(.tertiarySystemBackground), lineWidth: 2)
                                     )
                                 }
                                 
@@ -310,7 +310,7 @@ struct ForumView: View {
                             Spacer()
                         }
                         .frame(width: a.size.width)
-                        .background(Color.white)
+                        .background(Color(UIColor(named: "pseudoTertiaryBackground")!))
                         .cornerRadius(15, corners: [.topLeft, .topRight])
                         .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
                         
@@ -319,11 +319,10 @@ struct ForumView: View {
                                 ActivityIndicator()
                                     .frame(width: a.size.width * 0.3, height: a.size.width * 0.3)
                             }
-                            .frame(width: a.size.width, height: a.size.height * 0.3)
-                            .background(Color.white)
+                            .frame(width: a.size.width, height: a.size.height * 0.5)
                             .cornerRadius(15, corners: [.bottomLeft, .bottomRight])
                             .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
-
+                            .background(Color(UIColor(named: "pseudoTertiaryBackground")!))
                         } else {
                             if self.forumOtherDataStore.isLoaded == true && self.forumDataStore.threadsList.count > 0 {
                                 ForEach(self.forumDataStore.threadsList, id: \.self) { threadId in
@@ -332,13 +331,12 @@ struct ForumView: View {
                                         ThreadRow(threadDataStore: self.forumDataStore.threadDataStores[threadId]!, turnBottomPopup: { state in self.turnBottomPopup(state: state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state: state)}, togglePickedUser: { pickedUser in self.togglePickedUser(user: pickedUser)}, togglePickedThreadId: { (pickedThreadId, futureContainerWidth) in self.togglePickedThreadId(threadId: pickedThreadId, futureContainerWidth: futureContainerWidth)}, width: a.size.width * 0.9, height: a.size.height, toggleImageModal : { (threadDataStore, currentImageModalIndex) in self.toggleImageModal(threadDataStore: threadDataStore, currentImageModalIndex: currentImageModalIndex) })
                                     }
                                     .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
-                                    .listRowBackground(Color.white)
+                                    .listRowBackground(Color(UIColor(named: "pseudoTertiaryBackground")!))
                                 }
                                 
                                 ForumLoadMoreView(forumDataStore: self.forumDataStore, forumOtherDataStore: self.forumOtherDataStore, containerWidth: a.size.width * 0.81)
                                     .frame(width: a.size.width, height: a.size.height * 0.1)
                                     .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
-                                    
                                     // hacky bug fix for rounded corner creating a tiny black line between 2 views
                                     .padding(.top, -10)
                             } else {
@@ -356,7 +354,7 @@ struct ForumView: View {
                                 }
                                 .frame(width: a.size.width, height: a.size.height * 0.5)
                                 .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
-                                .background(Color.white)
+                                .background(Color(UIColor(named: "pseudoTertiaryBackground")!))
                                 .cornerRadius(15, corners: [.bottomLeft, .bottomRight])
                             }
                         }
@@ -372,7 +370,8 @@ struct ForumView: View {
                         self.recentFollowDataStore.insertVisitGame(gameId: self.forumDataStore.game.id)
                     }
                     
-                    NavigationLink(destination: NewThreadView(forumDataStore: self.forumDataStore, forumOtherDataStore: self.forumOtherDataStore, containerWidth: a.size.width * 0.81)) {
+                    NavigationLink(destination: NewThreadView(forumDataStore: self.forumDataStore, forumOtherDataStore: self.forumOtherDataStore, containerWidth: a.size.width * 0.81)
+                    ) {
                         NewThreadButton()
                             .frame(width: min(a.size.width, a.size.height) * 0.12, height: min(a.size.width, a.size.height) * 0.12, alignment: .center)
                             .shadow(radius: 10)
@@ -404,9 +403,11 @@ struct ActivityIndicator: View {
             ForEach(0..<5) { index in
                 Group {
                     Circle()
+                        .fill(Color(.secondaryLabel))
                         .frame(width: geometry.size.width / 5, height: geometry.size.height / 5)
                         .scaleEffect(!self.isAnimating ? 1 - CGFloat(index) / 5 : 0.2 + CGFloat(index) / 5)
                         .offset(y: geometry.size.width / 10 - geometry.size.height / 2)
+                    
                 }.frame(width: geometry.size.width, height: geometry.size.height)
                     .rotationEffect(!self.isAnimating ? .degrees(0) : .degrees(360))
                     .animation(Animation

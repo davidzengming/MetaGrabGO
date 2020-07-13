@@ -48,7 +48,7 @@ struct CommentView : View {
         self.togglePickedUser = togglePickedUser
         self.togglePickedCommentId = togglePickedCommentId
         self.toggleDidBecomeFirstResponder = toggleDidBecomeFirstResponder
-        print("comment view was created: ", self.commentDataStore.comment.id)
+//        print("comment view was created: ", self.commentDataStore.comment.id)
     }
 
     func onClickUser() {
@@ -137,7 +137,6 @@ struct CommentView : View {
                                         VStack(alignment: .leading, spacing: 0) {
                                             HStack(spacing: 0) {
                                                 Text(self.commentDataStore.author.username)
-                                                    .font(.system(size: 16))
                                                     .onTapGesture {
                                                         self.onClickUser()
                                                 }
@@ -152,23 +151,25 @@ struct CommentView : View {
                                                 HStack {
                                                     Image(":thumbs_up:")
                                                         .resizable()
-                                                        .frame(width: 11, height: 11)
+                                                        .frame(width: self.width * 0.025, height: self.width * 0.025)
                                                         .padding(5)
-                                                        .background(self.commentDataStore.vote != nil && self.commentDataStore.vote!.direction == 1 ? Color.black : Color(.lightGray))
+                                                        .background(self.commentDataStore.vote != nil && self.commentDataStore.vote!.direction == 1 ? Color(.darkGray) : Color(UIColor(named: "emojiBackgroundColor")!))
+                                                        
                                                         .cornerRadius(5)
                                                         .onTapGesture {
                                                             self.onClickUpvoteButton()
                                                     }
                                                     
                                                     Text(String(self.commentDataStore.comment.upvotes - self.commentDataStore.comment.downvotes))
-                                                        .frame(width: 20, height: 16)
+                                                        .font(.body)
+                                                        .frame(width: 20)
                                                     
                                                     Image(":thumbs_down:")
                                                         .resizable()
-                                                        .frame(width: 11, height: 11)
+                                                        .frame(width: self.width * 0.025, height: self.width * 0.025)
                                                         .padding(5)
                                                         
-                                                        .background(self.commentDataStore.vote != nil && self.commentDataStore.vote!.direction == -1 ? Color.black : Color(.lightGray))
+                                                        .background(self.commentDataStore.vote != nil && self.commentDataStore.vote!.direction == -1 ? Color(.darkGray) : Color(UIColor(named: "emojiBackgroundColor")!))
                                                         .cornerRadius(5)
                                                         .onTapGesture {
                                                             self.onClickDownvoteButton()
@@ -177,8 +178,8 @@ struct CommentView : View {
                                             }
                                             
                                             Text(self.commentDataStore.relativeDateString!)
-                                                .foregroundColor(Color(.darkGray))
-                                                .font(.system(size: 14))
+                                                .foregroundColor(Color(UIColor(named: "darkerLabelColor")!))
+                                                .font(.subheadline)
                                                 .padding(.bottom, 5)
                                         }
                                     }

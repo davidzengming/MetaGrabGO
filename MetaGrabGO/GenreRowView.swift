@@ -12,7 +12,6 @@ struct GenreRowView: View {
     @EnvironmentObject var globalGamesDataStore: GlobalGamesDataStore
     @EnvironmentObject var userDataStore: UserDataStore
     @ObservedObject var genreDataStore: GenreDataStore
-    
     @Environment(\.imageCache) var cache: ImageCache
     
     private let gameIconWidthMultiplier: CGFloat = 0.35

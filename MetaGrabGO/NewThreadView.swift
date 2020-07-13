@@ -39,6 +39,12 @@ struct NewThreadView: View {
     let placeholder = Image(systemName: "photo")
     let maxNumImages = 3
     
+    init(forumDataStore: ForumDataStore, forumOtherDataStore: ForumOtherDataStore, containerWidth: CGFloat) {
+        self.forumDataStore = forumDataStore
+        self.forumOtherDataStore = forumOtherDataStore
+        self.containerWidth = containerWidth
+    }
+    
     func submitThread() {
         if self.showImagePicker == true {
             self.showImagePicker = false
@@ -66,7 +72,8 @@ struct NewThreadView: View {
             VStack {
                 TextField("Add a title! (Optional)", text: self.$title)
                     .autocapitalization(.none)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .cornerRadius(5, corners: [.bottomLeft, .bottomRight, .topLeft, .topRight])
+                    .padding(.horizontal, 5)
                     .padding()
                 
                 HStack(spacing: 25) {
@@ -83,7 +90,8 @@ struct NewThreadView: View {
                                 UploadDashPlaceholderButton()
                                     .foregroundColor(Color.gray)
                                     .frame(width: 100, height: 100, alignment: .leading)
-                                    .opacity(self.imagesDict[id] != nil ? 0.5 : 1)
+                                    .background(Color(.tertiarySystemBackground))
+                                    .opacity(self.imagesDict[id] != nil ? 0.2 : 1)
                             }
                             .buttonStyle(PlainButtonStyle())
                             
@@ -107,25 +115,27 @@ struct NewThreadView: View {
                 
                 FancyPantsEditorView(existedTextStorage: .constant(NSTextStorage(string: "")), desiredHeight: .constant(0), newTextStorage: self.$content, isEditable: .constant(true), isFirstResponder: self.$isFirstResponder, didBecomeFirstResponder: self.$didBecomeFirstResponder, showFancyPantsEditorBar: .constant(false), isNewContent: true, isThread: true, isOmniBar: false, width: a.size.width, height: a.size.height)
                     .frame(minWidth: 0, maxWidth: a.size.width, minHeight: 0, maxHeight: a.size.height * 0.5, alignment: .leading)
+                    .background(Color(.tertiarySystemBackground))
                     .cornerRadius(5, corners: [.bottomLeft, .bottomRight, .topLeft, .topRight])
                     .overlay(
                         RoundedRectangle(cornerRadius: 5)
                             .stroke(Color.black, lineWidth: 2)
                 )
-                .padding()
-                .transition(.move(edge: .bottom))
-                .animation(.default)
+                    .padding()
+                    .transition(.move(edge: .bottom))
+                    .animation(.default)
                 Spacer()
             }
+            .KeyboardAwarePadding()
             .sheet(isPresented: self.$showImagePicker) {
                 ImagePicker(isImagePickerShown: self.$showImagePicker, image: self.$imagesDict[self.imagesArray[self.clickedImageIndex!]], data: self.$dataDict[self.imagesArray[self.clickedImageIndex!]], currentImages: self.$imagesArray, imagesDict: self.$imagesDict, dataDict: self.$dataDict)
-                        .frame(width: a.size.width)
-                        .background(self.assetsDataStore.colors["darkButNotBlack"]!)
-                        .cornerRadius(5, corners: [.topLeft, .topRight])
-                        .transition(.move(edge: .bottom))
-                        .animation(.default)
+                    .frame(width: a.size.width)
+                    .background(self.assetsDataStore.colors["darkButNotBlack"]!)
+                    .cornerRadius(5, corners: [.topLeft, .topRight])
+                    .transition(.move(edge: .bottom))
+                    .animation(.default)
             }
-            .KeyboardAwarePadding()
+                
             .navigationBarTitle(Text("Post to \(self.forumDataStore.game.name)"))
             .navigationBarItems(trailing: Button(action: self.submitThread) {
                 Text("Submit")

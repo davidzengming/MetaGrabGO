@@ -16,6 +16,8 @@ class RecentFollowDataStore: ObservableObject {
     var recentVisitGames: [Int]
     var followGames: Set<Int>
     
+    var shouldRefreshDataStore = false
+    
     init() {
         self.recentVisitGames = []
         self.followGames = []

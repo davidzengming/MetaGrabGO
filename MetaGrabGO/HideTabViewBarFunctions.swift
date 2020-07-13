@@ -16,6 +16,6 @@ extension UITabBar {
     override open func didMoveToSuperview() {
         super.didMoveToSuperview()
         Global.tabBar = self
-        print("Tab Bar moved to superview")
+//        print("Tab Bar moved to superview")
     }
 }

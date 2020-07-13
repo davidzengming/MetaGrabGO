@@ -9,6 +9,13 @@
 import SwiftUI
 import Combine
 
+var hasBottomNotch: Bool {
+    if #available(iOS 11.0, *), let keyWindow = UIApplication.shared.keyWindow, keyWindow.safeAreaInsets.bottom > 0 {
+        return true
+    }
+    return false
+}
+
 struct FancyPantsEditorView: View {
     @Binding var existedTextStorage: NSTextStorage
     @Binding var desiredHeight: CGFloat
@@ -46,7 +53,7 @@ struct FancyPantsEditorView: View {
     var height: CGFloat
     var togglePickedCommentId: ((CommentDataStore?, CGFloat) -> Void)?
     var mainCommentContainerWidth: CGFloat?
-    
+
     func toggleAttributesEditor() {
         self.isAttributesEditorOn = !self.isAttributesEditorOn
     }
@@ -180,10 +187,9 @@ struct FancyPantsEditorView: View {
                             .padding(.vertical, 10)
                             .padding(.horizontal, 20)
                             .frame(height: self.keyboardHeight == 0 ? 50 * 0.75 : self.desiredHeight + 20)
-                            .background(Color(red: 238 / 255, green: 238 / 255, blue: 238 / 255))
+                            .background(Color(UIColor(named: "omniBarBackgroundColor")!))
                             .cornerRadius(25)
                             .padding(.vertical, 10)
-                            .padding(.bottom, self.keyboardHeight == 0 ? 20 : 0)
                             .padding(.leading, 20)
                             .padding(.trailing, self.keyboardHeight == 0 ? 20 : 0)
                         
@@ -216,85 +222,93 @@ struct FancyPantsEditorView: View {
                             .padding(.trailing, 20)
                         }
                     }
-                    .background(Color.white)
+                    .background(Color(UIColor(named: "omniBarPrimaryBackgroundColor")!)
+                        .shadow(radius: 0.2)
+                    )
+                    .padding(.bottom, self.keyboardHeight == 0 && hasBottomNotch ? 20 : 0)
+                    .background(Color(UIColor(named: "pseudoTertiaryBackground")!))
                     
                     if self.isEditable == true && self.keyboardHeight != 0 && self.isAttributesEditorOn {
-                        HStack(spacing: 0) {
-                            Button(action: {
-                                self.turnOnDidChangeBold()
-                                self.toggleBold()
-                            }) {
-                                Image(systemName: "bold")
-                                    .resizable()
-                                    .padding(.vertical, 10)
-                                    .padding(.horizontal, 20)
-                                    .foregroundColor(self.isBold ? .black : .gray)
+                        
+                        HStack {
+                            HStack(spacing: 0) {
+                                Button(action: {
+                                    self.turnOnDidChangeBold()
+                                    self.toggleBold()
+                                }) {
+                                    Image(systemName: "bold")
+                                        .resizable()
+                                        .padding(.vertical, 10)
+                                        .padding(.horizontal, 20)
+                                        .foregroundColor(self.isBold ? .black : .gray)
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                                .frame(width: 60, height: 40, alignment: .center)
+                                
+                                Spacer()
+                                
+                                Button(action: {
+                                    self.turnOnDidChangeItalic()
+                                    self.toggleItalic()
+                                }) {
+                                    Image(systemName: "italic")
+                                        .resizable()
+                                        .padding(.vertical, 10)
+                                        .padding(.horizontal, 20)
+                                        .foregroundColor(self.isItalic ? .black : .gray)
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                                .frame(width: 60, height: 40, alignment: .center)
+                                
+                                Spacer()
+                                
+                                Button(action: {
+                                    self.turnOnDidChangeStrikethrough()
+                                    self.toggleStrikethrough()
+                                }) {
+                                    Image(systemName: "strikethrough")
+                                        .resizable()
+                                        .padding(.vertical, 10)
+                                        .padding(.horizontal, 20)
+                                        .foregroundColor(self.isStrikethrough ? .black : .gray)
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                                .frame(width: 60, height: 40, alignment: .center)
+                                
+                                Spacer()
+                                
+                                Button(action: {
+                                    self.turnOnDidChangeBulletList()
+                                    self.toggleBulletList()
+                                }) {
+                                    Image(systemName: "list.bullet")
+                                        .resizable()
+                                        .padding(.vertical, 10)
+                                        .padding(.horizontal, 20)
+                                        .foregroundColor(self.isDashBulletList ? .black : .gray)
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                                .frame(width: 60, height: 40, alignment: .center)
+                                
+                                Spacer()
+                                
+                                Button(action: {
+                                    self.turnOnDidChangeNumberedBulletList()
+                                    self.toggleNumberBulletList()
+                                }) {
+                                    Image(systemName: "list.number")
+                                        .resizable()
+                                        .padding(.vertical, 10)
+                                        .padding(.horizontal, 20)
+                                        .foregroundColor(self.isNumberedBulletList ? .black : .gray)
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                                .frame(width: 60, height: 40, alignment: .center)
                             }
-                            .buttonStyle(PlainButtonStyle())
-                            .frame(width: 60, height: 40, alignment: .center)
-                            
-                            Spacer()
-                            
-                            Button(action: {
-                                self.turnOnDidChangeItalic()
-                                self.toggleItalic()
-                            }) {
-                                Image(systemName: "italic")
-                                    .resizable()
-                                    .padding(.vertical, 10)
-                                    .padding(.horizontal, 20)
-                                    .foregroundColor(self.isItalic ? .black : .gray)
-                            }
-                            .buttonStyle(PlainButtonStyle())
-                            .frame(width: 60, height: 40, alignment: .center)
-                            
-                            Spacer()
-                            
-                            Button(action: {
-                                self.turnOnDidChangeStrikethrough()
-                                self.toggleStrikethrough()
-                            }) {
-                                Image(systemName: "strikethrough")
-                                    .resizable()
-                                    .padding(.vertical, 10)
-                                    .padding(.horizontal, 20)
-                                    .foregroundColor(self.isStrikethrough ? .black : .gray)
-                            }
-                            .buttonStyle(PlainButtonStyle())
-                            .frame(width: 60, height: 40, alignment: .center)
-                            
-                            Spacer()
-                            
-                            Button(action: {
-                                self.turnOnDidChangeBulletList()
-                                self.toggleBulletList()
-                            }) {
-                                Image(systemName: "list.bullet")
-                                    .resizable()
-                                    .padding(.vertical, 10)
-                                    .padding(.horizontal, 20)
-                                    .foregroundColor(self.isDashBulletList ? .black : .gray)
-                            }
-                            .buttonStyle(PlainButtonStyle())
-                            .frame(width: 60, height: 40, alignment: .center)
-                            
-                            Spacer()
-                            
-                            Button(action: {
-                                self.turnOnDidChangeNumberedBulletList()
-                                self.toggleNumberBulletList()
-                            }) {
-                                Image(systemName: "list.number")
-                                    .resizable()
-                                    .padding(.vertical, 10)
-                                    .padding(.horizontal, 20)
-                                    .foregroundColor(self.isNumberedBulletList ? .black : .gray)
-                            }
-                            .buttonStyle(PlainButtonStyle())
-                            .frame(width: 60, height: 40, alignment: .center)
+                            .frame(width: self.width - 20 * 2, height: 40, alignment: .leading)
                         }
-                        .frame(width: self.width - 20 * 2, height: 40, alignment: .leading)
-                        .background(Color.white)
+                        .frame(width: self.width)
+                        .background(Color(UIColor(named: "omniBarPrimaryBackgroundColor")!))
                     }
                 }
                 .onReceive(self.keyboardHeightPublisher) { self.keyboardHeight = $0 }
