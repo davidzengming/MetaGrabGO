@@ -9,8 +9,6 @@
 import SwiftUI
 
 struct EmojiBarThreadView: View {
-    @EnvironmentObject var userDataStore: UserDataStore
-    @EnvironmentObject var assetsDataStore: AssetsDataStore
     @ObservedObject var threadDataStore: ThreadDataStore
     
     var turnBottomPopup: (Bool) -> Void
@@ -30,45 +28,45 @@ struct EmojiBarThreadView: View {
             if self.threadDataStore.vote != nil {
                 switch self.threadDataStore.vote!.direction {
                 case 1:
-                    self.threadDataStore.deleteVote(user: userDataStore.user!, userDataStore: self.userDataStore)
+                    self.threadDataStore.deleteVote()
                     break
                 case 0:
-                    self.threadDataStore.upvoteByExistingVoteId(user: userDataStore.user!, userDataStore: self.userDataStore)
+                    self.threadDataStore.upvoteByExistingVoteId()
                     break
                 case -1:
-                    self.threadDataStore.switchUpvote(user: userDataStore.user!, userDataStore: self.userDataStore)
+                    self.threadDataStore.switchUpvote()
                     break
                 default:
                     print("Invalid vote direction.")
                 }
             } else {
-                self.threadDataStore.addNewUpvote(user: userDataStore.user!, userDataStore: self.userDataStore)
+                self.threadDataStore.addNewUpvote()
             }
             break
         case 1:
             if self.threadDataStore.vote != nil {
                 switch self.threadDataStore.vote!.direction {
                 case -1:
-                    self.threadDataStore.deleteVote(user: userDataStore.user!, userDataStore: self.userDataStore)
+                    self.threadDataStore.deleteVote()
                     break
                 case 0:
-                    self.threadDataStore.downvoteByExistingVoteId(user: userDataStore.user!, userDataStore: self.userDataStore)
+                    self.threadDataStore.downvoteByExistingVoteId()
                     break
                 case 1:
-                    self.threadDataStore.switchDownvote(user: userDataStore.user!, userDataStore: self.userDataStore)
+                    self.threadDataStore.switchDownvote()
                     break
                 default:
                     print("Invalid vote direction.")
                 }
             } else {
-                self.threadDataStore.addNewDownvote(user: userDataStore.user!, userDataStore: self.userDataStore)
+                self.threadDataStore.addNewDownvote()
             }
             break
         default:
             if self.threadDataStore.emojis.didReactToEmoji[emojiId] == true {
-                self.threadDataStore.removeEmojiByThreadId(emojiId: emojiId, user: userDataStore.user!, userDataStore: self.userDataStore)
+                self.threadDataStore.removeEmojiByThreadId(emojiId: emojiId)
             } else {
-                self.threadDataStore.addEmojiByThreadId(emojiId: emojiId, user: userDataStore.user!, userDataStore: self.userDataStore)
+                self.threadDataStore.addEmojiByThreadId(emojiId: emojiId)
             }
         }
     }
@@ -95,7 +93,7 @@ struct EmojiBarThreadView: View {
                                     .frame(alignment: .leading)
                                 } else {
                                     HStack {
-                                        Image(uiImage: self.assetsDataStore.emojis[emojiId]!)
+                                        Image(uiImage: appWideAssets.emojis[emojiId]!!)
                                             .resizable()
                                             .frame(width: 15, height: 15)
 

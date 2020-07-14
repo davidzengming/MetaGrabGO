@@ -27,10 +27,9 @@ struct LoginUserView: View {
     @State private var name: String = ""
     @State private var password: String = ""
     @EnvironmentObject var userDataStore: UserDataStore
-    @EnvironmentObject var assetsDataStore: AssetsDataStore
     
     private func submit() {
-        userDataStore.login(username: name, password: password)
+        userDataStore.acquireToken(username: name, password: password)
     }
     
     var body: some View {
@@ -42,7 +41,7 @@ struct LoginUserView: View {
                     .disableAutocorrection(true)
                     .autocapitalization(.none)
                     .padding(10)
-                    .background(self.assetsDataStore.colors["notQuiteBlack"]!)
+                    .background(appWideAssets.colors["notQuiteBlack"]!)
                     .cornerRadius(5)
                     .frame(width: a.size.width * 0.6)
                     .overlay(
@@ -61,7 +60,7 @@ struct LoginUserView: View {
                     .textContentType(.password)
                     .autocapitalization(.none)
                     .padding(10)
-                    .background(self.assetsDataStore.colors["notQuiteBlack"]!)
+                    .background(appWideAssets.colors["notQuiteBlack"]!)
                     .cornerRadius(5)
                     .frame(width: a.size.width * 0.6)
                     .overlay(
@@ -82,8 +81,7 @@ struct LoginUserView: View {
                     .shadow(radius: 5)
                 }
                 .onAppear() {
-                    self.userDataStore.onStart()
-                    if self.userDataStore.username != nil {
+                    if self.userDataStore.isAuthenticated == false && self.userDataStore.isAutologinEnabled == true {
                         self.userDataStore.autologin()
                     }
                 }
@@ -113,7 +111,6 @@ struct RegisterUserView : View {
     @State var email: String = ""
     @State var showDetail = false
     @EnvironmentObject var userDataStore: UserDataStore
-    @EnvironmentObject var assetsDataStore: AssetsDataStore
     
     var body: some View {
         GeometryReader { a in
@@ -124,7 +121,7 @@ struct RegisterUserView : View {
                     .disableAutocorrection(true)
                     .autocapitalization(.none)
                     .padding(10)
-                    .background(self.assetsDataStore.colors["notQuiteBlack"]!)
+                    .background(appWideAssets.colors["notQuiteBlack"]!)
                     .cornerRadius(5)
                     .frame(width: a.size.width * 0.6)
                     .overlay(
@@ -141,7 +138,7 @@ struct RegisterUserView : View {
                     .disableAutocorrection(true)
                     .autocapitalization(.none)
                     .padding(10)
-                    .background(self.assetsDataStore.colors["notQuiteBlack"]!)
+                    .background(appWideAssets.colors["notQuiteBlack"]!)
                     .cornerRadius(5)
                     .frame(width: a.size.width * 0.6)
                     .overlay(
@@ -159,7 +156,7 @@ struct RegisterUserView : View {
                     .textContentType(.password)
                     .autocapitalization(.none)
                     .padding(10)
-                    .background(self.assetsDataStore.colors["notQuiteBlack"]!)
+                    .background(appWideAssets.colors["notQuiteBlack"]!)
                     .cornerRadius(5)
                     .frame(width: a.size.width * 0.6)
                     .overlay(

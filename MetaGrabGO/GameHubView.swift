@@ -10,7 +10,7 @@ import SwiftUI
 
 struct GameHubView: View {
     @EnvironmentObject var userDataStore: UserDataStore
-    @EnvironmentObject var assetsDataStore: AssetsDataStore
+    @EnvironmentObject var globalGamesDataStore: GlobalGamesDataStore
     
     @State var selectedTab = 0
     
@@ -47,10 +47,10 @@ struct GameHubView: View {
                         Text("Home")
                     }
                         .tag(0)
-                    .background(self.assetsDataStore.colors["darkButNotBlack"])
+                    .background(appWideAssets.colors["darkButNotBlack"])
                     
                     NavigationView {
-                        PopularGamesView(popularListDataStore: PopularListDataStore(userDataStore: self.userDataStore))
+                        PopularGamesView(popularListDataStore: PopularListDataStore(globalGamesDataStore: self.globalGamesDataStore))
                             .navigationBarTitle("          ")
                             .navigationBarHidden(true)
                     }
@@ -59,7 +59,7 @@ struct GameHubView: View {
                         Text("Popular")
                     }
                     .tag(1)
-                    .background(self.assetsDataStore.colors["darkButNotBlack"])
+                    .background(appWideAssets.colors["darkButNotBlack"])
                     
                     NavigationView {
                         TimelineGamesView(timelineDataStore: TimelineDataStore())
@@ -71,7 +71,7 @@ struct GameHubView: View {
                         Text("Upcoming")
                     }
                     .tag(2)
-                    .background(self.assetsDataStore.colors["darkButNotBlack"])
+                    .background(appWideAssets.colors["darkButNotBlack"])
                     
                     NavigationView {
                         UserProfileView(blockHiddenDataStore: BlockHiddenDataStore())
@@ -83,11 +83,11 @@ struct GameHubView: View {
                         Text("Profile")
                     }
                     .tag(3)
-                    .background(self.assetsDataStore.colors["darkButNotBlack"])
+                    .background(appWideAssets.colors["darkButNotBlack"])
                     
                 }
                 .navigationViewStyle(StackNavigationViewStyle())
-                .background(self.assetsDataStore.colors["darkButNotBlack"])
+                .background(appWideAssets.colors["darkButNotBlack"])
             }
         }
     }

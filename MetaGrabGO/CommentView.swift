@@ -11,9 +11,6 @@ import SwiftUI
 
 
 struct CommentView : View {
-    @EnvironmentObject var assetsDataStore: AssetsDataStore
-    @EnvironmentObject var userDataStore: UserDataStore
-    
     @ObservedObject var commentDataStore: CommentDataStore
     
     @State var isEditable: Bool = false
@@ -52,7 +49,7 @@ struct CommentView : View {
     }
 
     func onClickUser() {
-        if self.commentDataStore.author.id == self.userDataStore.token!.userId {
+        if self.commentDataStore.author.id == keychainService.getUserId() {
             print("Cannot report self.")
             return
         }
@@ -83,28 +80,28 @@ struct CommentView : View {
     func onClickUpvoteButton() {
         if self.commentDataStore.vote != nil {
             if self.commentDataStore.vote!.direction == 1 {
-                self.commentDataStore.deleteVote(user: self.userDataStore.user!, userDataStore: self.userDataStore)
+                self.commentDataStore.deleteVote()
             } else if self.commentDataStore.vote!.direction == 0 {
-                self.commentDataStore.upvoteByExistingVoteId(user: self.userDataStore.user!, userDataStore: self.userDataStore)
+                self.commentDataStore.upvoteByExistingVoteId()
             } else {
-                self.commentDataStore.switchUpvote(user: self.userDataStore.user!, userDataStore: self.userDataStore)
+                self.commentDataStore.switchUpvote()
             }
         } else {
-            self.commentDataStore.addNewUpvote(user: self.userDataStore.user!, userDataStore: self.userDataStore)
+            self.commentDataStore.addNewUpvote()
         }
     }
     
     func onClickDownvoteButton() {
         if self.commentDataStore.vote != nil {
             if self.commentDataStore.vote!.direction == -1 {
-                self.commentDataStore.deleteVote(user: self.userDataStore.user!, userDataStore: self.userDataStore)
+                self.commentDataStore.deleteVote()
             } else if self.commentDataStore.vote!.direction == 0 {
-                self.commentDataStore.downvoteByExistingVoteId(user: self.userDataStore.user!, userDataStore: self.userDataStore)
+                self.commentDataStore.downvoteByExistingVoteId()
             } else {
-                self.commentDataStore.switchDownvote(user: self.userDataStore.user!, userDataStore: self.userDataStore)
+                self.commentDataStore.switchDownvote()
             }
         } else {
-            self.commentDataStore.addNewDownvote(user: self.userDataStore.user!, userDataStore: self.userDataStore)
+            self.commentDataStore.addNewDownvote()
         }
     }
     
@@ -116,7 +113,7 @@ struct CommentView : View {
                     HStack(spacing: 0) {
                         if self.level > 0 {
                             RoundedRectangle(cornerRadius: 25, style: .continuous)
-                                .fill(self.assetsDataStore.leadingLineColors[self.level % self.assetsDataStore.leadingLineColors.count])
+                                .fill(appWideAssets.leadingLineColors[self.level % appWideAssets.leadingLineColors.count])
                                 .frame(width: self.leadLineWidth, height: 30 + self.commentDataStore.desiredHeight + (self.isEditable ? 20 : 0) + 30 + 20)
                                 .padding(.trailing, 10)
                         }
@@ -199,13 +196,13 @@ struct CommentView : View {
                                                 Text("Unhide")
                                                     .bold()
                                                     .onTapGesture {
-                                                        self.commentDataStore.unhideComment(userDataStore: self.userDataStore)
+                                                        self.commentDataStore.unhideComment()
                                                 }
                                             } else {
                                                 Text("Hide")
                                                     .bold()
                                                     .onTapGesture {
-                                                        self.commentDataStore.hideComment(userDataStore: self.userDataStore)
+                                                        self.commentDataStore.hideComment()
                                                 }
                                             }
                                         }
@@ -239,7 +236,7 @@ struct CommentView : View {
                 if self.commentDataStore.isLoadingNextPage == true {
                     ActivityIndicator()
                         .frame(width: self.width - self.leadPadding - staticPadding * 2 - 10 - self.leadLineWidth - 20, height: self.height * 0.20)
-                        .foregroundColor(self.assetsDataStore.colors["darkButNotBlack"]!)
+                        .foregroundColor(appWideAssets.colors["darkButNotBlack"]!)
                 } else {
                     HStack {
                         Spacer()

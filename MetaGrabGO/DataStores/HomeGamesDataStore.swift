@@ -44,6 +44,7 @@ class RecentFollowDataStore: ObservableObject {
 
 class HomeGamesDataStore: ObservableObject {
     @Published var isLoaded: Bool
+    var cancellableSet: Set<AnyCancellable> = []
     
     let API = APIClient()
     
@@ -74,74 +75,105 @@ class HomeGamesDataStore: ObservableObject {
         }
     }
     
-    func fetchFollowGames(globalGamesDataStore: GlobalGamesDataStore, followGamesDataStore: FollowGamesDataStore, userDataStore: UserDataStore, start:Int = 0, count:Int = 10, recentFollowDataStore: RecentFollowDataStore, taskGroup: DispatchGroup?) {
+    func fetchFollowGames(globalGamesDataStore: GlobalGamesDataStore, followGamesDataStore: FollowGamesDataStore, start:Int = 0, count:Int = 10, recentFollowDataStore: RecentFollowDataStore, taskGroup: DispatchGroup?) {
         
         taskGroup?.enter()
         let params = ["start": String(start), "count": String(count)]
         let url = API.generateURL(resource: Resource.games, endPoint: EndPoint.getFollowGameByUserId, params: params)
         let request = API.generateRequest(url: url!, method: .GET, json: nil)
         
-        API.sessionHandler(request: request, userDataStore: userDataStore) { data in
-            if let jsonString = String(data: data, encoding: .utf8) {
-                let followGames: [Game] = load(jsonData: jsonString.data(using: .utf8)!)
-                
-                var newFollowGamesIdArr: [Int] = []
-                
-                for game in followGames {
-                    newFollowGamesIdArr.append(game.id)
-                    
-                    recentFollowDataStore.followGames.insert(game.id)
-                    followGamesDataStore.followGamesIdSet.insert(game.id)
-                    
-                    // could optimize a bit further by putting this in same background queue as visited API call, but will create crash if same resource used by different threads - race condition
-                    globalGamesQueue.async {
-                        if globalGamesDataStore.games[game.id] == nil {
-                            globalGamesDataStore.games[game.id] = game
-                        }
-                    }
+        API.accessTokenRefreshHandler(request: request)
+        let session = self.API.generateSession()
+        
+        refreshingRequestTaskGroup.notify(queue: .global()) {
+            processingRequestsTaskGroup.enter()
+            session.dataTaskPublisher(for: request)
+            .map(\.data)
+                .decode(type: [Game].self, decoder: self.API.getJSONDecoder())
+            .receive(on: RunLoop.main)
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case .finished:
+                    processingRequestsTaskGroup.leave()
+                    break
+                case .failure(let error):
+                    print("error: ", error)
+                    processingRequestsTaskGroup.leave()
+                    break
                 }
-                
-                if followGamesDataStore.followedGamesId != newFollowGamesIdArr {
-                    DispatchQueue.main.async {
-                        followGamesDataStore.followedGamesId = newFollowGamesIdArr
-                    }
-                }
-                
-                taskGroup?.leave()
-            }
+            }, receiveValue: { [unowned self] followGames in
+               var newFollowGamesIdArr: [Int] = []
+               
+               for game in followGames {
+                   newFollowGamesIdArr.append(game.id)
+                   
+                   recentFollowDataStore.followGames.insert(game.id)
+                   followGamesDataStore.followGamesIdSet.insert(game.id)
+                   
+                   // could optimize a bit further by putting this in same background queue as visited API call, but will create crash if same resource used by different threads - race condition
+                   globalGamesQueue.async {
+                       if globalGamesDataStore.games[game.id] == nil {
+                           globalGamesDataStore.games[game.id] = game
+                       }
+                   }
+               }
+               
+               if followGamesDataStore.followedGamesId != newFollowGamesIdArr {
+                    followGamesDataStore.followedGamesId = newFollowGamesIdArr
+               }
+               
+               taskGroup?.leave()
+            })
+            .store(in: &self.cancellableSet)
         }
     }
     
-    func getGameHistory(globalGamesDataStore: GlobalGamesDataStore, visitedGamesDataStore: VisitedGamesDataStore, recentFollowDataStore: RecentFollowDataStore, taskGroup: DispatchGroup?, userDataStore: UserDataStore) {
+    func getGameHistory(globalGamesDataStore: GlobalGamesDataStore, visitedGamesDataStore: VisitedGamesDataStore, recentFollowDataStore: RecentFollowDataStore, taskGroup: DispatchGroup?) {
         taskGroup?.enter()
         
         let url = API.generateURL(resource: Resource.games, endPoint: EndPoint.getGameHistoryByUserId)
         let request = API.generateRequest(url: url!, method: .GET, json: nil)
         
-        API.sessionHandler(request: request, userDataStore: userDataStore) { data in
-            if let jsonString = String(data: data, encoding: .utf8) {
-                let gameHistoryResponse: GameHistoryResponse = load(jsonData: jsonString.data(using: .utf8)!)
-                
-                var newVisitedGamesIdArr: [Int] = []
-                
-                for game in gameHistoryResponse.gameHistory  {
-                    newVisitedGamesIdArr.append(game.id)
-                    
-                    // could optimize a bit further by putting this in same background queue as visited API call, but will create crash if same resource used by different threads - race condition
-                    globalGamesQueue.async {
-                        if globalGamesDataStore.games[game.id] == nil {
-                            globalGamesDataStore.games[game.id] = game
-                        }
-                    }
+        API.accessTokenRefreshHandler(request: request)
+        let session = self.API.generateSession()
+        
+        refreshingRequestTaskGroup.notify(queue: .global()) {
+            processingRequestsTaskGroup.enter()
+            session.dataTaskPublisher(for: request)
+            .map(\.data)
+                .decode(type: GameHistoryResponse.self, decoder: self.API.getJSONDecoder())
+            .receive(on: RunLoop.main)
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case .finished:
+                    processingRequestsTaskGroup.leave()
+                    break
+                case .failure(let error):
+                    print("error: ", error)
+                    processingRequestsTaskGroup.leave()
+                    break
                 }
-                
-                recentFollowDataStore.recentVisitGames = newVisitedGamesIdArr
-                
-                DispatchQueue.main.async {
-                    visitedGamesDataStore.visitedGamesId = newVisitedGamesIdArr
-                }
-                taskGroup?.leave()
-            }
+            }, receiveValue: { [unowned self] gameHistoryResponse in
+               var newVisitedGamesIdArr: [Int] = []
+               for game in gameHistoryResponse.gameHistory  {
+                   newVisitedGamesIdArr.append(game.id)
+                   
+                   // could optimize a bit further by putting this in same background queue as visited API call, but will create crash if same resource used by different threads - race condition
+                   globalGamesQueue.async {
+                       if globalGamesDataStore.games[game.id] == nil {
+                           globalGamesDataStore.games[game.id] = game
+                       }
+                   }
+               }
+               
+               recentFollowDataStore.recentVisitGames = newVisitedGamesIdArr
+               
+               DispatchQueue.main.async {
+                   visitedGamesDataStore.visitedGamesId = newVisitedGamesIdArr
+               }
+               taskGroup?.leave()
+            })
+            .store(in: &self.cancellableSet)
         }
     }
 }

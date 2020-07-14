@@ -10,9 +10,6 @@ import SwiftUI
 import Combine
 
 struct ForumLoadMoreView: View {
-    @EnvironmentObject var assetsDataStore: AssetsDataStore
-    @EnvironmentObject var userDataStore: UserDataStore
-    
     @ObservedObject var forumDataStore: ForumDataStore
     @ObservedObject var forumOtherDataStore: ForumOtherDataStore
     var containerWidth: CGFloat
@@ -22,7 +19,7 @@ struct ForumLoadMoreView: View {
             return
         }
         
-        self.forumDataStore.fetchThreads(start: self.forumOtherDataStore.forumNextPageStartIndex!, userId: self.userDataStore.token!.userId, containerWidth: self.containerWidth, forumOtherDataStore: self.forumOtherDataStore, userDataStore: self.userDataStore)
+        self.forumDataStore.fetchThreads(start: self.forumOtherDataStore.forumNextPageStartIndex!, containerWidth: self.containerWidth, forumOtherDataStore: self.forumOtherDataStore)
     }
     
     var body: some View {
@@ -31,7 +28,7 @@ struct ForumLoadMoreView: View {
                 if self.forumOtherDataStore.isLoaded && self.forumOtherDataStore.forumNextPageStartIndex != nil && self.forumOtherDataStore.forumNextPageStartIndex != -1 {
                     VStack {
                         Rectangle()
-                        .fill(self.assetsDataStore.colors["darkButNotBlack"]!)
+                        .fill(appWideAssets.colors["darkButNotBlack"]!)
                             .frame(height: a.size.height * 0.25)
                             
                         Spacer()
@@ -68,7 +65,7 @@ struct ForumLoadMoreView: View {
                         Spacer()
                     }
                     .frame(width: a.size.width, height: a.size.height)
-                    .background(self.assetsDataStore.colors["darkButNotBlack"]!)
+                    .background(appWideAssets.colors["darkButNotBlack"]!)
                     .cornerRadius(15, corners: [.bottomLeft, .bottomRight])
                 }
 

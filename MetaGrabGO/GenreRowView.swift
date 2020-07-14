@@ -10,7 +10,6 @@ import SwiftUI
 
 struct GenreRowView: View {
     @EnvironmentObject var globalGamesDataStore: GlobalGamesDataStore
-    @EnvironmentObject var userDataStore: UserDataStore
     @ObservedObject var genreDataStore: GenreDataStore
     @Environment(\.imageCache) var cache: ImageCache
     
@@ -21,8 +20,8 @@ struct GenreRowView: View {
     
     var width: CGFloat
     
-    init(access: String, genre: Genre, globalGamesDataStore: GlobalGamesDataStore, width: CGFloat, userDataStore: UserDataStore) {
-        self.genreDataStore = GenreDataStore(genre: genre, globalGamesDataStore: globalGamesDataStore, userDataStore: userDataStore)
+    init(genre: Genre, genreDataStore: GenreDataStore, globalGamesDataStore: GlobalGamesDataStore, width: CGFloat) {
+        self.genreDataStore = genreDataStore
         self.width = width
     }
     
@@ -36,7 +35,7 @@ struct GenreRowView: View {
                 }
                 if self.genreDataStore.nextPageStartIndex != -1 {
                     Button(action: {
-                        self.genreDataStore.fetchGamesByGenrePage(start: self.genreDataStore.nextPageStartIndex, count: 5, refresh: false, globalGamesDataStore: self.globalGamesDataStore, userDataStore: self.userDataStore)
+                        self.genreDataStore.fetchGamesByGenrePage(start: self.genreDataStore.nextPageStartIndex, count: 5, refresh: false, globalGamesDataStore: self.globalGamesDataStore)
                     }) {
                         LoadMoreGamesIcon(isLoadingGames: self.$genreDataStore.isLoadingGames)
                         .frame(width: self.width * self.gameIconWidthMultiplier, height: self.width * self.gameIconWidthMultiplier * 1 / self.widthToHeightRatio / self.imageSizeHeightRatio * 0.8)

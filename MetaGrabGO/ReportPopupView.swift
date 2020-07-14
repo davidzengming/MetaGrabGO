@@ -9,7 +9,6 @@
 import SwiftUI
 
 struct ReportPopupView: View {
-    @EnvironmentObject var userDataStore: UserDataStore
     @ObservedObject var forumDataStore: ForumDataStore
     
     @Binding var pickedThreadId: Int
@@ -30,7 +29,7 @@ struct ReportPopupView: View {
     func submitReport() {
         self.isSendingReport = true
         let taskGroup = DispatchGroup()
-        self.forumDataStore.threadDataStores[self.pickedThreadId]!.sendReportByThreadId(reason: self.reportReason, taskGroup: taskGroup, userDataStore: self.userDataStore)
+        self.forumDataStore.threadDataStores[self.pickedThreadId]!.sendReportByThreadId(reason: self.reportReason, taskGroup: taskGroup)
         
         taskGroup.notify(queue: .global()) {
             self.isSendingReport = false
@@ -91,7 +90,6 @@ struct ReportPopupView: View {
 }
 
 struct ReportPopupViewThreadVer: View {
-    @EnvironmentObject var userDataStore: UserDataStore
     @ObservedObject var threadDataStore: ThreadDataStore
     
     @Binding var pickedThreadId: Int
@@ -117,9 +115,9 @@ struct ReportPopupViewThreadVer: View {
         let taskGroup = DispatchGroup()
         
         if pickedCommentId == nil {
-            self.threadDataStore.sendReportByThreadId(reason: reportReason, taskGroup: taskGroup, userDataStore: self.userDataStore)
+            self.threadDataStore.sendReportByThreadId(reason: reportReason, taskGroup: taskGroup)
         } else {
-            self.threadDataStore.childComments[pickedCommentId!.comment.id]!.sendReportByCommentId(reason: reportReason, taskGroup: taskGroup, userDataStore: self.userDataStore)
+            self.threadDataStore.childComments[pickedCommentId!.comment.id]!.sendReportByCommentId(reason: reportReason, taskGroup: taskGroup)
         }
         
         taskGroup.notify(queue: .global()) {

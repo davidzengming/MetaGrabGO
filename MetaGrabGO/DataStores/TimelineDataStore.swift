@@ -41,6 +41,9 @@ class TimelineDataStore: ObservableObject {
     @Published var hasPrevPage = true
     @Published var hasNextPage = true
     
+    let API = APIClient()
+    var cancellableSet: Set<AnyCancellable> = []
+    
     init() {
         self.gamesArr = []
         self.gamesCalendars = [:]
@@ -49,127 +52,153 @@ class TimelineDataStore: ObservableObject {
         self.endTime = currDate.secondsSince1970
     }
     
-    func fetchFirstLoadAtEpochTime(count: Int = 10, globalGamesDataStore: GlobalGamesDataStore, userDataStore: UserDataStore) {
-        let API = APIClient()
+    func fetchFirstLoadAtEpochTime(count: Int = 10, globalGamesDataStore: GlobalGamesDataStore) {
         let params = ["time_point_in_epoch": String(self.startTime), "count": String(count)]
         let url = API.generateURL(resource: Resource.games, endPoint: EndPoint.getGamesAtEpochTime, params: params)
         let request = API.generateRequest(url: url!, method: .GET, json: nil)
         
-        API.sessionHandler(request: request, userDataStore: userDataStore) { data in
-            if let jsonString = String(data: data, encoding: .utf8) {
-                let tempGamesTimelineResponse: GamesTimeLineResponse = load(jsonData: jsonString.data(using: .utf8)!)
-                
-                var addedTimelineArr: [Int] = []
-                
-                var lastGameId: Int? = nil
-                if self.gamesArr.count > 0 {
-                    lastGameId = self.gamesArr[self.gamesArr.count - 1]
+        self.API.accessTokenRefreshHandler(request: request)
+        let session = self.API.generateSession()
+        
+        refreshingRequestTaskGroup.notify(queue: .global()) {
+            processingRequestsTaskGroup.enter()
+            session.dataTaskPublisher(for: request)
+            .map(\.data)
+            .decode(type: GamesTimeLineResponse.self, decoder: self.API.getJSONDecoder())
+            .receive(on: RunLoop.main)
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case .finished:
+                    processingRequestsTaskGroup.leave()
+                    break
+                case .failure(let error):
+                    print("error: ", error)
+                    processingRequestsTaskGroup.leave()
+                    break
                 }
-                
-                for i in (0..<tempGamesTimelineResponse.gameArr.count) {
-                    let game = tempGamesTimelineResponse.gameArr[i]
-                    globalGamesDataStore.games[game.id] = game
-                    addedTimelineArr.append(game.id)
-                    
-                    
-                    let newGameCalendar = GameCalendarDataStore(epochTimeInSeconds: Int(tempGamesTimelineResponse.timeScores[i]))
-                    
-                    if lastGameId != nil {
-                        let lastGameCalendar = self.gamesCalendars[lastGameId!]!
-                        
-                        if newGameCalendar.year == lastGameCalendar.year {
-                            newGameCalendar.isShowingYear = false
-                        }
-                        
-                        if newGameCalendar.month == lastGameCalendar.month {
-                            newGameCalendar.isShowingMonth = false
-                            lastGameCalendar.isLastDayInMonth = false
-                        }
-                        
-                        if newGameCalendar.day == lastGameCalendar.day {
-                            newGameCalendar.isShowingDay = false
-                        }
-                    }
-                    
-                    self.gamesCalendars[game.id] = newGameCalendar
-                    lastGameId = tempGamesTimelineResponse.gameArr[i].id
-                }
-                
-                if tempGamesTimelineResponse.timeScores.count > 0 {
-                    self.startTime = Int(tempGamesTimelineResponse.timeScores[0])
-                    self.endTime = Int(tempGamesTimelineResponse.timeScores[tempGamesTimelineResponse.timeScores.count - 1])
-                }
-                
-                DispatchQueue.main.async {
-                    self.gamesArr = addedTimelineArr
-                }
-            }
+            }, receiveValue: { [unowned self] tempGamesTimelineResponse in
+               var addedTimelineArr: [Int] = []
+               
+               var lastGameId: Int? = nil
+               if self.gamesArr.count > 0 {
+                   lastGameId = self.gamesArr[self.gamesArr.count - 1]
+               }
+               
+               for i in (0..<tempGamesTimelineResponse.gameArr.count) {
+                   let game = tempGamesTimelineResponse.gameArr[i]
+                   globalGamesDataStore.games[game.id] = game
+                   addedTimelineArr.append(game.id)
+                   
+                   let newGameCalendar = GameCalendarDataStore(epochTimeInSeconds: Int(tempGamesTimelineResponse.timeScores[i]))
+                   
+                   if lastGameId != nil {
+                       let lastGameCalendar = self.gamesCalendars[lastGameId!]!
+                       
+                       if newGameCalendar.year == lastGameCalendar.year {
+                           newGameCalendar.isShowingYear = false
+                       }
+                       
+                       if newGameCalendar.month == lastGameCalendar.month {
+                           newGameCalendar.isShowingMonth = false
+                           lastGameCalendar.isLastDayInMonth = false
+                       }
+                       
+                       if newGameCalendar.day == lastGameCalendar.day {
+                           newGameCalendar.isShowingDay = false
+                       }
+                   }
+                   
+                   self.gamesCalendars[game.id] = newGameCalendar
+                   lastGameId = tempGamesTimelineResponse.gameArr[i].id
+               }
+               
+               if tempGamesTimelineResponse.timeScores.count > 0 {
+                   self.startTime = Int(tempGamesTimelineResponse.timeScores[0])
+                   self.endTime = Int(tempGamesTimelineResponse.timeScores[tempGamesTimelineResponse.timeScores.count - 1])
+               }
+               
+                self.gamesArr = addedTimelineArr
+            })
+            .store(in: &self.cancellableSet)
         }
     }
     
-    func fetchGamesByBeforeEpochTime(count: Int = 5, globalGamesDataStore: GlobalGamesDataStore, userDataStore: UserDataStore) {
+    func fetchGamesByBeforeEpochTime(count: Int = 5, globalGamesDataStore: GlobalGamesDataStore) {
         self.isLoadingPrev = true
-        
-        let API = APIClient()
         let params = ["time_point_in_epoch": String(self.startTime), "count": String(count)]
         let url = API.generateURL(resource: Resource.games, endPoint: EndPoint.getGamesBeforeEpochTime, params: params)
         let request = API.generateRequest(url: url!, method: .GET, json: nil)
         
-        API.sessionHandler(request: request, userDataStore: userDataStore) { data in
-            if let jsonString = String(data: data, encoding: .utf8) {
-                let tempGamesTimelineResponse: GamesTimeLineResponse = load(jsonData: jsonString.data(using: .utf8)!)
-                
-                var addedTimelineArr: [Int] = []
-                
-                var lastGameId: Int? = nil
-                if self.gamesArr.count > 0 {
-                    lastGameId = self.gamesArr[0]
-                } else {
-                    self.hasPrevPage = false
-                    self.isLoadingPrev = false
-                    return
+        self.API.accessTokenRefreshHandler(request: request)
+        let session = self.API.generateSession()
+        
+        refreshingRequestTaskGroup.notify(queue: .global()) {
+            processingRequestsTaskGroup.enter()
+            session.dataTaskPublisher(for: request)
+            .map(\.data)
+            .decode(type: GamesTimeLineResponse.self, decoder: self.API.getJSONDecoder())
+            .receive(on: RunLoop.main)
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case .finished:
+                    processingRequestsTaskGroup.leave()
+                    break
+                case .failure(let error):
+                    print("error: ", error)
+                    processingRequestsTaskGroup.leave()
+                    break
                 }
-                
-                for i in (0..<tempGamesTimelineResponse.gameArr.count).reversed() {
-                    let game = tempGamesTimelineResponse.gameArr[i]
-                    globalGamesDataStore.games[game.id] = game
-                    addedTimelineArr.append(game.id)
-                    
-                    let newGameCalendar = GameCalendarDataStore(epochTimeInSeconds: Int(tempGamesTimelineResponse.timeScores[i]))
-                    
-                    if lastGameId != nil {
-                        let lastGameCalendar = self.gamesCalendars[lastGameId!]!
-                        
-                        if newGameCalendar.year == lastGameCalendar.year {
-                            lastGameCalendar.isShowingYear = false
-                        }
-                        
-                        if newGameCalendar.month == lastGameCalendar.month {
-                            lastGameCalendar.isShowingMonth = false
-                            newGameCalendar.isLastDayInMonth = false
-                        }
-                        
-                        if newGameCalendar.day == lastGameCalendar.day {
-                            lastGameCalendar.isShowingDay = false
-                        }
-                    }
-                    
-                    self.gamesCalendars[game.id] = newGameCalendar
-                    lastGameId = tempGamesTimelineResponse.gameArr[i].id
-                }
-                
-                if tempGamesTimelineResponse.timeScores.count > 0 {
-                    self.startTime = Int(tempGamesTimelineResponse.timeScores[0])
-                }
-                DispatchQueue.main.async {
-                    self.gamesArr = addedTimelineArr.reversed() + self.gamesArr
-                    self.isLoadingPrev = false
-                }
-            }
+            }, receiveValue: { [unowned self] tempGamesTimelineResponse in
+               var addedTimelineArr: [Int] = []
+               
+               var lastGameId: Int? = nil
+               if self.gamesArr.count > 0 {
+                   lastGameId = self.gamesArr[0]
+               } else {
+                   self.hasPrevPage = false
+                   self.isLoadingPrev = false
+                   return
+               }
+               
+               for i in (0..<tempGamesTimelineResponse.gameArr.count).reversed() {
+                   let game = tempGamesTimelineResponse.gameArr[i]
+                   globalGamesDataStore.games[game.id] = game
+                   addedTimelineArr.append(game.id)
+                   
+                   let newGameCalendar = GameCalendarDataStore(epochTimeInSeconds: Int(tempGamesTimelineResponse.timeScores[i]))
+                   
+                   if lastGameId != nil {
+                       let lastGameCalendar = self.gamesCalendars[lastGameId!]!
+                       
+                       if newGameCalendar.year == lastGameCalendar.year {
+                           lastGameCalendar.isShowingYear = false
+                       }
+                       
+                       if newGameCalendar.month == lastGameCalendar.month {
+                           lastGameCalendar.isShowingMonth = false
+                           newGameCalendar.isLastDayInMonth = false
+                       }
+                       
+                       if newGameCalendar.day == lastGameCalendar.day {
+                           lastGameCalendar.isShowingDay = false
+                       }
+                   }
+                   
+                   self.gamesCalendars[game.id] = newGameCalendar
+                   lastGameId = tempGamesTimelineResponse.gameArr[i].id
+               }
+               
+               if tempGamesTimelineResponse.timeScores.count > 0 {
+                   self.startTime = Int(tempGamesTimelineResponse.timeScores[0])
+               }
+               self.gamesArr = addedTimelineArr.reversed() + self.gamesArr
+               self.isLoadingPrev = false
+            })
+            .store(in: &self.cancellableSet)
         }
     }
     
-    func fetchGamesByAfterEpochTime(count: Int = 5, globalGamesDataStore: GlobalGamesDataStore, userDataStore: UserDataStore) {
+    func fetchGamesByAfterEpochTime(count: Int = 5, globalGamesDataStore: GlobalGamesDataStore) {
         self.isLoadingAfter = true
         
         let API = APIClient()
@@ -177,58 +206,72 @@ class TimelineDataStore: ObservableObject {
         let url = API.generateURL(resource: Resource.games, endPoint: EndPoint.getGamesAfterEpochTime, params: params)
         let request = API.generateRequest(url: url!, method: .GET, json: nil)
         
-        API.sessionHandler(request: request, userDataStore: userDataStore) { data in
-            if let jsonString = String(data: data, encoding: .utf8) {
-                let tempGamesTimelineResponse: GamesTimeLineResponse = load(jsonData: jsonString.data(using: .utf8)!)
-                
-                var addedTimelineArr: [Int] = []
-                
-                var lastGameId: Int? = nil
-                if self.gamesArr.count > 0 {
-                    lastGameId = self.gamesArr[self.gamesArr.count - 1]
-                } else {
-                    self.hasNextPage = false
-                    self.isLoadingAfter = false
-                    return
+        self.API.accessTokenRefreshHandler(request: request)
+        let session = self.API.generateSession()
+        
+        refreshingRequestTaskGroup.notify(queue: .global()) {
+            processingRequestsTaskGroup.enter()
+            session.dataTaskPublisher(for: request)
+            .map(\.data)
+            .decode(type: GamesTimeLineResponse.self, decoder: self.API.getJSONDecoder())
+            .receive(on: RunLoop.main)
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case .finished:
+                    processingRequestsTaskGroup.leave()
+                    break
+                case .failure(let error):
+                    print("error: ", error)
+                    processingRequestsTaskGroup.leave()
+                    break
                 }
-                
-                for i in (0..<tempGamesTimelineResponse.gameArr.count) {
-                    let game = tempGamesTimelineResponse.gameArr[i]
-                    globalGamesDataStore.games[game.id] = game
-                    addedTimelineArr.append(game.id)
-                    
-                    
-                    let newGameCalendar = GameCalendarDataStore(epochTimeInSeconds: Int(tempGamesTimelineResponse.timeScores[i]))
-                    
-                    if lastGameId != nil {
-                        let lastGameCalendar = self.gamesCalendars[lastGameId!]!
-                        
-                        if newGameCalendar.year == lastGameCalendar.year {
-                            newGameCalendar.isShowingYear = false
-                        }
-                        
-                        if newGameCalendar.month == lastGameCalendar.month {
-                            newGameCalendar.isShowingMonth = false
-                            lastGameCalendar.isLastDayInMonth = false
-                        }
-                        
-                        if newGameCalendar.day == lastGameCalendar.day {
-                            newGameCalendar.isShowingDay = false
-                        }
-                    }
-                    
-                    self.gamesCalendars[game.id] = newGameCalendar
-                    lastGameId = tempGamesTimelineResponse.gameArr[i].id
-                }
-                
-                if tempGamesTimelineResponse.timeScores.count > 0 {
-                    self.endTime = Int(tempGamesTimelineResponse.timeScores[tempGamesTimelineResponse.timeScores.count - 1])
-                }
-                DispatchQueue.main.async {
-                    self.gamesArr = self.gamesArr + addedTimelineArr
-                    self.isLoadingAfter = false
-                }
-            }
+            }, receiveValue: { [unowned self] tempGamesTimelineResponse in
+               var addedTimelineArr: [Int] = []
+               
+               var lastGameId: Int? = nil
+               if self.gamesArr.count > 0 {
+                   lastGameId = self.gamesArr[self.gamesArr.count - 1]
+               } else {
+                   self.hasNextPage = false
+                   self.isLoadingAfter = false
+                   return
+               }
+               
+               for i in (0..<tempGamesTimelineResponse.gameArr.count) {
+                   let game = tempGamesTimelineResponse.gameArr[i]
+                   globalGamesDataStore.games[game.id] = game
+                   addedTimelineArr.append(game.id)
+                   
+                   let newGameCalendar = GameCalendarDataStore(epochTimeInSeconds: Int(tempGamesTimelineResponse.timeScores[i]))
+                   
+                   if lastGameId != nil {
+                       let lastGameCalendar = self.gamesCalendars[lastGameId!]!
+                       
+                       if newGameCalendar.year == lastGameCalendar.year {
+                           newGameCalendar.isShowingYear = false
+                       }
+                       
+                       if newGameCalendar.month == lastGameCalendar.month {
+                           newGameCalendar.isShowingMonth = false
+                           lastGameCalendar.isLastDayInMonth = false
+                       }
+                       
+                       if newGameCalendar.day == lastGameCalendar.day {
+                           newGameCalendar.isShowingDay = false
+                       }
+                   }
+                   
+                   self.gamesCalendars[game.id] = newGameCalendar
+                   lastGameId = tempGamesTimelineResponse.gameArr[i].id
+               }
+               
+               if tempGamesTimelineResponse.timeScores.count > 0 {
+                   self.endTime = Int(tempGamesTimelineResponse.timeScores[tempGamesTimelineResponse.timeScores.count - 1])
+               }
+               self.gamesArr = self.gamesArr + addedTimelineArr
+               self.isLoadingAfter = false
+            })
+            .store(in: &self.cancellableSet)
         }
     }
 }

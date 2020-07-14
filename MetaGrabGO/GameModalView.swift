@@ -9,14 +9,11 @@
 import SwiftUI
 
 struct GameModalView: View {
-    @EnvironmentObject var userDataStore: UserDataStore
-    @EnvironmentObject var assetsDataStore: AssetsDataStore
     @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
     
     @Environment(\.imageCache) var cache: ImageCache
     @ObservedObject private var imageLoader: ImageLoader
     var game: Game
-    let placeholder = Image(systemName: "rectangle.fill")
     
     init(game: Game, imageLoader: ImageLoader) {
         self.game = game
@@ -60,15 +57,15 @@ struct GameModalView: View {
                                             .scaledToFill()
                                             .shadow(radius: 5)
                                     } else {
-                                        self.placeholder
-                                            .resizable()
+                                        Rectangle()
+                                            .fill(appWideAssets.colors["darkButNotBlack"]!)
                                             .frame(width: a.size.width * 0.8, height: a.size.height * 0.2)
                                             .scaledToFill()
                                             .shadow(radius: 5)
                                     }
                                 }
                                 .frame(width: a.size.width * 0.9, height: a.size.height * 0.15)
-                                .background(self.assetsDataStore.colors["notQuiteBlack"]!)
+                                .background(appWideAssets.colors["notQuiteBlack"]!)
                                 Spacer()
                             }
                             .padding(.vertical, 20)
@@ -85,7 +82,7 @@ struct GameModalView: View {
                             Rectangle()
                                 .frame(width: a.size.width * 0.9, height: 1)
                                 .foregroundColor(.clear)
-                                .background(LinearGradient(gradient: Gradient(colors: [.blue, self.assetsDataStore.colors["notQuiteBlack"]!]), startPoint: .leading, endPoint: .trailing))
+                                .background(LinearGradient(gradient: Gradient(colors: [.blue, appWideAssets.colors["notQuiteBlack"]!]), startPoint: .leading, endPoint: .trailing))
                                 .padding(.horizontal)
                             
                             VStack {
@@ -132,7 +129,7 @@ struct GameModalView: View {
                                     
                                     Spacer()
                                     HStack {
-                                        NavigationLink(destination: LazyView { ForumView(forumDataStore: ForumDataStore(game: self.game), forumOtherDataStore: ForumOtherDataStore(gameId: self.game.id, userDataStore: self.userDataStore) , gameIconLoader: ImageLoader(url: self.game.icon, cache: self.cache, whereIsThisFrom: "modal to forum view, game:" + String(self.game.id)))
+                                        NavigationLink(destination: LazyView { ForumView(forumDataStore: ForumDataStore(game: self.game), forumOtherDataStore: ForumOtherDataStore(gameId: self.game.id) , gameIconLoader: ImageLoader(url: self.game.icon, cache: self.cache, whereIsThisFrom: "modal to forum view, game:" + String(self.game.id)))
                                             .onAppear(perform: {
                                                 Global.tabBar!.isHidden = true
                                             })
@@ -149,12 +146,12 @@ struct GameModalView: View {
                                         }
                                         Spacer()
                                     }
-                                    .background(self.assetsDataStore.colors["darkButNotBlack"]!)
+                                    .background(appWideAssets.colors["darkButNotBlack"]!)
                                 }
                                 .padding()
                             }
                             .frame(width: a.size.width * 0.9, alignment: .leading)
-                            .background(self.assetsDataStore.colors["notQuiteBlack"]!)
+                            .background(appWideAssets.colors["notQuiteBlack"]!)
                             .padding()
                             
                             Spacer()
@@ -164,7 +161,7 @@ struct GameModalView: View {
             }
             .navigationBarTitle("")
             .navigationBarHidden(true)
-            .background(self.assetsDataStore.colors["darkButNotBlack"]!)
+            .background(appWideAssets.colors["darkButNotBlack"]!)
             .edgesIgnoringSafeArea(.all)
         }
         .navigationViewStyle(StackNavigationViewStyle())

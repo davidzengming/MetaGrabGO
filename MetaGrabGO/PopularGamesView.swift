@@ -10,9 +10,6 @@ import SwiftUI
 
 struct PopularGamesView: View {
     @EnvironmentObject var globalGamesDataStore: GlobalGamesDataStore
-    @EnvironmentObject var userDataStore: UserDataStore
-    @EnvironmentObject var assetsDataStore: AssetsDataStore
-    
     @ObservedObject var popularListDataStore: PopularListDataStore
     
     init(popularListDataStore: PopularListDataStore) {
@@ -30,7 +27,7 @@ struct PopularGamesView: View {
     
     var body: some View {
         ZStack {
-            self.assetsDataStore.colors["darkButNotBlack"].edgesIgnoringSafeArea(.all)
+            appWideAssets.colors["darkButNotBlack"].edgesIgnoringSafeArea(.all)
             
             GeometryReader { a in
                 List {
@@ -64,7 +61,7 @@ struct PopularGamesView: View {
                                     .shadow(radius: 5)
                             }
 
-                            GenreRowView(access: self.userDataStore.token!.access, genre: self.popularListDataStore.genres[genreId]!, globalGamesDataStore: self.globalGamesDataStore, width: a.size.width - 10, userDataStore: self.userDataStore)
+                            GenreRowView(genre: self.popularListDataStore.genres[genreId]!, genreDataStore: self.popularListDataStore.genresDataStore[genreId]!, globalGamesDataStore: self.globalGamesDataStore, width: a.size.width - 10)
                         }
                         .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
                         .padding(.horizontal, 10)

@@ -17,13 +17,10 @@ extension UIApplication {
 }
 
 struct ThreadView : View {
-    @EnvironmentObject var assetsDataStore: AssetsDataStore
-    @EnvironmentObject var userDataStore: UserDataStore
     @ObservedObject var threadDataStore: ThreadDataStore
     
     let formatter = RelativeDateTimeFormatter()
     let outerPadding : CGFloat = 20
-    let placeholder = Image(systemName: "rectangle.fill")
     
     @State var isEditable = false
     @State var isBottomPopupOn = false
@@ -110,7 +107,7 @@ struct ThreadView : View {
     }
     
     func onClickUser() {
-        if self.threadDataStore.author.id == self.userDataStore.token!.userId {
+        if self.threadDataStore.author.id == keychainService.getUserId() {
             print("Cannot report self.")
             return
         }
@@ -131,7 +128,7 @@ struct ThreadView : View {
     }
     
     func fetchNextPage(containerWidth: CGFloat) {
-        self.threadDataStore.fetchCommentTreeByThreadId(start: self.threadDataStore.childCommentList.count, refresh: true, userId: self.userDataStore.token!.userId, containerWidth: containerWidth, leadPadding: 20, userDataStore: self.userDataStore)
+        self.threadDataStore.fetchCommentTreeByThreadId(start: self.threadDataStore.childCommentList.count, refresh: true, containerWidth: containerWidth, leadPadding: 20)
     }
     
     func toggleImageModal(threadDataStore: ThreadDataStore?, currentImageModalIndex: Int?) {
@@ -150,20 +147,19 @@ struct ThreadView : View {
 //        print("submitted")
 
         if pickedCommentId != nil {
-            self.pickedCommentId!.postChildComment(content: self.replyContent, containerWidth: self.replyFutureContainerWidth, userDataStore: self.userDataStore)
+            self.pickedCommentId!.postChildComment(content: self.replyContent, containerWidth: self.replyFutureContainerWidth)
         } else {
-            self.threadDataStore.postMainComment(content: self.replyContent, containerWidth: mainCommentContainerWidth, userDataStore: self.userDataStore)
+            self.threadDataStore.postMainComment(content: self.replyContent, containerWidth: mainCommentContainerWidth)
         }
         
         self.togglePickedCommentId(commentId: nil, futureContainerWidth: CGFloat(0))
         self.replyContent.setAttributedString(NSAttributedString(string: ""))
         self.didBecomeFirstResponder = false
-        self.endEditing()
     }
     
     var body: some View {
         ZStack {
-            self.assetsDataStore.colors["darkButNotBlack"]!
+            appWideAssets.colors["darkButNotBlack"]!
                 .edgesIgnoringSafeArea(.all)
             
             Color(UIColor(named: "pseudoTertiaryBackground")!)
@@ -221,8 +217,8 @@ struct ThreadView : View {
                                                     self.toggleImageModal(threadDataStore: self.threadDataStore, currentImageModalIndex: index)
                                                 }
                                             } else {
-                                                self.placeholder
-                                                    .resizable()
+                                                Rectangle()
+                                                .fill(Color(UIColor(named: "pseudoTertiaryBackground")!))
                                                     .aspectRatio(contentMode: .fit)
                                                     .cornerRadius(5)
                                                     .frame(minWidth: a.size.width * 0.05, maxWidth: a.size.width * 0.25, minHeight: a.size.height * 0.1, maxHeight: a.size.height * 0.15, alignment: .center)
@@ -251,13 +247,13 @@ struct ThreadView : View {
                                             Text("Unhide")
                                                 .bold()
                                                 .onTapGesture {
-                                                    self.threadDataStore.unhideThread( threadId: self.threadDataStore.thread.id, userDataStore: self.userDataStore)
+                                                    self.threadDataStore.unhideThread( threadId: self.threadDataStore.thread.id)
                                             }
                                         } else {
                                             Text("Hide")
                                                 .bold()
                                                 .onTapGesture {
-                                                    self.threadDataStore.hideThread(threadId: self.threadDataStore.thread.id, userDataStore: self.userDataStore)
+                                                    self.threadDataStore.hideThread(threadId: self.threadDataStore.thread.id)
                                             }
                                         }
                                     }
@@ -314,7 +310,7 @@ struct ThreadView : View {
                                 if self.threadDataStore.isLoadingNextPage == true {
                                     ActivityIndicator()
                                         .frame(width: a.size.width, height: a.size.height * 0.20)
-                                        .foregroundColor(self.assetsDataStore.colors["darkButNotBlack"]!)
+                                        .foregroundColor(appWideAssets.colors["darkButNotBlack"]!)
                                 } else {
                                     HStack {
                                         Spacer()
@@ -330,7 +326,7 @@ struct ThreadView : View {
                         .frame(width: a.size.width, height: a.size.height - (20 + 20 + 40))
                         .onAppear() {
                             if self.threadDataStore.areCommentsLoaded == false {
-                                self.threadDataStore.fetchCommentTreeByThreadId(refresh: true, userId: self.userDataStore.token!.userId, containerWidth: a.size.width - self.outerPadding * 2, leadPadding: 20, userDataStore: self.userDataStore)
+                                self.threadDataStore.fetchCommentTreeByThreadId(refresh: true, containerWidth: a.size.width - self.outerPadding * 2, leadPadding: 20)
                             }
                         }
                         

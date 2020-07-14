@@ -3,11 +3,10 @@ import SwiftUI
 // Entry point into view
 struct MainView: View {
     @EnvironmentObject var userDataStore: UserDataStore
-    @EnvironmentObject var assetsDataStore: AssetsDataStore
     
     var body: some View {
         ZStack {
-            self.assetsDataStore.colors["darkButNotBlack"]!
+            appWideAssets.colors["darkButNotBlack"]!
                 .edgesIgnoringSafeArea(.all)
             
             VStack {

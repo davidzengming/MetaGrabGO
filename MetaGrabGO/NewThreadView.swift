@@ -16,9 +16,7 @@ struct IdentifiableImageContainer: Identifiable {
 
 struct NewThreadView: View {
     @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
-    @EnvironmentObject var userDataStore: UserDataStore
-    @EnvironmentObject var assetsDataStore: AssetsDataStore
-    
+
     @ObservedObject var forumDataStore: ForumDataStore
     @ObservedObject var forumOtherDataStore: ForumOtherDataStore
     
@@ -36,7 +34,6 @@ struct NewThreadView: View {
     @State var isFirstResponder = true
     @State var didBecomeFirstResponder = false
     
-    let placeholder = Image(systemName: "photo")
     let maxNumImages = 3
     
     init(forumDataStore: ForumDataStore, forumOtherDataStore: ForumOtherDataStore, containerWidth: CGFloat) {
@@ -48,10 +45,10 @@ struct NewThreadView: View {
     func submitThread() {
         if self.showImagePicker == true {
             self.showImagePicker = false
-            self.forumDataStore.submitThread(forumDataStore: self.forumDataStore, title: self.title, flair: self.flair, content: self.content, imageData: self.dataDict, imagesArray: self.imagesArray, userId: self.userDataStore.token!.userId, containerWidth: self.containerWidth, forumOtherDataStore: self.forumOtherDataStore, userDataStore: self.userDataStore)
+            self.forumDataStore.submitThread(forumDataStore: self.forumDataStore, title: self.title, flair: self.flair, content: self.content, imageData: self.dataDict, imagesArray: self.imagesArray, userId: keychainService.getUserId(), containerWidth: self.containerWidth, forumOtherDataStore: self.forumOtherDataStore)
             self.presentationMode.wrappedValue.dismiss()
         } else {
-            self.forumDataStore.submitThread(forumDataStore: self.forumDataStore, title: self.title, flair: self.flair, content: self.content, imageData: self.dataDict, imagesArray: self.imagesArray, userId: self.userDataStore.token!.userId, containerWidth: self.containerWidth, forumOtherDataStore: self.forumOtherDataStore, userDataStore: self.userDataStore)
+            self.forumDataStore.submitThread(forumDataStore: self.forumDataStore, title: self.title, flair: self.flair, content: self.content, imageData: self.dataDict, imagesArray: self.imagesArray, userId: keychainService.getUserId(), containerWidth: self.containerWidth, forumOtherDataStore: self.forumOtherDataStore)
             self.presentationMode.wrappedValue.dismiss()
         }
     }
@@ -130,7 +127,7 @@ struct NewThreadView: View {
             .sheet(isPresented: self.$showImagePicker) {
                 ImagePicker(isImagePickerShown: self.$showImagePicker, image: self.$imagesDict[self.imagesArray[self.clickedImageIndex!]], data: self.$dataDict[self.imagesArray[self.clickedImageIndex!]], currentImages: self.$imagesArray, imagesDict: self.$imagesDict, dataDict: self.$dataDict)
                     .frame(width: a.size.width)
-                    .background(self.assetsDataStore.colors["darkButNotBlack"]!)
+                    .background(appWideAssets.colors["darkButNotBlack"]!)
                     .cornerRadius(5, corners: [.topLeft, .topRight])
                     .transition(.move(edge: .bottom))
                     .animation(.default)

@@ -54,7 +54,7 @@
 		3E6815EC24804DC500E68860 /* EmojiPickerPopupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E6815EB24804DC500E68860 /* EmojiPickerPopupView.swift */; };
 		3E6815EE248053E600E68860 /* EmojiDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E6815ED248053E600E68860 /* EmojiDataStore.swift */; };
 		3E6F200224A12BF1009BFEAF /* GlobalGamesDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E6F200124A12BF1009BFEAF /* GlobalGamesDataStore.swift */; };
-		3E7ACE1524769E1200873BC8 /* AssetsDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E7ACE1424769E1200873BC8 /* AssetsDataStore.swift */; };
+		3E7ACE1524769E1200873BC8 /* AppWideAssets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E7ACE1424769E1200873BC8 /* AppWideAssets.swift */; };
 		3E7ACE172476A40E00873BC8 /* KeyboardModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E7ACE162476A40E00873BC8 /* KeyboardModifier.swift */; };
 		3E7ACE192476A5AF00873BC8 /* GameFeedIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E7ACE182476A5AF00873BC8 /* GameFeedIcon.swift */; };
 		3E7ACE1D2476AF8800873BC8 /* GameModalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E7ACE1C2476AF8800873BC8 /* GameModalView.swift */; };
@@ -140,7 +140,7 @@
 		3E6815EB24804DC500E68860 /* EmojiPickerPopupView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EmojiPickerPopupView.swift; sourceTree = "<group>"; };
 		3E6815ED248053E600E68860 /* EmojiDataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmojiDataStore.swift; sourceTree = "<group>"; };
 		3E6F200124A12BF1009BFEAF /* GlobalGamesDataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalGamesDataStore.swift; sourceTree = "<group>"; };
-		3E7ACE1424769E1200873BC8 /* AssetsDataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetsDataStore.swift; sourceTree = "<group>"; };
+		3E7ACE1424769E1200873BC8 /* AppWideAssets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppWideAssets.swift; sourceTree = "<group>"; };
 		3E7ACE162476A40E00873BC8 /* KeyboardModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardModifier.swift; sourceTree = "<group>"; };
 		3E7ACE182476A5AF00873BC8 /* GameFeedIcon.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GameFeedIcon.swift; sourceTree = "<group>"; };
 		3E7ACE1C2476AF8800873BC8 /* GameModalView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GameModalView.swift; sourceTree = "<group>"; };
@@ -253,6 +253,7 @@
 				3EB25B472475CA6C00C465D1 /* AppDelegate.swift */,
 				3EB25B492475CA6C00C465D1 /* SceneDelegate.swift */,
 				3EE38C6B2475CB8B007E9F32 /* DarkHostingController.swift */,
+				3E7ACE1424769E1200873BC8 /* AppWideAssets.swift */,
 				3E7ACE242476B78500873BC8 /* APIClient.swift */,
 				3EB25B4E2475CA6C00C465D1 /* LaunchView.swift */,
 				3EE38C6D2475CDF6007E9F32 /* MainView.swift */,
@@ -316,7 +317,6 @@
 				3E3610E824760CF2004C70B4 /* UserDataStore.swift */,
 				3E937A1D247706980033EA04 /* BlockHiddenDataStore.swift */,
 				3E14B76D24A6395D005B4E29 /* TimelineDataStore.swift */,
-				3E7ACE1424769E1200873BC8 /* AssetsDataStore.swift */,
 				3ED7815F24782C5E00C5EE96 /* ForumDataStore.swift */,
 				3E6815ED248053E600E68860 /* EmojiDataStore.swift */,
 			);
@@ -495,7 +495,7 @@
 				3E36113524760DAB004C70B4 /* ImageUrls.swift in Sources */,
 				3E36115324760DFF004C70B4 /* NewThreadButton.swift in Sources */,
 				3E36113F24760DAB004C70B4 /* Vote.swift in Sources */,
-				3E7ACE1524769E1200873BC8 /* AssetsDataStore.swift in Sources */,
+				3E7ACE1524769E1200873BC8 /* AppWideAssets.swift in Sources */,
 				3E4AB0C22481A6E4009E5BDB /* BlockUserPopupView.swift in Sources */,
 				3E36114524760DAB004C70B4 /* ThreadsResponse.swift in Sources */,
 				3E6815EE248053E600E68860 /* EmojiDataStore.swift in Sources */,

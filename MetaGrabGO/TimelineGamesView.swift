@@ -32,8 +32,6 @@ extension String {
 
 struct TimelineGamesView: View {
     @EnvironmentObject var globalGamesDataStore: GlobalGamesDataStore
-    @EnvironmentObject var userDataStore: UserDataStore
-    @EnvironmentObject var assetsDataStore: AssetsDataStore
     @EnvironmentObject var recentFollowDataStore: RecentFollowDataStore
     @Environment(\.imageCache) var cache: ImageCache
     
@@ -65,20 +63,20 @@ struct TimelineGamesView: View {
         if self.timelineDataStore.isLoadingPrev == true {
             return
         }
-        self.timelineDataStore.fetchGamesByBeforeEpochTime(globalGamesDataStore: self.globalGamesDataStore, userDataStore: self.userDataStore)
+        self.timelineDataStore.fetchGamesByBeforeEpochTime(globalGamesDataStore: self.globalGamesDataStore)
     }
     
     func loadNextPage() {
         if self.timelineDataStore.isLoadingAfter == true {
             return
         }
-        self.timelineDataStore.fetchGamesByAfterEpochTime(globalGamesDataStore: self.globalGamesDataStore, userDataStore: self.userDataStore)
+        self.timelineDataStore.fetchGamesByAfterEpochTime(globalGamesDataStore: self.globalGamesDataStore)
     }
     
     // Lists recent games is past 2 months and upcoming games 1 year down the road
     var body: some View {
         ZStack {
-            self.assetsDataStore.colors["darkButNotBlack"].edgesIgnoringSafeArea(.all)
+            appWideAssets.colors["darkButNotBlack"].edgesIgnoringSafeArea(.all)
             
             GeometryReader() { a in
                 List {
@@ -169,7 +167,7 @@ struct TimelineGamesView: View {
                                                 .shadow(radius: 5)
                                             
                                             Circle()
-                                                .fill(self.assetsDataStore.colors["darkButNotBlack"]!)
+                                                .fill(appWideAssets.colors["darkButNotBlack"]!)
                                                 .frame(width: 10, height: 10)
                                                 .position(x: b.size.width * 0.5, y: b.size.height * 0.5)
                                                 .shadow(radius: 5)
@@ -214,7 +212,7 @@ struct TimelineGamesView: View {
             Global.tabBar!.isHidden = false
             if self.timelineDataStore.fetchFirstLoad == false {
                 self.timelineDataStore.fetchFirstLoad = true
-                self.timelineDataStore.fetchFirstLoadAtEpochTime(globalGamesDataStore: self.globalGamesDataStore, userDataStore: self.userDataStore)
+                self.timelineDataStore.fetchFirstLoadAtEpochTime(globalGamesDataStore: self.globalGamesDataStore)
             }
         }
     }

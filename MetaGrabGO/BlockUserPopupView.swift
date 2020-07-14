@@ -10,8 +10,6 @@ import SwiftUI
 
 struct BlockUserPopupView: View {
     @ObservedObject var blockHiddenDataStore: BlockHiddenDataStore
-    @EnvironmentObject var userDataStore: UserDataStore
-
     @Binding var pickedUser: User
     var turnBottomPopup: (Bool) -> Void
     var toggleBottomBarState: (BottomBarState) -> Void
@@ -25,7 +23,7 @@ struct BlockUserPopupView: View {
 
     func blockUser() {
         let taskGroup = DispatchGroup()
-        self.blockHiddenDataStore.blockUser(targetBlockUser: self.pickedUser, taskGroup: taskGroup, userDataStore: self.userDataStore)
+        self.blockHiddenDataStore.blockUser(targetBlockUser: self.pickedUser, taskGroup: taskGroup)
         
         taskGroup.notify(queue: .global()) {
             self.dismissView()

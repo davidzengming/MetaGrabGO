@@ -10,37 +10,36 @@ import SwiftUI
 
 struct UserProfileView: View {
     @EnvironmentObject var userDataStore: UserDataStore
-    @EnvironmentObject var assetsDataStore: AssetsDataStore
     @EnvironmentObject var recentFollowDataStore: RecentFollowDataStore
     @ObservedObject var blockHiddenDataStore: BlockHiddenDataStore
     @State private var loadedBlacklist = false
     @State private var loadedHiddenThreads = false
     @State private var loadedHiddenComments = false
-
+    
     private func unblockUser(unblockUser: User) {
-        self.blockHiddenDataStore.unblockUser(targetUnblockUser: unblockUser, userDataStore: self.userDataStore)
+        self.blockHiddenDataStore.unblockUser(targetUnblockUser: unblockUser)
     }
     
     private func unhideThread(threadId: Int) {
-        self.blockHiddenDataStore.unhideThread(threadId: threadId, userDataStore: self.userDataStore)
+        self.blockHiddenDataStore.unhideThread(threadId: threadId)
     }
     
     private func unhideComment(commentId: Int) {
-        self.blockHiddenDataStore.unhideComment(commentId: commentId, userDataStore: self.userDataStore)
+        self.blockHiddenDataStore.unhideComment(commentId: commentId)
     }
     
     private func fetchBlacklistedUsers() {
-        self.blockHiddenDataStore.fetchBlacklistedUsers(userId: self.userDataStore.token!.userId, userDataStore: self.userDataStore)
+        self.blockHiddenDataStore.fetchBlacklistedUsers()
         self.loadedBlacklist = true
     }
     
     private func fetchHiddenThreads() {
-        self.blockHiddenDataStore.fetchHiddenThreads(userId: self.userDataStore.token!.userId, userDataStore: self.userDataStore)
+        self.blockHiddenDataStore.fetchHiddenThreads()
         self.loadedHiddenThreads = true
     }
     
     private func fetchHiddenComments() {
-        self.blockHiddenDataStore.fetchHiddenComments(userId: self.userDataStore.token!.userId, userDataStore: self.userDataStore)
+        self.blockHiddenDataStore.fetchHiddenComments()
         self.loadedHiddenComments = true
     }
     
@@ -52,7 +51,7 @@ struct UserProfileView: View {
     
     var body: some View {
         ZStack {
-            self.assetsDataStore.colors["darkButNotBlack"].edgesIgnoringSafeArea(.all)
+            appWideAssets.colors["darkButNotBlack"].edgesIgnoringSafeArea(.all)
             
             GeometryReader { a in
                 VStack {
@@ -67,7 +66,7 @@ struct UserProfileView: View {
                         }
                         
                         VStack(alignment: .trailing, spacing: 0) {
-                            Text(self.userDataStore.username!)
+                            Text(keychainService.getUserName())
                         }
                     }
                     .foregroundColor(Color.white)
@@ -80,7 +79,7 @@ struct UserProfileView: View {
                                     .tracking(1)
                                     .padding()
                                     .frame(width: a.size.width * 0.9, height: a.size.height * 0.05, alignment: .leading)
-                                    .background(self.assetsDataStore.colors["teal"])
+                                    .background(appWideAssets.colors["teal"]!)
                                 
                                 if self.loadedBlacklist == false {
                                     Button(action: self.fetchBlacklistedUsers) {
@@ -114,7 +113,7 @@ struct UserProfileView: View {
                                 }
                             }
                             .frame(width: a.size.width * 0.9)
-                            .background(self.assetsDataStore.colors["notQuiteBlack"])
+                            .background(appWideAssets.colors["notQuiteBlack"])
                             .padding()
                             
                             VStack {
@@ -122,7 +121,7 @@ struct UserProfileView: View {
                                     .tracking(1)
                                     .padding()
                                     .frame(width: a.size.width * 0.9, height: a.size.height * 0.05, alignment: .leading)
-                                    .background(self.assetsDataStore.colors["teal"])
+                                    .background(appWideAssets.colors["teal"]!)
                                 
                                 if self.loadedHiddenThreads == false {
                                     Button(action: self.fetchHiddenThreads) {
@@ -153,7 +152,7 @@ struct UserProfileView: View {
                                 }
                             }
                             .frame(width: a.size.width * 0.9)
-                            .background(self.assetsDataStore.colors["notQuiteBlack"])
+                            .background(appWideAssets.colors["notQuiteBlack"])
                             .padding()
                             
                             VStack {
@@ -161,7 +160,7 @@ struct UserProfileView: View {
                                     .tracking(1)
                                     .padding()
                                     .frame(width: a.size.width * 0.9, height: a.size.height * 0.05, alignment: .leading)
-                                    .background(self.assetsDataStore.colors["teal"])
+                                    .background(appWideAssets.colors["teal"]!)
                                 
                                 if self.loadedHiddenComments == false {
                                     Button(action: self.fetchHiddenComments) {
@@ -191,7 +190,7 @@ struct UserProfileView: View {
                                 }
                             }
                             .frame(width: a.size.width * 0.9)
-                            .background(self.assetsDataStore.colors["notQuiteBlack"])
+                            .background(appWideAssets.colors["notQuiteBlack"])
                             .padding()
                             
                             VStack {

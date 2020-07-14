@@ -9,8 +9,6 @@
 import SwiftUI
 
 struct FrontHubView: View {
-    @EnvironmentObject var userDataStore: UserDataStore
-    @EnvironmentObject var assetsDataStore: AssetsDataStore
     @Environment(\.imageCache) var cache: ImageCache
     @EnvironmentObject var recentFollowDataStore: RecentFollowDataStore
     @EnvironmentObject var globalGamesDataStore: GlobalGamesDataStore
@@ -36,7 +34,7 @@ struct FrontHubView: View {
     
     var body: some View {
         ZStack {
-            self.assetsDataStore.colors["darkButNotBlack"].edgesIgnoringSafeArea(.all)
+            appWideAssets.colors["darkButNotBlack"].edgesIgnoringSafeArea(.all)
             
             GeometryReader { a in
                 VStack(alignment: .leading) {
@@ -194,8 +192,8 @@ struct FrontHubView: View {
 //                        print("Fetching follow and visited games history...")
 //                        
                         let taskGroup = DispatchGroup()
-                        self.homeGamesDataStore.fetchFollowGames(globalGamesDataStore: self.globalGamesDataStore, followGamesDataStore: self.followGamesDataStore, userDataStore: self.userDataStore, recentFollowDataStore: self.recentFollowDataStore, taskGroup: taskGroup)
-                        self.homeGamesDataStore.getGameHistory(globalGamesDataStore: self.globalGamesDataStore, visitedGamesDataStore: self.visitedGamesDataStore, recentFollowDataStore: self.recentFollowDataStore, taskGroup: taskGroup, userDataStore: self.userDataStore)
+                        self.homeGamesDataStore.fetchFollowGames(globalGamesDataStore: self.globalGamesDataStore, followGamesDataStore: self.followGamesDataStore, recentFollowDataStore: self.recentFollowDataStore, taskGroup: taskGroup)
+                        self.homeGamesDataStore.getGameHistory(globalGamesDataStore: self.globalGamesDataStore, visitedGamesDataStore: self.visitedGamesDataStore, recentFollowDataStore: self.recentFollowDataStore, taskGroup: taskGroup)
                         
                         taskGroup.notify(queue: .main) {
                             self.homeGamesDataStore.isLoaded = true

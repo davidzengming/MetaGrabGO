@@ -9,12 +9,10 @@
 import SwiftUI
 
 struct EmojiPickerPopupView: View {
-    @EnvironmentObject var userDataStore: UserDataStore
-    @EnvironmentObject var assetsDataStore: AssetsDataStore
-    
     @ObservedObject var forumDataStore: ForumDataStore
     
     @Binding var pickedThreadId: Int
+    
     var turnBottomPopup: (Bool) -> Void
     var toggleBottomBarState: (BottomBarState) -> Void
     var togglePickedUser: (User) -> Void
@@ -35,19 +33,18 @@ struct EmojiPickerPopupView: View {
             if self.forumDataStore.threadDataStores[self.pickedThreadId]!.vote != nil {
                 switch self.forumDataStore.threadDataStores[self.pickedThreadId]!.vote!.direction {
                 case 1:
-                    print("hello")
                     break
                 case 0:
-                    self.forumDataStore.threadDataStores[self.pickedThreadId]!.upvoteByExistingVoteId(user: self.userDataStore.user!, taskGroup: taskGroup, userDataStore: self.userDataStore)
+                    self.forumDataStore.threadDataStores[self.pickedThreadId]!.upvoteByExistingVoteId(taskGroup: taskGroup)
                     break
                 case -1:
-                    self.forumDataStore.threadDataStores[self.pickedThreadId]!.switchUpvote(user: self.userDataStore.user!,taskGroup: taskGroup, userDataStore: self.userDataStore)
+                    self.forumDataStore.threadDataStores[self.pickedThreadId]!.switchUpvote(taskGroup: taskGroup)
                     break
                 default:
                     print("Vote direction is invalid.")
                 }
             } else {
-                self.forumDataStore.threadDataStores[self.pickedThreadId]!.addNewUpvote(user: self.userDataStore.user!,taskGroup: taskGroup, userDataStore: self.userDataStore)
+                self.forumDataStore.threadDataStores[self.pickedThreadId]!.addNewUpvote(taskGroup: taskGroup)
             }
             
             break
@@ -57,16 +54,16 @@ struct EmojiPickerPopupView: View {
                 case -1:
                     return
                 case 0:
-                    self.forumDataStore.threadDataStores[self.pickedThreadId]!.downvoteByExistingVoteId(user: self.userDataStore.user!, taskGroup: taskGroup, userDataStore: self.userDataStore)
+                    self.forumDataStore.threadDataStores[self.pickedThreadId]!.downvoteByExistingVoteId(taskGroup: taskGroup)
                     break
                 case 1:
-                    self.forumDataStore.threadDataStores[self.pickedThreadId]!.switchDownvote(user: self.userDataStore.user!, taskGroup: taskGroup, userDataStore: self.userDataStore)
+                    self.forumDataStore.threadDataStores[self.pickedThreadId]!.switchDownvote(taskGroup: taskGroup)
                     break
                 default:
                     print("Vote direction is invalid.")
                 }
             } else {
-                self.forumDataStore.threadDataStores[self.pickedThreadId]!.addNewDownvote(user: self.userDataStore.user!, taskGroup: taskGroup, userDataStore: self.userDataStore)
+                self.forumDataStore.threadDataStores[self.pickedThreadId]!.addNewDownvote(taskGroup: taskGroup)
             }
             break
         default:
@@ -91,7 +88,7 @@ struct EmojiPickerPopupView: View {
                 }
             }
             
-            self.forumDataStore.threadDataStores[self.pickedThreadId]!.addEmojiByThreadId( emojiId: emojiId, user: self.userDataStore.user!, taskGroup: taskGroup, userDataStore: self.userDataStore)
+            self.forumDataStore.threadDataStores[self.pickedThreadId]!.addEmojiByThreadId(emojiId: emojiId, taskGroup: taskGroup)
         }
         
         taskGroup.notify(queue: .global()) {
@@ -119,8 +116,8 @@ struct EmojiPickerPopupView: View {
                 VStack(spacing: 0){
                     ScrollView(.vertical) {
                         HStack(spacing: 0) {
-                            ForEach(self.assetsDataStore.emojiArray, id: \.self) { emojiId in
-                                Image(uiImage: self.assetsDataStore.emojis[emojiId]!)
+                            ForEach(appWideAssets.emojiArray, id: \.self) { emojiId in
+                                Image(uiImage: appWideAssets.emojis[emojiId]!!)
                                     .resizable()
                                     .frame(width: 25, height: 25)
                                     .padding(.horizontal, 3)
@@ -138,9 +135,6 @@ struct EmojiPickerPopupView: View {
 }
 
 struct EmojiPickerPopupViewThreadVer: View {
-    @EnvironmentObject var userDataStore: UserDataStore
-    @EnvironmentObject var assetsDataStore: AssetsDataStore
-    
     @ObservedObject var threadDataStore: ThreadDataStore
     
     @Binding var pickedThreadId: Int
@@ -166,19 +160,18 @@ struct EmojiPickerPopupViewThreadVer: View {
             if self.threadDataStore.vote != nil {
                 switch self.threadDataStore.vote!.direction {
                 case 1:
-                    print("hello")
                     break
                 case 0:
-                    self.threadDataStore.upvoteByExistingVoteId(user: self.userDataStore.user!, taskGroup: taskGroup, userDataStore: self.userDataStore)
+                    self.threadDataStore.upvoteByExistingVoteId(taskGroup: taskGroup)
                     break
                 case -1:
-                    self.threadDataStore.switchUpvote(user: self.userDataStore.user!, taskGroup: taskGroup, userDataStore: self.userDataStore)
+                    self.threadDataStore.switchUpvote(taskGroup: taskGroup)
                     break
                 default:
                     print("Vote direction is invalid.")
                 }
             } else {
-                self.threadDataStore.addNewUpvote(user: self.userDataStore.user!, taskGroup: taskGroup, userDataStore: self.userDataStore)
+                self.threadDataStore.addNewUpvote(taskGroup: taskGroup)
             }
             
             break
@@ -188,16 +181,16 @@ struct EmojiPickerPopupViewThreadVer: View {
                 case -1:
                     return
                 case 0:
-                    self.threadDataStore.downvoteByExistingVoteId(user: self.userDataStore.user!, taskGroup: taskGroup, userDataStore: self.userDataStore)
+                    self.threadDataStore.downvoteByExistingVoteId(taskGroup: taskGroup)
                     break
                 case 1:
-                    self.threadDataStore.switchDownvote(user: self.userDataStore.user!, taskGroup: taskGroup, userDataStore: self.userDataStore)
+                    self.threadDataStore.switchDownvote(taskGroup: taskGroup)
                     break
                 default:
                     print("Vote direction is invalid.")
                 }
             } else {
-                self.threadDataStore.addNewDownvote(user: self.userDataStore.user!, taskGroup: taskGroup, userDataStore: self.userDataStore)
+                self.threadDataStore.addNewDownvote(taskGroup: taskGroup)
             }
             break
         default:
@@ -222,7 +215,7 @@ struct EmojiPickerPopupViewThreadVer: View {
                 }
             }
             
-            self.threadDataStore.addEmojiByThreadId(emojiId: emojiId, user: self.userDataStore.user!, taskGroup: taskGroup, userDataStore: self.userDataStore)
+            self.threadDataStore.addEmojiByThreadId(emojiId: emojiId, taskGroup: taskGroup)
         }
         
         taskGroup.notify(queue: .global()) {
@@ -250,8 +243,8 @@ struct EmojiPickerPopupViewThreadVer: View {
                 VStack(spacing: 0){
                     ScrollView(.vertical) {
                         HStack(spacing: 0) {
-                            ForEach(self.assetsDataStore.emojiArray, id: \.self) { emojiId in
-                                Image(uiImage: self.assetsDataStore.emojis[emojiId]!)
+                            ForEach(appWideAssets.emojiArray, id: \.self) { emojiId in
+                                Image(uiImage: appWideAssets.emojis[emojiId]!!)
                                     .resizable()
                                     .frame(width: 25, height: 25)
                                     .padding(.horizontal, 3)

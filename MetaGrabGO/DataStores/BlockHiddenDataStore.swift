@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Combine
 
 class BlockHiddenDataStore: ObservableObject {
     @Published var hiddenThreadIdArr = [Int]()
@@ -20,154 +21,308 @@ class BlockHiddenDataStore: ObservableObject {
     @Published var blacklistedUserIdArr = [Int]()
     
     let API = APIClient()
+    var cancellableSet: Set<AnyCancellable> = []
     
-    func hideThread(threadId: Int, userDataStore: UserDataStore) {
+    func hideThread(threadId: Int) {
         let json: [String: Any] = ["hide_thread_id": threadId]
         let url = API.generateURL(resource: Resource.usersProfile, endPoint: EndPoint.hideThreadByUserId)
         let request = API.generateRequest(url: url!, method: .POST, json: json)
 
-        API.sessionHandler(request: request, userDataStore: userDataStore) { _ in
-            DispatchQueue.main.async {
-                self.hiddenThreadIdArr.append(threadId)
-                self.isThreadHiddenByThreadId[threadId] = true
-            }
+        API.accessTokenRefreshHandler(request: request)
+        let session = self.API.generateSession()
+
+        refreshingRequestTaskGroup.notify(queue: .global()) {
+            processingRequestsTaskGroup.enter()
+            session.dataTaskPublisher(for: request)
+            .map(\.data)
+            .receive(on: RunLoop.main)
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case .finished:
+                    self.hiddenThreadIdArr.append(threadId)
+                    self.isThreadHiddenByThreadId[threadId] = true
+                    processingRequestsTaskGroup.leave()
+                    break
+                case .failure(let error):
+                    print("error: ", error)
+                    processingRequestsTaskGroup.leave()
+                    break
+                }
+            }, receiveValue: { _ in
+                print("done") })
+            .store(in: &self.cancellableSet)
         }
     }
     
-    func unhideThread(threadId: Int, userDataStore: UserDataStore) {
+    func unhideThread(threadId: Int) {
         let json: [String: Any] = ["unhide_thread_id": threadId]
         let url = API.generateURL(resource: Resource.usersProfile, endPoint: EndPoint.unhideThreadByUserId)
         let request = API.generateRequest(url: url!, method: .POST, json: json)
         
-        API.sessionHandler(request: request, userDataStore: userDataStore) { _ in
-            DispatchQueue.main.async {
-                let itemToRemoveIndex = self.hiddenThreadIdArr.firstIndex(of: threadId)
-                self.hiddenThreadIdArr.remove(at: itemToRemoveIndex!)
-                self.hiddenThreadsById.removeValue(forKey: threadId)
-                self.isThreadHiddenByThreadId[threadId] = false
-            }
+        API.accessTokenRefreshHandler(request: request)
+        let session = self.API.generateSession()
+
+        refreshingRequestTaskGroup.notify(queue: .global()) {
+            processingRequestsTaskGroup.enter()
+            session.dataTaskPublisher(for: request)
+            .map(\.data)
+            .receive(on: RunLoop.main)
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case .finished:
+                    let itemToRemoveIndex = self.hiddenThreadIdArr.firstIndex(of: threadId)
+                    self.hiddenThreadIdArr.remove(at: itemToRemoveIndex!)
+                    self.hiddenThreadsById.removeValue(forKey: threadId)
+                    self.isThreadHiddenByThreadId[threadId] = false
+                    processingRequestsTaskGroup.leave()
+                    break
+                case .failure(let error):
+                    print("error: ", error)
+                    processingRequestsTaskGroup.leave()
+                    break
+                }
+            }, receiveValue: { _ in
+                print("done") })
+            .store(in: &self.cancellableSet)
         }
     }
     
-    func hideComment(commentId: Int, userDataStore: UserDataStore) {
+    func hideComment(commentId: Int) {
         let json: [String: Any] = ["hide_comment_id": commentId]
         let url = API.generateURL(resource: Resource.usersProfile, endPoint: EndPoint.hideCommentByUserId)
         let request = API.generateRequest(url: url!, method: .POST, json: json)
-
-        API.sessionHandler(request: request, userDataStore: userDataStore) { data in
-            DispatchQueue.main.async {
-                self.hiddenCommentIdArr.append(commentId)
-                self.isCommentHiddenByCommentId[commentId] = true
-            }
+        
+        API.accessTokenRefreshHandler(request: request)
+        let session = self.API.generateSession()
+        
+        refreshingRequestTaskGroup.notify(queue: .global()) {
+            processingRequestsTaskGroup.enter()
+            session.dataTaskPublisher(for: request)
+            .map(\.data)
+            .receive(on: RunLoop.main)
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case .finished:
+                    self.hiddenCommentIdArr.append(commentId)
+                    self.isCommentHiddenByCommentId[commentId] = true
+                    processingRequestsTaskGroup.leave()
+                    break
+                case .failure(let error):
+                    print("error: ", error)
+                    processingRequestsTaskGroup.leave()
+                    break
+                }
+            }, receiveValue: { _ in
+                print("done") })
+            .store(in: &self.cancellableSet)
         }
     }
     
-    func unhideComment(commentId: Int, userDataStore: UserDataStore) {
+    func unhideComment(commentId: Int) {
         let json: [String: Any] = ["unhide_comment_id": commentId]
         let url = API.generateURL(resource: Resource.usersProfile, endPoint: EndPoint.unhideCommentByUserId)
         let request = API.generateRequest(url: url!, method: .POST, json: json)
         
-        API.sessionHandler(request: request, userDataStore: userDataStore) { _ in
-            DispatchQueue.main.async {
-                let itemToRemoveIndex = self.hiddenCommentIdArr.firstIndex(of: commentId)
-                self.hiddenCommentIdArr.remove(at: itemToRemoveIndex!)
-                self.hiddenCommentsById.removeValue(forKey: commentId)
-                self.isCommentHiddenByCommentId[commentId] = false
-            }
+        API.accessTokenRefreshHandler(request: request)
+        let session = self.API.generateSession()
+        
+        refreshingRequestTaskGroup.notify(queue: .global()) {
+            processingRequestsTaskGroup.enter()
+            session.dataTaskPublisher(for: request)
+            .map(\.data)
+            .receive(on: RunLoop.main)
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case .finished:
+                    let itemToRemoveIndex = self.hiddenCommentIdArr.firstIndex(of: commentId)
+                    self.hiddenCommentIdArr.remove(at: itemToRemoveIndex!)
+                    self.hiddenCommentsById.removeValue(forKey: commentId)
+                    self.isCommentHiddenByCommentId[commentId] = false
+                    processingRequestsTaskGroup.leave()
+                    break
+                case .failure(let error):
+                    print("error: ", error)
+                    processingRequestsTaskGroup.leave()
+                    break
+                }
+            }, receiveValue: { _ in
+                print("done") })
+            .store(in: &self.cancellableSet)
         }
     }
     
-    func blockUser(targetBlockUser: User, taskGroup: DispatchGroup? = nil, userDataStore: UserDataStore) {
+    func blockUser(targetBlockUser: User, taskGroup: DispatchGroup? = nil) {
         let json: [String: Any] = ["blacklist_user_id": targetBlockUser.id]
         let url = API.generateURL(resource: Resource.usersProfile, endPoint: EndPoint.blockUser)
         let request = API.generateRequest(url: url!, method: .POST, json: json)
-
-        API.sessionHandler(request: request, userDataStore: userDataStore) { _ in
-            DispatchQueue.main.async {
-                self.blacklistedUsersById[targetBlockUser.id] = targetBlockUser
-                self.blacklistedUserIdArr.append(targetBlockUser.id)
-            }
+        
+        API.accessTokenRefreshHandler(request: request)
+        let session = self.API.generateSession()
+        
+        refreshingRequestTaskGroup.notify(queue: .global()) {
+            processingRequestsTaskGroup.enter()
+            session.dataTaskPublisher(for: request)
+            .map(\.data)
+            .receive(on: RunLoop.main)
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case .finished:
+                    self.blacklistedUsersById[targetBlockUser.id] = targetBlockUser
+                    self.blacklistedUserIdArr.append(targetBlockUser.id)
+                    processingRequestsTaskGroup.leave()
+                    break
+                case .failure(let error):
+                    print("error: ", error)
+                    processingRequestsTaskGroup.leave()
+                    break
+                }
+            }, receiveValue: { _ in
+                print("done") })
+            .store(in: &self.cancellableSet)
         }
     }
     
-    func unblockUser(targetUnblockUser: User, taskGroup: DispatchGroup? = nil, userDataStore: UserDataStore) {
+    func unblockUser(targetUnblockUser: User, taskGroup: DispatchGroup? = nil) {
         let json: [String: Any] = ["unblacklist_user_id": targetUnblockUser.id]
         let url = API.generateURL(resource: Resource.usersProfile, endPoint: EndPoint.unblockUser)
         let request = API.generateRequest(url: url!, method: .POST, json: json)
-
-        API.sessionHandler(request: request, userDataStore: userDataStore) { _ in
-            DispatchQueue.main.async {
-                let indexToBeRemoved = self.blacklistedUserIdArr.firstIndex(of: targetUnblockUser.id)
-                self.blacklistedUserIdArr.remove(at: indexToBeRemoved!)
-                self.blacklistedUsersById.removeValue(forKey: targetUnblockUser.id)
-            }
+        
+        API.accessTokenRefreshHandler(request: request)
+        let session = self.API.generateSession()
+        
+        refreshingRequestTaskGroup.notify(queue: .global()) {
+            processingRequestsTaskGroup.enter()
+            session.dataTaskPublisher(for: request)
+            .map(\.data)
+            .receive(on: RunLoop.main)
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case .finished:
+                    let indexToBeRemoved = self.blacklistedUserIdArr.firstIndex(of: targetUnblockUser.id)
+                    self.blacklistedUserIdArr.remove(at: indexToBeRemoved!)
+                    self.blacklistedUsersById.removeValue(forKey: targetUnblockUser.id)
+                    processingRequestsTaskGroup.leave()
+                    break
+                case .failure(let error):
+                    print("error: ", error)
+                    processingRequestsTaskGroup.leave()
+                    break
+                }
+            }, receiveValue: { _ in
+                print("done") })
+            .store(in: &self.cancellableSet)
         }
     }
     
-    func fetchBlacklistedUsers(userId: Int, userDataStore: UserDataStore) {
+    func fetchBlacklistedUsers() {
         let url = API.generateURL(resource: Resource.usersProfile, endPoint: EndPoint.getBlacklist)
         let request = API.generateRequest(url: url!, method: .GET, json: nil)
-
-        API.sessionHandler(request: request, userDataStore: userDataStore) { data in
-            if let jsonString = String(data: data, encoding: .utf8) {
-                let blacklistedUsersResponse: BlacklistedUsersResponse = load(jsonData: jsonString.data(using: .utf8)!)
-                
-                DispatchQueue.main.async {
-                    for blacklistedUser in blacklistedUsersResponse.blacklistedUsers {
-                        if self.isUserBlockedByUserId[blacklistedUser.id] != nil && self.isUserBlockedByUserId[blacklistedUser.id]! == true {
-                            continue
-                        }
-                        self.isUserBlockedByUserId[blacklistedUser.id] = true
-                        self.blacklistedUsersById[blacklistedUser.id] = blacklistedUser
-                        self.blacklistedUserIdArr.append(blacklistedUser.id)
-                    }
+        
+        self.API.accessTokenRefreshHandler(request: request)
+        let session = self.API.generateSession()
+        
+        refreshingRequestTaskGroup.notify(queue: .global()) {
+            processingRequestsTaskGroup.enter()
+            session.dataTaskPublisher(for: request)
+            .map(\.data)
+            .decode(type: BlacklistedUsersResponse.self, decoder: self.API.getJSONDecoder())
+            .receive(on: RunLoop.main)
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case .finished:
+                    processingRequestsTaskGroup.leave()
+                    break
+                case .failure(let error):
+                    print("error: ", error)
+                    processingRequestsTaskGroup.leave()
+                    break
                 }
-            }
+            }, receiveValue: { [unowned self] blacklistedUsersResponse in
+               for blacklistedUser in blacklistedUsersResponse.blacklistedUsers {
+                   if self.isUserBlockedByUserId[blacklistedUser.id] != nil && self.isUserBlockedByUserId[blacklistedUser.id]! == true {
+                       continue
+                   }
+                   self.isUserBlockedByUserId[blacklistedUser.id] = true
+                   self.blacklistedUsersById[blacklistedUser.id] = blacklistedUser
+                   self.blacklistedUserIdArr.append(blacklistedUser.id)
+               }
+            })
+            .store(in: &self.cancellableSet)
         }
     }
     
-    func fetchHiddenThreads(userId: Int, userDataStore: UserDataStore) {
+    func fetchHiddenThreads() {
         let url = API.generateURL(resource: Resource.usersProfile, endPoint: EndPoint.getHiddenThreads)
         let request = API.generateRequest(url: url!, method: .GET, json: nil)
         
-        API.sessionHandler(request: request, userDataStore: userDataStore) { data in
-            if let jsonString = String(data: data, encoding: .utf8) {
-                let hiddenThreadsResponse: HiddenThreadsResponse = load(jsonData: jsonString.data(using: .utf8)!)
-                
-                DispatchQueue.main.async {
-                    for hiddenThread in hiddenThreadsResponse.hiddenThreads {
-                        if self.isThreadHiddenByThreadId[hiddenThread.id] != nil && self.isThreadHiddenByThreadId[hiddenThread.id]! == true {
-                            continue
-                        }
-                        
-                        self.hiddenThreadIdArr.append(hiddenThread.id)
-                        self.hiddenThreadsById[hiddenThread.id] = hiddenThread
-                        self.isThreadHiddenByThreadId[hiddenThread.id] = true
-                    }
+        self.API.accessTokenRefreshHandler(request: request)
+        let session = self.API.generateSession()
+        
+        refreshingRequestTaskGroup.notify(queue: .global()) {
+            processingRequestsTaskGroup.enter()
+            session.dataTaskPublisher(for: request)
+            .map(\.data)
+            .decode(type: HiddenThreadsResponse.self, decoder: self.API.getJSONDecoder())
+            .receive(on: RunLoop.main)
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case .finished:
+                    processingRequestsTaskGroup.leave()
+                    break
+                case .failure(let error):
+                    print("error: ", error)
+                    processingRequestsTaskGroup.leave()
+                    break
                 }
-            }
+            }, receiveValue: { [unowned self] hiddenThreadsResponse in
+               for hiddenThread in hiddenThreadsResponse.hiddenThreads {
+                   if self.isThreadHiddenByThreadId[hiddenThread.id] != nil && self.isThreadHiddenByThreadId[hiddenThread.id]! == true {
+                       continue
+                   }
+                   
+                   self.hiddenThreadIdArr.append(hiddenThread.id)
+                   self.hiddenThreadsById[hiddenThread.id] = hiddenThread
+                   self.isThreadHiddenByThreadId[hiddenThread.id] = true
+               }
+            })
+            .store(in: &self.cancellableSet)
         }
     }
     
-    func fetchHiddenComments(userId: Int, userDataStore: UserDataStore) {
+    func fetchHiddenComments() {
         let url = API.generateURL(resource: Resource.usersProfile, endPoint: EndPoint.getHiddenComments)
         let request = API.generateRequest(url: url!, method: .GET, json: nil)
-
-        API.sessionHandler(request: request, userDataStore: userDataStore) { data in
-            if let jsonString = String(data: data, encoding: .utf8) {
-                let hiddenCommentsResponse: HiddenCommentsResponse = load(jsonData: jsonString.data(using: .utf8)!)
-                
-                DispatchQueue.main.async {
-                    for hiddenComment in hiddenCommentsResponse.hiddenComments {
-                        if self.isCommentHiddenByCommentId[hiddenComment.id] != nil && self.isCommentHiddenByCommentId[hiddenComment.id]! == true {
-                            continue
-                        }
-                        self.hiddenCommentIdArr.append(hiddenComment.id)
-                        self.hiddenCommentsById[hiddenComment.id] = hiddenComment
-                        self.isCommentHiddenByCommentId[hiddenComment.id] = true
-                    }
+        
+        self.API.accessTokenRefreshHandler(request: request)
+        let session = self.API.generateSession()
+        
+        refreshingRequestTaskGroup.notify(queue: .global()) {
+            processingRequestsTaskGroup.enter()
+            session.dataTaskPublisher(for: request)
+            .map(\.data)
+            .decode(type: HiddenCommentsResponse.self, decoder: self.API.getJSONDecoder())
+            .receive(on: RunLoop.main)
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case .finished:
+                    processingRequestsTaskGroup.leave()
+                    break
+                case .failure(let error):
+                    print("error: ", error)
+                    processingRequestsTaskGroup.leave()
+                    break
                 }
-            }
+            }, receiveValue: { [unowned self] hiddenCommentsResponse in
+               for hiddenComment in hiddenCommentsResponse.hiddenComments {
+                   if self.isCommentHiddenByCommentId[hiddenComment.id] != nil && self.isCommentHiddenByCommentId[hiddenComment.id]! == true {
+                       continue
+                   }
+                   self.hiddenCommentIdArr.append(hiddenComment.id)
+                   self.hiddenCommentsById[hiddenComment.id] = hiddenComment
+                   self.isCommentHiddenByCommentId[hiddenComment.id] = true
+               }
+            })
+            .store(in: &self.cancellableSet)
         }
     }
 }

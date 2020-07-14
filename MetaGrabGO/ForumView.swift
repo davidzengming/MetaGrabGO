@@ -29,7 +29,6 @@ enum BottomBarState {
 }
 
 struct BottomBarView: View {
-    @EnvironmentObject var assetsDataStore: AssetsDataStore
     @ObservedObject var forumDataStore: ForumDataStore
     @Binding var isBottomPopupOn: Bool
     @Binding var bottomBarState: BottomBarState
@@ -58,7 +57,7 @@ struct BottomBarView: View {
                     }
                 }
                 .frame(width: self.width, height: self.height)
-                .background(self.assetsDataStore.colors["darkButNotBlack"]!)
+                .background(appWideAssets.colors["darkButNotBlack"]!)
                 .cornerRadius(5, corners: [.topLeft, .topRight])
                 .KeyboardAwarePadding()
                 .transition(.move(edge: .bottom))
@@ -69,7 +68,6 @@ struct BottomBarView: View {
 }
 
 struct BottomBarViewThreadVer: View {
-    @EnvironmentObject var assetsDataStore: AssetsDataStore
     @ObservedObject var threadDataStore: ThreadDataStore
     @Binding var isBottomPopupOn: Bool
     @Binding var bottomBarState: BottomBarState
@@ -99,7 +97,7 @@ struct BottomBarViewThreadVer: View {
                     }
                 }
                 .frame(width: self.width, height: self.height)
-                .background(self.assetsDataStore.colors["darkButNotBlack"]!)
+                .background(appWideAssets.colors["darkButNotBlack"]!)
                 .cornerRadius(5, corners: [.topLeft, .topRight])
                 .KeyboardAwarePadding()
                 .transition(.move(edge: .bottom))
@@ -173,8 +171,6 @@ struct FollowerStatsView: View {
 
 struct ForumView: View {
     @EnvironmentObject var blockHiddenDataStore: BlockHiddenDataStore
-    @EnvironmentObject var userDataStore: UserDataStore
-    @EnvironmentObject var assetsDataStore: AssetsDataStore
     @EnvironmentObject var recentFollowDataStore: RecentFollowDataStore
     
     @ObservedObject var forumDataStore: ForumDataStore
@@ -260,12 +256,12 @@ struct ForumView: View {
     }
     
     private func followGame() {
-        self.forumOtherDataStore.followGame(gameId: self.forumDataStore.game.id, userDataStore: self.userDataStore)
+        self.forumOtherDataStore.followGame(gameId: self.forumDataStore.game.id)
         self.recentFollowDataStore.followGames.insert(self.forumDataStore.game.id)
     }
     
     private func unfollowGame() {
-        self.forumOtherDataStore.unfollowGame(gameId: self.forumDataStore.game.id, userDataStore: self.userDataStore)
+        self.forumOtherDataStore.unfollowGame(gameId: self.forumDataStore.game.id)
         self.recentFollowDataStore.followGames.remove(self.forumDataStore.game.id)
     }
     
@@ -363,8 +359,8 @@ struct ForumView: View {
                     .navigationBarTitle(Text(self.forumDataStore.game.name), displayMode: .inline)
                     .onAppear() {
                         if self.forumOtherDataStore.isLoaded == false {
-                            self.forumDataStore.fetchThreads(userId: self.userDataStore.token!.userId, containerWidth: a.size.width * 0.81, forumOtherDataStore: self.forumOtherDataStore, userDataStore: self.userDataStore)
-                            self.forumDataStore.insertGameHistory(userDataStore: self.userDataStore)
+                            self.forumDataStore.fetchThreads(containerWidth: a.size.width * 0.81, forumOtherDataStore: self.forumOtherDataStore)
+                            self.forumDataStore.insertGameHistory()
                         }
                         
                         self.recentFollowDataStore.insertVisitGame(gameId: self.forumDataStore.game.id)

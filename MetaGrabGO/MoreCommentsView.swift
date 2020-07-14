@@ -9,8 +9,6 @@
 import SwiftUI
 
 struct MoreCommentsView: View {
-    @EnvironmentObject var assetsDataStore: AssetsDataStore
-    @EnvironmentObject var userDataStore: UserDataStore
     @ObservedObject var commentDataStore: CommentDataStore
     
     var width: CGFloat
@@ -31,7 +29,7 @@ struct MoreCommentsView: View {
     }
     
     func fetchNextPage() {
-        self.commentDataStore.fetchCommentTreeByCommentId(start: self.commentDataStore.childCommentList.count, refresh: true, userId: self.userDataStore.token!.userId, containerWidth: self.width + self.staticPadding * 2 + 10, leadPadding: 20, userDataStore: self.userDataStore)
+        self.commentDataStore.fetchCommentTreeByCommentId(start: self.commentDataStore.childCommentList.count, refresh: true, containerWidth: self.width + self.staticPadding * 2 + 10, leadPadding: 20)
     }
     
     var body: some View {
@@ -42,7 +40,7 @@ struct MoreCommentsView: View {
             
             HStack(spacing: 0) {
                 RoundedRectangle(cornerRadius: 25, style: .continuous)
-                    .fill(self.assetsDataStore.leadingLineColors[self.level % self.assetsDataStore.leadingLineColors.count])
+                    .fill(appWideAssets.leadingLineColors[self.level % appWideAssets.leadingLineColors.count])
                     .frame(width: self.leadLineWidth, height: 20)
                     .padding(.trailing, 10)
                 

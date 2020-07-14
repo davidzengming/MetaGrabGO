@@ -10,9 +10,6 @@ import SwiftUI
 import Combine
 
 struct GameFeedIcon : View {
-    
-    @EnvironmentObject var userDataStore: UserDataStore
-    @EnvironmentObject var assetsDataStore: AssetsDataStore
     @EnvironmentObject var recentFollowDataStore: RecentFollowDataStore
     @Environment(\.imageCache) var cache: ImageCache
     
@@ -20,7 +17,6 @@ struct GameFeedIcon : View {
     @State private var showModal = false
     
     var game: Game
-    let placeholder = Image(systemName: "rectangle.fill")
     
     var body: some View {
         GeometryReader { a in
@@ -31,8 +27,8 @@ struct GameFeedIcon : View {
                             .resizable()
                             .frame(width: a.size.width, height: a.size.height * 0.75)
                     } else {
-                        self.placeholder
-                            .resizable()
+                        Rectangle()
+                            .fill(appWideAssets.colors["darkButNotBlack"]!)
                             .frame(width: a.size.width, height: a.size.height * 0.75)
                     }
                 }
@@ -54,12 +50,10 @@ struct GameFeedIcon : View {
                     .frame(width: a.size.width / 2, height: a.size.height * 0.25)
                     .sheet(isPresented: self.$showModal) {
                         GameModalView(game: self.game, imageLoader: ImageLoader(url: self.game.banner, cache: self.cache, whereIsThisFrom: "game modal view, game:" + String(self.game.id)))
-                            .environmentObject(self.userDataStore)
-                            .environmentObject(self.assetsDataStore)
                             .environmentObject(self.recentFollowDataStore)
                     }
                     
-                    NavigationLink(destination: LazyView { ForumView(forumDataStore: ForumDataStore(game: self.game), forumOtherDataStore: ForumOtherDataStore(gameId: self.game.id, userDataStore: self.userDataStore), gameIconLoader: self.imageLoader).onAppear(perform: {
+                    NavigationLink(destination: LazyView { ForumView(forumDataStore: ForumDataStore(game: self.game), forumOtherDataStore: ForumOtherDataStore(gameId: self.game.id), gameIconLoader: self.imageLoader).onAppear(perform: {
                         Global.tabBar!.isHidden = true
                     })
                     }) {
@@ -70,7 +64,7 @@ struct GameFeedIcon : View {
                         .frame(width: a.size.width / 2, height: a.size.height * 0.25)
                     }
                 }
-                .background(self.assetsDataStore.colors["notQuiteBlack"]!)
+                .background(appWideAssets.colors["notQuiteBlack"]!)
             }
         }
     }
@@ -78,9 +72,6 @@ struct GameFeedIcon : View {
 
 // Extra game feed view for time line specifically due to disclosure arrow bug with navigationview
 struct GameFeedTimelineIcon : View {
-    
-    @EnvironmentObject var userDataStore: UserDataStore
-    @EnvironmentObject var assetsDataStore: AssetsDataStore
     @EnvironmentObject var recentFollowDataStore: RecentFollowDataStore
     @Environment(\.imageCache) var cache: ImageCache
     
@@ -88,7 +79,6 @@ struct GameFeedTimelineIcon : View {
     @State private var showModal = false
     
     var game: Game
-    let placeholder = Image(systemName: "rectangle.fill")
     
     var body: some View {
         GeometryReader { a in
@@ -99,8 +89,8 @@ struct GameFeedTimelineIcon : View {
                             .resizable()
                             .frame(width: a.size.width, height: a.size.height * 0.75)
                     } else {
-                        self.placeholder
-                            .resizable()
+                        Rectangle()
+                            .fill(appWideAssets.colors["darkButNotBlack"]!)
                             .frame(width: a.size.width, height: a.size.height * 0.75)
                     }
                 }
@@ -122,8 +112,6 @@ struct GameFeedTimelineIcon : View {
                     .frame(width: a.size.width / 2, height: a.size.height * 0.25)
                     .sheet(isPresented: self.$showModal) {
                         GameModalView(game: self.game, imageLoader: ImageLoader(url: self.game.banner, cache: self.cache, whereIsThisFrom: "game modal view, game:" + String(self.game.id)))
-                            .environmentObject(self.userDataStore)
-                            .environmentObject(self.assetsDataStore)
                             .environmentObject(self.recentFollowDataStore)
                     }
                     
@@ -136,7 +124,7 @@ struct GameFeedTimelineIcon : View {
                         
                         .frame(width: a.size.width / 2, height: a.size.height * 0.25)
                         
-                        NavigationLink(destination: LazyView { ForumView(forumDataStore: ForumDataStore(game: self.game), forumOtherDataStore: ForumOtherDataStore(gameId: self.game.id, userDataStore: self.userDataStore), gameIconLoader: self.imageLoader).onAppear(perform: {
+                        NavigationLink(destination: LazyView { ForumView(forumDataStore: ForumDataStore(game: self.game), forumOtherDataStore: ForumOtherDataStore(gameId: self.game.id), gameIconLoader: self.imageLoader).onAppear(perform: {
                             Global.tabBar!.isHidden = true
                         })
                         }) {
@@ -147,7 +135,7 @@ struct GameFeedTimelineIcon : View {
                     }
                     
                 }
-                .background(self.assetsDataStore.colors["notQuiteBlack"]!)
+                .background(appWideAssets.colors["notQuiteBlack"]!)
             }
         }
     }

@@ -170,43 +170,43 @@ struct APIClient {
         return request
     }
     
-    func generateSession(access: String) -> URLSession {
+    func generateSession() -> URLSession {
         let sessionConfig = URLSessionConfiguration.default
-        let authString: String? = "Bearer \(access)"
+        let authString: String? = "Bearer \(keychainService.getAccessToken())"
         sessionConfig.httpAdditionalHeaders = ["Authorization": authString!]
         
         let session = URLSession(configuration: sessionConfig, delegate: nil, delegateQueue: nil)
         return session
     }
     
-    func getData(request: URLRequest, completion: @escaping(Data) -> Void, userDataStore: UserDataStore) {
+    func getData(request: URLRequest, completion: @escaping(Data) -> Void) {
         processingRequestsTaskGroup.enter()
-        let session = self.generateSession(access: userDataStore.token!.access)
-        
+        let session = self.generateSession()
+
         session.dataTask(with: request) { (data, response, error) in
             if let data = data {
                 completion(data)
             }
-            
+
             processingRequestsTaskGroup.leave()
         }.resume()
     }
     
-    func sessionHandler(request: URLRequest, userDataStore: UserDataStore, completion: @escaping(Data) -> Void) {
+    func sessionHandler(request: URLRequest, completion: @escaping(Data) -> Void) {
         let count = refreshingRequestTaskGroup.debugDescription.components(separatedBy: ",").filter({$0.contains("count")}).first?.components(separatedBy: CharacterSet.decimalDigits.inverted).compactMap{Int($0)}.first
         
         if count != 0 {
             refreshingRequestTaskGroup.notify(queue: .global()) {
-                self.getData(request: request, completion: completion, userDataStore: userDataStore)
+                self.getData(request: request, completion: completion)
             }
         } else {
             let curDateEpoch = Date().secondsSince1970
 
-            if curDateEpoch >= userDataStore.token!.accessExpDateEpoch - 300 {
+            if curDateEpoch >= keychainService.getAccessExpDateEpoch() - 300 {
                 refreshingRequestTaskGroup.enter()
                 processingRequestsTaskGroup.notify(queue: .global()) {
                     let url = self.generateURL(resource: Resource.api, endPoint: EndPoint.refreshToken)
-                    let request = self.generateRequest(url: url!, method: .POST, bodyData: "refresh=\(userDataStore.token!.refresh)")
+                    let request = self.generateRequest(url: url!, method: .POST, bodyData: "refresh=\(keychainService.getRefreshToken())")
                     
                     URLSession.shared.dataTask(with: request) { (data, response, error) in
                         if let data = data {
@@ -214,7 +214,7 @@ struct APIClient {
                                 let accessTokenResponse: AccessToken = load(jsonData: jsonString.data(using: .utf8)!)
                                 
                                 DispatchQueue.main.async {
-                                    userDataStore.token!.access = accessTokenResponse.access
+                                    _ = KeyChain.save(key: "metagrab.tokenaccess", data: accessTokenResponse.access.data(using: String.Encoding.utf8)!)
                                     refreshingRequestTaskGroup.leave()
                                 }
                             }
@@ -223,14 +223,58 @@ struct APIClient {
                 }
                 
                 refreshingRequestTaskGroup.notify(queue: .global()) {
-                    self.getData(request: request, completion: completion, userDataStore: userDataStore)
+                    self.getData(request: request, completion: completion)
                 }
             } else {
-                self.getData(request: request, completion: completion, userDataStore: userDataStore)
+                self.getData(request: request, completion: completion)
             }
         }
+    }
+    
+    func accessTokenRefreshHandler(request: URLRequest) {
+        let count = refreshingRequestTaskGroup.debugDescription.components(separatedBy: ",").filter({$0.contains("count")}).first?.components(separatedBy: CharacterSet.decimalDigits.inverted).compactMap{Int($0)}.first
+        
+        if count != 0 {
+            return
+        } else {
+            let curDateEpoch = Date().secondsSince1970
+
+            if curDateEpoch >= keychainService.getAccessExpDateEpoch() - 300 {
+                refreshingRequestTaskGroup.enter()
+                processingRequestsTaskGroup.notify(queue: .global()) {
+                    let url = self.generateURL(resource: Resource.api, endPoint: EndPoint.refreshToken)
+                    let request = self.generateRequest(url: url!, method: .POST, bodyData: "refresh=\(keychainService.getRefreshToken())")
+                    
+                    URLSession.shared.dataTask(with: request) { (data, response, error) in
+                        if let data = data {
+                            if let jsonString = String(data: data, encoding: .utf8) {
+                                let accessTokenResponse: AccessToken = load(jsonData: jsonString.data(using: .utf8)!)
+                                
+                                DispatchQueue.main.async {
+                                    _ = KeyChain.save(key: "metagrab.tokenaccess", data: accessTokenResponse.access.data(using: String.Encoding.utf8)!)
+                                    refreshingRequestTaskGroup.leave()
+                                }
+                            }
+                        }
+                    }.resume()
+                }
+            } else {
+                return
+            }
+        }
+    }
+    
+    func getJSONDecoder() -> JSONDecoder {
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        let dateFormat = DateFormatter()
+        dateFormat.locale = Locale(identifier: "en_US_POSIX")
+        dateFormat.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        decoder.dateDecodingStrategy = .formatted(dateFormat)
+        return decoder
     }
 }
 
 let processingRequestsTaskGroup = DispatchGroup()
 let refreshingRequestTaskGroup = DispatchGroup()
+let keychainService = KeyChainService()

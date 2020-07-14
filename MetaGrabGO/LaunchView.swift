@@ -12,6 +12,5 @@ struct LaunchView: View {
     var body: some View {
         MainView()
             .environmentObject(UserDataStore())
-            .environmentObject(AssetsDataStore())
     }
 }

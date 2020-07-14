@@ -13,7 +13,6 @@ struct ImageModalView: View {
     @Environment(\.imageCache) var cache: ImageCache
     @Binding var threadDataStore: ThreadDataStore?
     @Binding var currentImageModalIndex: Int?
-    let placeholder = Image(systemName: "rectangle.fill")
     
     var body: some View {
         GeometryReader { a in
@@ -26,8 +25,8 @@ struct ImageModalView: View {
                             .transition(AnyTransition.slide)
                             .aspectRatio(contentMode: .fit)
                     } else {
-                        self.placeholder
-                            .resizable()
+                        Rectangle()
+                            .fill(appWideAssets.colors["darkButNotBlack"]!)
                             .aspectRatio(contentMode: .fit)
                     }
                     

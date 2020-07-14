@@ -9,8 +9,6 @@
 import SwiftUI
 
 struct ThreadRow : View {
-    @EnvironmentObject var assetsDataStore: AssetsDataStore
-    @EnvironmentObject var userDataStore: UserDataStore
     @ObservedObject var threadDataStore: ThreadDataStore
 
     var turnBottomPopup: (Bool) -> Void
@@ -21,7 +19,6 @@ struct ThreadRow : View {
     var height: CGFloat
     var toggleImageModal: (ThreadDataStore?, Int?) -> Void
     
-    let placeholder = Image(systemName: "rectangle.fill")
     let formatter = RelativeDateTimeFormatter()
     
     let threadsFromBottomToGetReadyToLoadNextPage = 1
@@ -36,11 +33,11 @@ struct ThreadRow : View {
         self.width = width
         self.height = height
         self.toggleImageModal = toggleImageModal
-//        print("remaking thread row: ", threadDataStore.thread.id)
+        print("remaking thread row: ", threadDataStore.thread.id)
     }
 
     func onClickUser() {
-        if self.threadDataStore.author.id == self.userDataStore.token!.userId {
+        if self.threadDataStore.author.id == keychainService.getUserId() {
             print("Cannot report self.")
             return
         }
@@ -68,7 +65,7 @@ struct ThreadRow : View {
                     
                     Text(self.threadDataStore.relativeDateString!)
                         .font(.subheadline)
-                        .foregroundColor(Color(UIColor(named: "darkerLabelColor")!))
+                        .foregroundColor(Color(.secondaryLabel))
                 }
                 
                 Spacer()
@@ -103,8 +100,8 @@ struct ThreadRow : View {
                                         self.toggleImageModal(self.threadDataStore, index)
                                 }
                             } else {
-                                self.placeholder
-                                .resizable()
+                                Rectangle()
+                                .fill(Color(UIColor(named: "pseudoTertiaryBackground")!))
                                 .aspectRatio(contentMode: .fit)
                                 .cornerRadius(5)
                                 .onTapGesture {
@@ -142,13 +139,13 @@ struct ThreadRow : View {
                             Text("Unhide")
                                 .bold()
                                 .onTapGesture {
-                                    self.threadDataStore.unhideThread(threadId: self.threadDataStore.thread.id, userDataStore: self.userDataStore)
+                                    self.threadDataStore.unhideThread(threadId: self.threadDataStore.thread.id)
                             }
                         } else {
                             Text("Hide")
                                 .bold()
                                 .onTapGesture {
-                                    self.threadDataStore.hideThread(threadId: self.threadDataStore.thread.id, userDataStore: self.userDataStore)
+                                    self.threadDataStore.hideThread(threadId: self.threadDataStore.thread.id)
                             }
                         }
                     }
