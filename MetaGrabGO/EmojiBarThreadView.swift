@@ -123,6 +123,8 @@ struct EmojiBarThreadView: View {
                         self.onClickAddEmojiBubble()
                 }
             }
+            
+            Spacer()
         }
     }
 }

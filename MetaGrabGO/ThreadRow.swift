@@ -10,7 +10,7 @@ import SwiftUI
 
 struct ThreadRow : View {
     @ObservedObject var threadDataStore: ThreadDataStore
-
+    
     var turnBottomPopup: (Bool) -> Void
     var toggleBottomBarState: (BottomBarState) -> Void
     var togglePickedUser: (User) -> Void
@@ -35,7 +35,7 @@ struct ThreadRow : View {
         self.toggleImageModal = toggleImageModal
         print("remaking thread row: ", threadDataStore.thread.id)
     }
-
+    
     func onClickUser() {
         if self.threadDataStore.author.id == keychainService.getUserId() {
             print("Cannot report self.")
@@ -48,7 +48,7 @@ struct ThreadRow : View {
     }
     
     var body: some View {
-        VStack(alignment: .leading) {
+        VStack(alignment: .leading, spacing: 0) {
             HStack {
                 VStack(spacing: 0) {
                     Image(systemName: "person.circle.fill")
@@ -59,22 +59,22 @@ struct ThreadRow : View {
                 
                 VStack(alignment: .leading, spacing: 0) {
                     Text(self.threadDataStore.author.username)
+                        .fontWeight(.medium)
                         .onTapGesture {
                             self.onClickUser()
                     }
                     
-                    Text(self.threadDataStore.relativeDateString!)
+                    Text("replied " + self.threadDataStore.relativeDateString!)
                         .font(.subheadline)
                         .foregroundColor(Color(.secondaryLabel))
                 }
-                
                 Spacer()
             }
-            .frame(width: self.width, height: self.height * 0.045, alignment: .leading)
+            .frame(width: self.width, height: self.height * 0.04, alignment: .leading)
             .padding(.bottom, 10)
             
             NavigationLink(destination: LazyView{ ThreadView(threadDataStore: self.threadDataStore) }) {
-                VStack(alignment: .leading) {
+                VStack(alignment: .leading, spacing: 0) {
                     if self.threadDataStore.thread.title.count > 0 {
                         Text(self.threadDataStore.thread.title)
                             .fontWeight(.medium)
@@ -93,18 +93,18 @@ struct ThreadRow : View {
                         VStack {
                             if self.threadDataStore.imageLoaders[index]!.downloadedImage != nil {
                                 Image(uiImage: self.threadDataStore.imageLoaders[index]!.downloadedImage!)
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .cornerRadius(5)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .cornerRadius(5)
                                     .onTapGesture {
                                         self.toggleImageModal(self.threadDataStore, index)
                                 }
                             } else {
                                 Rectangle()
-                                .fill(Color(UIColor(named: "pseudoTertiaryBackground")!))
-                                .aspectRatio(contentMode: .fit)
-                                .cornerRadius(5)
-                                .onTapGesture {
+                                    .fill(Color(UIColor(named: "pseudoTertiaryBackground")!))
+                                    .aspectRatio(contentMode: .fit)
+                                    .cornerRadius(5)
+                                    .onTapGesture {
                                         self.toggleImageModal(self.threadDataStore, index)
                                 }
                             }
@@ -114,73 +114,67 @@ struct ThreadRow : View {
                 }
                 .frame(minWidth: 0, maxWidth: self.width * 0.9, minHeight: self.height * 0.15, maxHeight: self.height * 0.15, alignment: .leading)
                 .padding(.vertical, 10)
-//                    .overlay(
-//                        GeometryReader { proxy in
-//                            Text("\(proxy.size.width) x \(proxy.size.height)")
-//                        }
-//                    )
-//                .background(Color.red)
+                .padding(.bottom, 10)
             }
             
-            VStack(alignment: .leading, spacing: 20) {
-                HStack(spacing: 10) {
-                    HStack(spacing: 5) {
-                        Image(systemName: "bubble.right.fill")
-                        Text(String(self.threadDataStore.thread.numSubtreeNodes))
-                            .font(.body)
-                            .bold()
-                        Text("Comments")
-                            .bold()
-                    }
-                    .frame(height: self.height * 0.025, alignment: .leading)
-                    
-                    HStack {
-                        if self.threadDataStore.isHidden == true {
-                            Text("Unhide")
-                                .bold()
-                                .onTapGesture {
-                                    self.threadDataStore.unhideThread(threadId: self.threadDataStore.thread.id)
-                            }
-                        } else {
-                            Text("Hide")
-                                .bold()
-                                .onTapGesture {
-                                    self.threadDataStore.hideThread(threadId: self.threadDataStore.thread.id)
-                            }
-                        }
-                    }
-                    
-                    HStack {
-                        Text("Report")
+            HStack(spacing: 10) {
+                HStack(spacing: 5) {
+                    Image(systemName: "bubble.right.fill")
+                    Text(String(self.threadDataStore.thread.numSubtreeNodes))
+                        .font(.body)
+                        .bold()
+                    Text("Comments")
+                        .bold()
+                }
+                .frame(height: self.height * 0.025, alignment: .leading)
+                
+                HStack {
+                    if self.threadDataStore.isHidden == true {
+                        Text("Unhide")
                             .bold()
                             .onTapGesture {
-                                self.togglePickedThreadId(self.threadDataStore.thread.id, CGFloat(0))
-                                self.toggleBottomBarState(.reportThread)
-                                self.turnBottomPopup(true)
+                                self.threadDataStore.unhideThread(threadId: self.threadDataStore.thread.id)
+                        }
+                    } else {
+                        Text("Hide")
+                            .bold()
+                            .onTapGesture {
+                                self.threadDataStore.hideThread(threadId: self.threadDataStore.thread.id)
                         }
                     }
-                    
-                    Spacer()
                 }
-                .foregroundColor(Color(.secondaryLabel))
-                .frame(width: self.width * 0.9)
                 
-                EmojiBarThreadView(threadDataStore: self.threadDataStore, turnBottomPopup: { state in self.turnBottomPopup(state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state)}, togglePickedUser: { pickedUser in self.togglePickedUser(pickedUser)}, togglePickedThreadId: { (pickedThreadId, futureContainerWidth) in self.togglePickedThreadId(pickedThreadId, futureContainerWidth) })
+                HStack {
+                    Text("Report")
+                        .bold()
+                        .onTapGesture {
+                            self.togglePickedThreadId(self.threadDataStore.thread.id, CGFloat(0))
+                            self.toggleBottomBarState(.reportThread)
+                            self.turnBottomPopup(true)
+                    }
+                }
+                
+                Spacer()
             }
-            .padding(.top, 10)
+            .foregroundColor(Color(.secondaryLabel))
+            .frame(width: self.width * 0.9, height: self.height * 0.025)
+            .padding(.bottom, 10)
+            
+            EmojiBarThreadView(threadDataStore: self.threadDataStore, turnBottomPopup: { state in self.turnBottomPopup(state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state)}, togglePickedUser: { pickedUser in self.togglePickedUser(pickedUser)}, togglePickedThreadId: { (pickedThreadId, futureContainerWidth) in self.togglePickedThreadId(pickedThreadId, futureContainerWidth) })
         }
         .padding(.all, 20)
+        .padding(.vertical, 10)
         .frame(width: self.width, height:
-            ceil(self.height * 0.045 + 10 + 10 +
-//                (self.threadDataStore.thread.title.isEmpty == false ? self.threadDataStore.thread.title.height : 0) +
-                min(self.threadDataStore.desiredHeight, 200)
-            + 10
-            + (self.threadDataStore.imageLoaders.count > 0 ? (self.height * 0.15) : 0) + 40
-            + self.height * 0.025 + CGFloat(self.threadDataStore.emojis.emojiArr.count) * 40
-            + 40 + 20 + 20)
-//        .background(Color.white)
-            , alignment: .top)
-        .buttonStyle(PlainButtonStyle())
+            ceil(self.height * 0.04 + 10
+                + min(self.threadDataStore.desiredHeight, 200) + 10
+                + (self.threadDataStore.imageLoaders.count > 0 ? (self.height * 0.15) : 0) + 30
+                + self.height * 0.025
+                + CGFloat(self.threadDataStore.emojis.emojiArr.count) * 40
+                + 40
+                + 20)
+            //        .background(Color.white)
+            , alignment: .center)
+            .buttonStyle(PlainButtonStyle())
     }
 }
 

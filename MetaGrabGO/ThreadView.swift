@@ -16,11 +16,21 @@ extension UIApplication {
     }
 }
 
+struct CenterModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        HStack {
+            Spacer()
+            content
+            Spacer()
+        }
+    }
+}
+
 struct ThreadView : View {
     @ObservedObject var threadDataStore: ThreadDataStore
     
     let formatter = RelativeDateTimeFormatter()
-    let outerPadding : CGFloat = 20
+    let outerPadding : CGFloat = 0
     
     @State var isEditable = false
     @State var isBottomPopupOn = false
@@ -42,11 +52,11 @@ struct ThreadView : View {
     
     @State var isFirstResponder: Bool = false
     @State var didBecomeFirstResponder: Bool = false
-
+    
     
     init(threadDataStore: ThreadDataStore) {
         self.threadDataStore = threadDataStore
-//        print("thread view created", threadDataStore.thread.id)
+        //        print("thread view created", threadDataStore.thread.id)
         self.pickedThreadId = threadDataStore.thread.id
     }
     
@@ -144,8 +154,8 @@ struct ThreadView : View {
     }
     
     func submit(mainCommentContainerWidth: CGFloat) {
-//        print("submitted")
-
+        //        print("submitted")
+        
         if pickedCommentId != nil {
             self.pickedCommentId!.postChildComment(content: self.replyContent, containerWidth: self.replyFutureContainerWidth)
         } else {
@@ -169,68 +179,83 @@ struct ThreadView : View {
                 ZStack(alignment: .bottom) {
                     VStack {
                         List {
-                            VStack(alignment: .leading) {
-                                HStack(spacing: 0) {
+                            VStack(spacing: 0) {
+                                HStack {
                                     VStack(spacing: 0) {
                                         Image(systemName: "person.circle.fill")
                                             .resizable()
                                             .aspectRatio(contentMode: .fit)
                                             .foregroundColor(Color.orange)
                                     }
-                                    .frame(width: 30, height: 30)
-                                    .padding(.trailing, 10)
+                                    .frame(height: a.size.height * 0.04)
                                     
                                     VStack(alignment: .leading, spacing: 0) {
-                                        HStack(spacing: 0) {
-                                            Text(self.threadDataStore.thread.users[0].username)
-                                            Spacer()
-                                        }
-                                        .onTapGesture {
-                                            self.onClickUser()
+                                        Text(self.threadDataStore.author.username)
+                                            .onTapGesture {
+                                                self.onClickUser()
                                         }
                                         
                                         Text(self.threadDataStore.relativeDateString!)
-                                            .foregroundColor(Color(UIColor(named: "darkerLabelColor")!))
                                             .font(.subheadline)
-                                            .padding(.bottom, 5)
+                                            .foregroundColor(Color(.secondaryLabel))
                                     }
+                                    
+                                    Spacer()
                                 }
+                                .frame(width: a.size.width * 0.9, height: a.size.height * 0.04)
                                 .padding(.top, 20)
+                                .padding(.bottom, 10)
+                                .modifier(CenterModifier())
+                                
+                                if self.threadDataStore.thread.title.count > 0 {
+                                    Text(self.threadDataStore.thread.title)
+                                        .fontWeight(.medium)
+                                        .frame(width: a.size.width * 0.9, alignment: .leading)
+                                        .modifier(CenterModifier())
+                                }
                                 
                                 Button(action: {self.togglePickedThreadId(threadId: self.threadDataStore.thread.id, futureContainerWidth: 0)
                                     self.toggleDidBecomeFirstResponder()}) {
-                                        FancyPantsEditorView(existedTextStorage: self.$threadDataStore.textStorage, desiredHeight: self.$threadDataStore.desiredHeight,  newTextStorage: .constant(NSTextStorage(string: "")), isEditable: .constant(false), isFirstResponder: .constant(false), didBecomeFirstResponder: .constant(false), showFancyPantsEditorBar: .constant(false), isNewContent: false, isThread: true, threadId: self.threadDataStore.thread.id, isOmniBar: false, width: a.size.width, height: a.size.height)
-                                        .frame(width: a.size.width - self.outerPadding * 2, height: self.threadDataStore.desiredHeight + (self.isEditable ? 20 : 0))
-                                        .padding(.bottom, 10)
+                                        FancyPantsEditorView(existedTextStorage: self.$threadDataStore.textStorage, desiredHeight: self.$threadDataStore.desiredHeight,  newTextStorage: .constant(NSTextStorage(string: "")), isEditable: .constant(false), isFirstResponder: .constant(false), didBecomeFirstResponder: .constant(false), showFancyPantsEditorBar: .constant(false), isNewContent: false, isThread: true, threadId: self.threadDataStore.thread.id, isOmniBar: false, width: a.size.width * 0.9, height: a.size.height)
+                                            .frame(width: a.size.width * 0.9, height: self.threadDataStore.desiredHeight + (self.isEditable ? 20 : 0))
+                                            .padding(.bottom, 10)
                                 }
+                                .modifier(CenterModifier())
                                 
-                                HStack(spacing: 10) {
-                                    ForEach(self.threadDataStore.imageArr, id: \.self) { index in
-                                        Group {
-                                            if self.threadDataStore.imageLoaders[index]!.downloadedImage != nil {
-                                                Image(uiImage: self.threadDataStore.imageLoaders[index]!.downloadedImage!)
-                                                    .resizable()
-                                                    .aspectRatio(contentMode: .fit)
-                                                    .cornerRadius(5)
-                                                    
-                                                .onTapGesture {
-                                                    self.toggleImageModal(threadDataStore: self.threadDataStore, currentImageModalIndex: index)
-                                                }
-                                            } else {
-                                                Rectangle()
-                                                .fill(Color(UIColor(named: "pseudoTertiaryBackground")!))
-                                                    .aspectRatio(contentMode: .fit)
-                                                    .cornerRadius(5)
-                                                    .frame(minWidth: a.size.width * 0.05, maxWidth: a.size.width * 0.25, minHeight: a.size.height * 0.1, maxHeight: a.size.height * 0.15, alignment: .center)
-                                                .onTapGesture {
-                                                    self.toggleImageModal(threadDataStore: self.threadDataStore, currentImageModalIndex: index)
+                                if self.threadDataStore.imageArr.count != 0 {
+                                    VStack(alignment: .leading, spacing: 0) {
+                                        HStack(spacing: 10) {
+                                            ForEach(self.threadDataStore.imageArr, id: \.self) { index in
+                                                Group {
+                                                    if self.threadDataStore.imageLoaders[index]!.downloadedImage != nil {
+                                                        Image(uiImage: self.threadDataStore.imageLoaders[index]!.downloadedImage!)
+                                                            .resizable()
+                                                            .aspectRatio(contentMode: .fit)
+                                                            .cornerRadius(5)
+                                                            
+                                                            .onTapGesture {
+                                                                self.toggleImageModal(threadDataStore: self.threadDataStore, currentImageModalIndex: index)
+                                                        }
+                                                    } else {
+                                                        Rectangle()
+                                                            .fill(Color(UIColor(named: "pseudoTertiaryBackground")!))
+                                                            .aspectRatio(contentMode: .fit)
+                                                            .cornerRadius(5)
+                                                            .frame(minWidth: a.size.width * 0.05, maxWidth: a.size.width * 0.25, minHeight: a.size.height * 0.1, maxHeight: a.size.height * 0.15, alignment: .center)
+                                                            .onTapGesture {
+                                                                self.toggleImageModal(threadDataStore: self.threadDataStore, currentImageModalIndex: index)
+                                                        }
+                                                    }
                                                 }
                                             }
                                         }
+                                        .frame(minWidth: 0, maxWidth: a.size.width * 0.81, minHeight: 0, maxHeight: a.size.height * 0.15, alignment: .leading)
+                                        .padding(.bottom, 20)
+                                        .padding(.top, 10)
                                     }
+                                    .frame(width: a.size.width * 0.9, alignment: .leading)
+                                    .modifier(CenterModifier())
                                 }
-                                .frame(minWidth: 0, maxWidth: a.size.width * 0.9, minHeight: 0, maxHeight: a.size.height * 0.15, alignment: .leading)
-                                .padding(.vertical, 10)
                                 
                                 HStack(spacing: 10) {
                                     HStack(spacing: 5) {
@@ -270,17 +295,23 @@ struct ThreadView : View {
                                     
                                     Spacer()
                                 }
-                                .frame(width: a.size.width - self.outerPadding * 2, height: 20)
+                                .frame(width: a.size.width * 0.9)
+                                .padding(.bottom, 10)
                                 .foregroundColor(.gray)
+                                .modifier(CenterModifier())
                                 
                                 EmojiBarThreadView(threadDataStore: self.threadDataStore, turnBottomPopup: { state in self.turnBottomPopup(state: state) }, toggleBottomBarState: { state in self.toggleBottomBarState(state: state)}, togglePickedUser: { user in self.togglePickedUser(user: user)}, togglePickedThreadId: { (threadId, futureContainerWidth) in self.togglePickedThreadId(threadId: threadId, futureContainerWidth: futureContainerWidth) })
+                                    .frame(width: a.size.width * 0.9)
+                                    .modifier(CenterModifier())
                             }
+                            .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
                             
                             if self.threadDataStore.areCommentsLoaded {
                                 if !self.threadDataStore.childCommentList.isEmpty {
                                     Divider()
                                     ForEach(self.threadDataStore.childCommentList, id: \.self) { commentId in
-                                        CommentView(commentDataStore: self.threadDataStore.childComments[commentId]!, ancestorThreadId: self.threadDataStore.thread.id, width: a.size.width - self.outerPadding * 2, height: a.size.height, leadPadding: 0, level: 0, turnBottomPopup: { state in self.turnBottomPopup(state: state) }, toggleBottomBarState: { state in self.toggleBottomBarState(state: state) }, togglePickedUser: { user in self.togglePickedUser(user: user) }, togglePickedCommentId: { (commentId, futureContainerWidth) in self.togglePickedCommentId(commentId: commentId, futureContainerWidth: futureContainerWidth) }, toggleDidBecomeFirstResponder: self.toggleDidBecomeFirstResponder)
+                                        CommentView(commentDataStore: self.threadDataStore.childComments[commentId]!, ancestorThreadId: self.threadDataStore.thread.id, width: a.size.width * 0.9, height: a.size.height, leadPadding: 0, level: 0, turnBottomPopup: { state in self.turnBottomPopup(state: state) }, toggleBottomBarState: { state in self.toggleBottomBarState(state: state) }, togglePickedUser: { user in self.togglePickedUser(user: user) }, togglePickedCommentId: { (commentId, futureContainerWidth) in self.togglePickedCommentId(commentId: commentId, futureContainerWidth: futureContainerWidth) }, toggleDidBecomeFirstResponder: self.toggleDidBecomeFirstResponder)
+                                            .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
                                     }
                                 } else {
                                     Divider()
@@ -296,29 +327,39 @@ struct ThreadView : View {
                                             .foregroundColor(Color(.lightGray))
                                             .padding()
                                     }
-                                    .frame(width: a.size.width - self.outerPadding * 2, height: a.size.height / 2)
+                                    .frame(height: a.size.height / 2)
+                                    .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
+                                    .modifier(CenterModifier())
                                 }
                             } else {
                                 VStack {
                                     ActivityIndicator()
-                                    .frame(width: a.size.width, height: a.size.height * 0.20)
+                                        .frame(width: a.size.width, height: a.size.height * 0.20)
                                 }
-                                .frame(width: a.size.width - self.outerPadding * 2, height: a.size.height / 2)
+                                .frame(height: a.size.height / 2)
+                                .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
+                                .modifier(CenterModifier())
                             }
                             
-                            if self.threadDataStore.childCommentList.count < self.threadDataStore.thread.numChilds {
+                            if self.threadDataStore.childCommentList.count < self.threadDataStore.thread.numChilds && self.threadDataStore.areCommentsLoaded == true {
                                 if self.threadDataStore.isLoadingNextPage == true {
                                     ActivityIndicator()
-                                        .frame(width: a.size.width, height: a.size.height * 0.20)
+                                        .frame(height: a.size.height * 0.20)
                                         .foregroundColor(appWideAssets.colors["darkButNotBlack"]!)
+                                        .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
+                                        .modifier(CenterModifier())
                                 } else {
                                     HStack {
+                                        Image(systemName: "arrowtriangle.down.fill")
+                                            .resizable()
+                                            .frame(width: a.size.height * 0.02, height: a.size.height * 0.02)
+                                        Text("View more comments (\(self.threadDataStore.thread.numChilds - self.threadDataStore.childCommentList.count) replies)")
+                                            .frame(width: a.size.width * 0.9, height: a.size.height * 0.05, alignment: .leading)
+                                            .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
                                         Spacer()
-                                        Text("Load more comments (\(self.threadDataStore.thread.numChilds - self.threadDataStore.childCommentList.count) replies)")
-                                            .frame(width: a.size.width - self.outerPadding * 2 - 5, height: a.size.height * 0.05, alignment: .leading)
-                                            .onTapGesture {
-                                                self.fetchNextPage(containerWidth: a.size.width - self.outerPadding * 2)
-                                        }
+                                    }
+                                    .onTapGesture {
+                                            self.fetchNextPage(containerWidth: a.size.width * 0.9)
                                     }
                                 }
                             }
@@ -326,23 +367,19 @@ struct ThreadView : View {
                         .frame(width: a.size.width, height: a.size.height - (20 + 20 + 40))
                         .onAppear() {
                             if self.threadDataStore.areCommentsLoaded == false {
-                                self.threadDataStore.fetchCommentTreeByThreadId(refresh: true, containerWidth: a.size.width - self.outerPadding * 2, leadPadding: 20)
+                                self.threadDataStore.fetchCommentTreeByThreadId(refresh: true, containerWidth: a.size.width * 0.9, leadPadding: 20)
                             }
                         }
-                        
                         Spacer()
                     }
                     .frame(width: a.size.width, height: a.size.height)
                     
-                    
-                    FancyPantsEditorView(existedTextStorage: .constant(NSTextStorage(string: "")), desiredHeight: self.$replyBarDesiredHeight, newTextStorage: self.$replyContent, isEditable: .constant(true), isFirstResponder: self.$isFirstResponder, didBecomeFirstResponder: self.$didBecomeFirstResponder, showFancyPantsEditorBar: .constant(true), isNewContent: true, isThread: true, isOmniBar: true, submit: { mainCommentContainerWidth in self.submit(mainCommentContainerWidth: mainCommentContainerWidth)}, width: a.size.width, height: a.size.height, togglePickedCommentId: { (commentId, futureContainerWidth) in self.togglePickedCommentId(commentId: commentId, futureContainerWidth: futureContainerWidth)}, mainCommentContainerWidth: a.size.width - self.outerPadding * 2)
-                    .KeyboardAwarePadding()
-                    .animation(.spring())
-                    .transition(.slide)
-                    
+                    FancyPantsEditorView(existedTextStorage: .constant(NSTextStorage(string: "")), desiredHeight: self.$replyBarDesiredHeight, newTextStorage: self.$replyContent, isEditable: .constant(true), isFirstResponder: self.$isFirstResponder, didBecomeFirstResponder: self.$didBecomeFirstResponder, showFancyPantsEditorBar: .constant(true), isNewContent: true, isThread: true, isOmniBar: true, submit: { mainCommentContainerWidth in self.submit(mainCommentContainerWidth: mainCommentContainerWidth)}, width: a.size.width, height: a.size.height, togglePickedCommentId: { (commentId, futureContainerWidth) in self.togglePickedCommentId(commentId: commentId, futureContainerWidth: futureContainerWidth)}, mainCommentContainerWidth: a.size.width)
+                        .KeyboardAwarePadding()
+                        .animation(.spring())
+                        .transition(.slide)
                     
                     BottomBarViewThreadVer(threadDataStore: self.threadDataStore, isBottomPopupOn: self.$isBottomPopupOn, bottomBarState: self.$bottomBarState, pickedThreadId: self.$pickedThreadId,  pickedCommentId: self.$pickedCommentId, pickedUser: self.$pickedUser, width: a.size.width, height: a.size.height * 0.25, turnBottomPopup: { state in self.turnBottomPopup(state: state) }, toggleBottomBarState: { state in self.toggleBottomBarState(state: state)}, togglePickedUser: { user in self.togglePickedUser(user: user)}, togglePickedThreadId: { (threadId, futureContainerWidth) in self.togglePickedThreadId(threadId: threadId, futureContainerWidth: futureContainerWidth) }, togglePickedCommentId: { (commentId, futureContainerWidth) in self.togglePickedCommentId(commentId: commentId, futureContainerWidth: futureContainerWidth) })
-                    
                 }
                 
                 DummyImageModalView(isImageModalOn: self.$isImageModalOn, threadDataStore: self.$imageModalSelectedThreadStore, currentImageModalIndex: self.$currentImageModalIndex)

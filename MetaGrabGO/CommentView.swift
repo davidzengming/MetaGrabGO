@@ -20,11 +20,10 @@ struct CommentView : View {
     var width: CGFloat
     var height: CGFloat
     var leadPadding: CGFloat
-    let staticPadding: CGFloat = 5
     let level: Int
     let leadLineWidth: CGFloat = 3
-    let verticalPadding: CGFloat = 15
-    let outerPadding : CGFloat = 20
+    let verticalPadding: CGFloat = 10
+    let outerPadding : CGFloat = 0
     
     var turnBottomPopup: (Bool) -> Void
     var toggleBottomBarState: (BottomBarState) -> Void
@@ -45,9 +44,9 @@ struct CommentView : View {
         self.togglePickedUser = togglePickedUser
         self.togglePickedCommentId = togglePickedCommentId
         self.toggleDidBecomeFirstResponder = toggleDidBecomeFirstResponder
-//        print("comment view was created: ", self.commentDataStore.comment.id)
+        //        print("comment view was created: ", self.commentDataStore.comment.id)
     }
-
+    
     func onClickUser() {
         if self.commentDataStore.author.id == keychainService.getUserId() {
             print("Cannot report self.")
@@ -59,24 +58,24 @@ struct CommentView : View {
         self.turnBottomPopup(true)
     }
     
-//    func transformVotesString(points: Int) -> String {
-//        let isNegative = false
-//        let numPoints = points
-//
-//        var concatVotesStr = ""
-//        if numPoints > 1000000 {
-//            concatVotesStr = String((Double(numPoints) / 1000000 * 10).rounded() / 10)
-//            concatVotesStr += " M"
-//        } else if numPoints > 1000 {
-//            concatVotesStr = String((Double(numPoints) / 1000 * 10).rounded() / 10)
-//            concatVotesStr += " K"
-//        } else {
-//            concatVotesStr += String(numPoints)
-//        }
-//
-//        return ((isNegative ? "-" : "" ) + concatVotesStr)
-//    }
-//
+    //    func transformVotesString(points: Int) -> String {
+    //        let isNegative = false
+    //        let numPoints = points
+    //
+    //        var concatVotesStr = ""
+    //        if numPoints > 1000000 {
+    //            concatVotesStr = String((Double(numPoints) / 1000000 * 10).rounded() / 10)
+    //            concatVotesStr += " M"
+    //        } else if numPoints > 1000 {
+    //            concatVotesStr = String((Double(numPoints) / 1000 * 10).rounded() / 10)
+    //            concatVotesStr += " K"
+    //        } else {
+    //            concatVotesStr += String(numPoints)
+    //        }
+    //
+    //        return ((isNegative ? "-" : "" ) + concatVotesStr)
+    //    }
+    //
     func onClickUpvoteButton() {
         if self.commentDataStore.vote != nil {
             if self.commentDataStore.vote!.direction == 1 {
@@ -107,14 +106,17 @@ struct CommentView : View {
     
     var body: some View {
         Group {
-            HStack {
-                Spacer()
+            HStack(spacing: 0) {
+                if level != 0 {
+                    Spacer()
+                }
+                
                 VStack(spacing: 0) {
                     HStack(spacing: 0) {
                         if self.level > 0 {
                             RoundedRectangle(cornerRadius: 25, style: .continuous)
                                 .fill(appWideAssets.leadingLineColors[self.level % appWideAssets.leadingLineColors.count])
-                                .frame(width: self.leadLineWidth, height: 30 + self.commentDataStore.desiredHeight + (self.isEditable ? 20 : 0) + 30 + 20)
+                                .frame(width: self.leadLineWidth, height: self.commentDataStore.desiredHeight + (self.isEditable ? 20 : 0) + self.height * 0.04 + 10 + 20 + 10 + 5)
                                 .padding(.trailing, 10)
                         }
                         
@@ -122,73 +124,75 @@ struct CommentView : View {
                             VStack(alignment: .trailing, spacing: 0) {
                                 VStack(alignment: .trailing, spacing: 0) {
                                     HStack(spacing: 0) {
-                                        VStack(spacing: 0) {
-                                            Image(systemName: "person.circle.fill")
-                                                .resizable()
-                                                .aspectRatio(contentMode: .fit)
-                                                .foregroundColor(Color.orange)
-                                        }
-                                        .frame(width: 30, height: 30)
-                                        .padding(.trailing, 10)
-                                        
-                                        VStack(alignment: .leading, spacing: 0) {
-                                            HStack(spacing: 0) {
-                                                Text(self.commentDataStore.author.username)
-                                                    .onTapGesture {
-                                                        self.onClickUser()
-                                                }
-//                                                Text(String(self.commentDataStore.comment.id))
-//                                                    .onAppear() {
-//                                                        print("hi comment", self.commentDataStore.comment.id)
-//                                                }
-//                                                .foregroundColor(.black)
-                                                
-                                                Spacer()
-                                                
+                                        HStack {
+                                            VStack(spacing: 0) {
+                                                Image(systemName: "person.circle.fill")
+                                                    .resizable()
+                                                    .aspectRatio(contentMode: .fit)
+                                                    .foregroundColor(Color.orange)
+                                            }
+                                            .frame(height: self.height * 0.04)
+                                            
+                                            VStack(alignment: .leading, spacing: 0) {
                                                 HStack {
-                                                    Image(":thumbs_up:")
-                                                        .resizable()
-                                                        .frame(width: self.width * 0.025, height: self.width * 0.025)
-                                                        .padding(5)
-                                                        .background(self.commentDataStore.vote != nil && self.commentDataStore.vote!.direction == 1 ? Color(.darkGray) : Color(UIColor(named: "emojiBackgroundColor")!))
-                                                        
-                                                        .cornerRadius(5)
+                                                    Text(self.commentDataStore.author.username)
                                                         .onTapGesture {
-                                                            self.onClickUpvoteButton()
+                                                            self.onClickUser()
                                                     }
                                                     
-                                                    Text(String(self.commentDataStore.comment.upvotes - self.commentDataStore.comment.downvotes))
-                                                        .font(.body)
-                                                        .frame(width: 20)
-                                                    
-                                                    Image(":thumbs_down:")
-                                                        .resizable()
-                                                        .frame(width: self.width * 0.025, height: self.width * 0.025)
-                                                        .padding(5)
-                                                        
-                                                        .background(self.commentDataStore.vote != nil && self.commentDataStore.vote!.direction == -1 ? Color(.darkGray) : Color(UIColor(named: "emojiBackgroundColor")!))
-                                                        .cornerRadius(5)
-                                                        .onTapGesture {
-                                                            self.onClickDownvoteButton()
-                                                    }
+                                                    Spacer()
                                                 }
+                                                
+                                                Text(self.commentDataStore.relativeDateString!)
+                                                    .font(.subheadline)
+                                                    .foregroundColor(Color(.secondaryLabel))
                                             }
                                             
-                                            Text(self.commentDataStore.relativeDateString!)
-                                                .foregroundColor(Color(UIColor(named: "darkerLabelColor")!))
-                                                .font(.subheadline)
-                                                .padding(.bottom, 5)
+                                            Spacer()
+                                            
+                                            HStack {
+                                                Image(":thumbs_up:")
+                                                    .resizable()
+                                                    .frame(width: self.width * 0.025, height: self.width * 0.025)
+                                                    .padding(5)
+                                                    .background(self.commentDataStore.vote != nil && self.commentDataStore.vote!.direction == 1 ? Color(.darkGray) : Color(UIColor(named: "emojiBackgroundColor")!))
+                                                    
+                                                    .cornerRadius(5)
+                                                    .onTapGesture {
+                                                        self.onClickUpvoteButton()
+                                                }
+                                                
+                                                Text(String(self.commentDataStore.comment.upvotes - self.commentDataStore.comment.downvotes))
+                                                    .font(.body)
+                                                    .frame(width: 20)
+                                                
+                                                Image(":thumbs_down:")
+                                                    .resizable()
+                                                    .frame(width: self.width * 0.025, height: self.width * 0.025)
+                                                    .padding(5)
+                                                    
+                                                    .background(self.commentDataStore.vote != nil && self.commentDataStore.vote!.direction == -1 ? Color(.darkGray) : Color(UIColor(named: "emojiBackgroundColor")!))
+                                                    .cornerRadius(5)
+                                                    .onTapGesture {
+                                                        self.onClickDownvoteButton()
+                                                }
+                                            }
+                                            .frame(height: self.height * 0.04, alignment: .top)
                                         }
+                                        .frame(width: self.width - self.leadPadding - (self.level > 0 ? self.leadLineWidth + 10: 0), height: self.height * 0.04)
+                                        
                                     }
                                     .padding(.vertical, 5)
                                     
-                                    Button(action: {self.togglePickedCommentId(self.commentDataStore, self.width - self.leadPadding - self.staticPadding * 2 - 10 - self.leadLineWidth - 20)
+                                    Button(action: {self.togglePickedCommentId(self.commentDataStore, self.width - self.leadPadding - 10 - self.leadLineWidth - 20)
                                         self.toggleDidBecomeFirstResponder()}) {
                                             FancyPantsEditorView(existedTextStorage: self.$commentDataStore.textStorage, desiredHeight: self.$commentDataStore.desiredHeight, newTextStorage: .constant(NSTextStorage(string: "")), isEditable: self.$isEditable, isFirstResponder: .constant(false), didBecomeFirstResponder: .constant(false), showFancyPantsEditorBar: .constant(false), isNewContent: false, isThread: false, isOmniBar: false, width: self.width, height: self.height)
-                                            
-                                            .frame(height: self.commentDataStore.desiredHeight + (self.isEditable ? 20 : 0), alignment: .leading)
+                                                
+                                                .frame(height: self.commentDataStore.desiredHeight + (self.isEditable ? 20 : 0), alignment: .leading)
+                                                .padding(.top, 10)
+                                                .padding(.bottom, 5)
                                     }
-
+                                    
                                     
                                     HStack {
                                         HStack {
@@ -211,7 +215,7 @@ struct CommentView : View {
                                             Text("Report")
                                                 .bold()
                                                 .onTapGesture {
-                                                    self.togglePickedCommentId(self.commentDataStore, self.width - self.leadPadding - self.staticPadding * 2 - 10 - self.leadLineWidth - 20)
+                                                    self.togglePickedCommentId(self.commentDataStore, self.width - self.leadPadding - 10 - self.leadLineWidth - 20)
                                                     self.toggleBottomBarState(.reportThread)
                                                     self.turnBottomPopup(true)
                                             }
@@ -221,28 +225,29 @@ struct CommentView : View {
                                     }
                                     .foregroundColor(.gray)
                                     .frame(height: 20)
-                                    .padding(.top, 10)
                                 }
                             }
-                            .frame(width: self.width - self.leadPadding - staticPadding * 2 - (self.level > 0 ? self.leadLineWidth + 10: 0), height: 30 + self.commentDataStore.desiredHeight + (self.isEditable ? 20 : 0) + 30, alignment: .leading)
+                            .frame(width: self.width - self.leadPadding - (self.level > 0 ? self.leadLineWidth + 10: 0), height: self.height * 0.04 + self.commentDataStore.desiredHeight + (self.isEditable ? 20 : 0) + 10 + 20 + 10 + 5, alignment: .leading)
                         }
                         .padding(.vertical, self.verticalPadding)
                     }
                 }
             }
             .frame(width: self.width)
+            .modifier(CenterModifier())
             
             if self.commentDataStore.childCommentList.count < self.commentDataStore.comment.numChilds {
                 if self.commentDataStore.isLoadingNextPage == true {
                     ActivityIndicator()
-                        .frame(width: self.width - self.leadPadding - staticPadding * 2 - 10 - self.leadLineWidth - 20, height: self.height * 0.20)
+                        .frame(width: self.width - self.leadPadding - 10 - self.leadLineWidth - 20, height: self.height * 0.20)
+                        .modifier(CenterModifier())
                         .foregroundColor(appWideAssets.colors["darkButNotBlack"]!)
                 } else {
                     HStack {
-                        Spacer()
-                        MoreCommentsView(commentDataStore: self.commentDataStore, width: self.width - self.leadPadding - staticPadding * 2 - 10 - self.leadLineWidth - 20, leadLineWidth: self.leadLineWidth, staticPadding: self.staticPadding, verticalPadding: self.verticalPadding, level: self.level + 1)
+                        MoreCommentsView(commentDataStore: self.commentDataStore, width: self.width - self.leadPadding - 10 - self.leadLineWidth - 20, leadLineWidth: self.leadLineWidth, verticalPadding: self.verticalPadding, level: self.level + 1)
                     }
                     .frame(width: self.width)
+                    .modifier(CenterModifier())
                 }
             }
             

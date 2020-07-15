@@ -232,7 +232,7 @@ struct ForumView: View {
         self.forumOtherDataStore = forumOtherDataStore
         self.gameIconLoader = gameIconLoader
         
-//        print("creating forum for game:", forumDataStore.game.id)
+        //        print("creating forum for game:", forumDataStore.game.id)
         // Navigation related
         // To remove all separators including the actual ones:
         //        UITableView.appearance().separatorStyle = .none
@@ -242,11 +242,11 @@ struct ForumView: View {
         UINavigationBar.appearance().barTintColor = hexStringToUIColor(hex: "#2C2F33")
         //        UINavigationBar.appearance().setBackgroundImage(UIImage(), for: .default) //makes status bar translucent
         UINavigationBar.appearance().tintColor = .white
-//                UINavigationBar.appearance().backgroundColor = .clear
+        //                UINavigationBar.appearance().backgroundColor = .clear
         
         // List related
-//        UITableView.appearance().backgroundColor = .clear
-//        UITableViewCell.appearance().backgroundColor = .clear
+        //        UITableView.appearance().backgroundColor = .clear
+        //        UITableViewCell.appearance().backgroundColor = .clear
         
         // To remove only extra separators below the list:
         UITableView.appearance().tableFooterView = UIView()
@@ -326,6 +326,7 @@ struct ForumView: View {
                                         Divider()
                                         ThreadRow(threadDataStore: self.forumDataStore.threadDataStores[threadId]!, turnBottomPopup: { state in self.turnBottomPopup(state: state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state: state)}, togglePickedUser: { pickedUser in self.togglePickedUser(user: pickedUser)}, togglePickedThreadId: { (pickedThreadId, futureContainerWidth) in self.togglePickedThreadId(threadId: pickedThreadId, futureContainerWidth: futureContainerWidth)}, width: a.size.width * 0.9, height: a.size.height, toggleImageModal : { (threadDataStore, currentImageModalIndex) in self.toggleImageModal(threadDataStore: threadDataStore, currentImageModalIndex: currentImageModalIndex) })
                                     }
+                                    .frame(width: a.size.width, alignment: .center)
                                     .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
                                     .listRowBackground(Color(UIColor(named: "pseudoTertiaryBackground")!))
                                 }

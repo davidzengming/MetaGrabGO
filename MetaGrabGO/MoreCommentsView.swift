@@ -13,7 +13,6 @@ struct MoreCommentsView: View {
     
     var width: CGFloat
     var leadLineWidth: CGFloat
-    var staticPadding: CGFloat
     var verticalPadding: CGFloat
     var level: Int
     
@@ -29,14 +28,14 @@ struct MoreCommentsView: View {
     }
     
     func fetchNextPage() {
-        self.commentDataStore.fetchCommentTreeByCommentId(start: self.commentDataStore.childCommentList.count, refresh: true, containerWidth: self.width + self.staticPadding * 2 + 10, leadPadding: 20)
+        self.commentDataStore.fetchCommentTreeByCommentId(start: self.commentDataStore.childCommentList.count, refresh: true, containerWidth: self.width + 10, leadPadding: 20)
     }
     
     var body: some View {
         VStack(spacing: 0) {
             RoundedRectangle(cornerRadius: 10, style: .continuous)
             .fill(Color(red: 225 / 255, green: 225 / 255, blue: 225 / 255))
-            .frame(width: self.width + self.staticPadding * 2 + 10 + self.leadLineWidth, height: 1, alignment: .leading)
+            .frame(width: self.width + 10 + self.leadLineWidth, height: 1, alignment: .leading)
             
             HStack(spacing: 0) {
                 RoundedRectangle(cornerRadius: 25, style: .continuous)
@@ -54,7 +53,6 @@ struct MoreCommentsView: View {
                 .onTapGesture() {
                     self.fetchNextPage()
                 }
-                .padding(.horizontal, self.staticPadding)
                 .padding(.vertical, self.verticalPadding)
             }
         }

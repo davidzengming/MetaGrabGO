@@ -368,13 +368,23 @@ func generateTextStorageFromJson(contentString: String, contentAttributes: Attri
     return generatedTextStorage
 }
 
+extension Date {
+    func get(_ components: Calendar.Component..., calendar: Calendar = Calendar.current) -> DateComponents {
+        return calendar.dateComponents(Set(components), from: self)
+    }
+
+    func get(_ component: Calendar.Component, calendar: Calendar = Calendar.current) -> Int {
+        return calendar.component(component, from: self)
+    }
+}
+
 class ThreadDataStore: ObservableObject {
     @Published var childCommentList: [Int]
     @Published var childComments: [Int: CommentDataStore]
-    @Published var relativeDateString: String?
+    
+    
     @Published var desiredHeight: CGFloat
     @Published var textStorage: NSTextStorage
-    
     @Published var imageLoaders: [Int: ImageLoader] = [:]
     @Published var imageArr: [Int] = []
     @Published var isHidden: Bool = false
@@ -390,11 +400,13 @@ class ThreadDataStore: ObservableObject {
     @Published var areCommentsLoaded: Bool = false
     @Published var isLoadingNextPage: Bool = false
     @Environment(\.imageCache) var cache: ImageCache
+    
     var threadImagesHeight: CGFloat = 0
     var gameId: Int
     var thread: Thread
     var vote: Vote?
     var author: User
+    var relativeDateString: String?
     
     let API = APIClient()
     var cancellableSet: Set<AnyCancellable> = []
@@ -404,6 +416,9 @@ class ThreadDataStore: ObservableObject {
         let currDate = Date()
         if currDate.timeIntervalSince1970 - thread.created.timeIntervalSince1970 <= 30 {
             self.relativeDateString = "just now"
+        } else if currDate.timeIntervalSince1970 - thread.created.timeIntervalSince1970 > 172800 { // longer 2 days
+            let components = thread.created.get(.day, .month)
+            self.relativeDateString = String(format: "%02d", components.month!) + "-" + String(format: "%02d", components.day!)
         } else {
             self.relativeDateString = RelativeDateTimeFormatter().localizedString(for: thread.created, relativeTo: currDate)
         }
@@ -1116,7 +1131,7 @@ class CommentDataStore: ObservableObject {
     @Published var childCommentList: [Int]
     @Published var childComments: [Int: CommentDataStore]
     
-    @Published var relativeDateString: String?
+    
     @Published var textStorage: NSTextStorage
     @Published var isHidden: Bool = false
     @Published var desiredHeight: CGFloat
@@ -1125,6 +1140,7 @@ class CommentDataStore: ObservableObject {
     @Published var vote: Vote?
     @Published var isVoting: Bool = false
     
+    var relativeDateString: String?
     var ancestorThreadId: Int
     var gameId: Int
     var author: User
@@ -1142,6 +1158,9 @@ class CommentDataStore: ObservableObject {
         let currDate = Date()
         if currDate.timeIntervalSince1970 - comment.created.timeIntervalSince1970 <= 30 {
             self.relativeDateString = "just now"
+        } else if currDate.timeIntervalSince1970 - comment.created.timeIntervalSince1970 > 172800 { // longer 2 days
+            let components = comment.created.get(.day, .month)
+            self.relativeDateString = String(format: "%02d", components.month!) + "-" + String(format: "%02d", components.day!)
         } else {
             self.relativeDateString = RelativeDateTimeFormatter().localizedString(for: comment.created, relativeTo: currDate)
         }
@@ -1244,7 +1263,6 @@ class CommentDataStore: ObservableObject {
                 return
             }
         }
-        
         let url = self.API.generateURL(resource: Resource.votes, endPoint: EndPoint.addNewUpvoteByCommentId)
         let json: [String: Any] = ["comment_id": comment.id]
         let request = self.API.generateRequest(url: url!, method: .POST, json: json)
@@ -1269,6 +1287,7 @@ class CommentDataStore: ObservableObject {
                         break
                     }
                 }, receiveValue: { [unowned self] vote in
+                    self.vote = vote
                     self.comment.upvotes += 1
                     self.isVoting = false
                     taskGroup?.leave()
@@ -1352,6 +1371,7 @@ class CommentDataStore: ObservableObject {
                         break
                     }
                 }, receiveValue: { [unowned self] vote in
+                    self.vote = vote
                     self.comment.downvotes += 1
                     self.isVoting = false
                     taskGroup?.leave()

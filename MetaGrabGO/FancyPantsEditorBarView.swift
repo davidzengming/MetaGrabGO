@@ -146,7 +146,6 @@ struct FancyPantsEditorView: View {
                     .padding(.horizontal, self.isEditable || self.isNewContent ? 20 : 0)
             } else {
                 VStack(spacing: 0) {
-                    
                     if self.keyboardHeight != 0 {
                         // hack for clear clickable background
                         Color.black
