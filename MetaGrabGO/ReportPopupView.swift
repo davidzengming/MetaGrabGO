@@ -17,16 +17,16 @@ struct ReportPopupView: View {
     var togglePickedUser: (User) -> Void
     var togglePickedThreadId: (Int, CGFloat) -> Void
     
-    @State var reportReason: String = ""
-    @State var isSendingReport = false
+    @State private var reportReason: String = ""
+    @State private var isSendingReport = false
     
-    func dismissView() {
+    private func dismissView() {
         self.togglePickedThreadId(-1, CGFloat(0))
         self.toggleBottomBarState(.inActive)
         self.turnBottomPopup(false)
     }
     
-    func submitReport() {
+    private func submitReport() {
         self.isSendingReport = true
         let taskGroup = DispatchGroup()
         self.forumDataStore.threadDataStores[self.pickedThreadId]!.sendReportByThreadId(reason: self.reportReason, taskGroup: taskGroup)

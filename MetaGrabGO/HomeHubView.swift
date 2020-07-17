@@ -9,13 +9,13 @@
 import SwiftUI
 
 struct FrontHubView: View {
-    @Environment(\.imageCache) var cache: ImageCache
-    @EnvironmentObject var recentFollowDataStore: RecentFollowDataStore
-    @EnvironmentObject var globalGamesDataStore: GlobalGamesDataStore
+    @Environment(\.imageCache) private var cache: ImageCache
+    @EnvironmentObject private var recentFollowDataStore: RecentFollowDataStore
+    @EnvironmentObject private var globalGamesDataStore: GlobalGamesDataStore
     
-    @ObservedObject var homeGamesDataStore: HomeGamesDataStore
-    @ObservedObject var followGamesDataStore: FollowGamesDataStore
-    @ObservedObject var visitedGamesDataStore: VisitedGamesDataStore
+    @ObservedObject private var homeGamesDataStore: HomeGamesDataStore
+    @ObservedObject private var followGamesDataStore: FollowGamesDataStore
+    @ObservedObject private var visitedGamesDataStore: VisitedGamesDataStore
     @Binding var selectedTab: Int
     
     private let gameIconWidthMultiplier: CGFloat = 0.35

@@ -9,11 +9,11 @@
 import SwiftUI
 
 struct GameModalView: View {
-    @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
+    @Environment(\.presentationMode) private var presentationMode: Binding<PresentationMode>
     
-    @Environment(\.imageCache) var cache: ImageCache
+    @Environment(\.imageCache) private var cache: ImageCache
     @ObservedObject private var imageLoader: ImageLoader
-    var game: Game
+    private var game: Game
     
     init(game: Game, imageLoader: ImageLoader) {
         self.game = game

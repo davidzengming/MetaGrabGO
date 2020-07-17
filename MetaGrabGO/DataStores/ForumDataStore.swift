@@ -12,26 +12,31 @@ import Combine
 import Cloudinary
 
 class ForumOtherDataStore: ObservableObject {
-    var gameId: Int
-    @Published var forumNextPageStartIndex: Int?
-    @Published var isLoaded: Bool
+    private(set) var gameId: Int
+    var forumNextPageStartIndex: Int?
     @Published var isLoadingNextPage: Bool = false
     @Published var isFollowed: Bool?
     @Published var threadCount: Int?
     @Published var followerCount: Int?
     
-    let API = APIClient()
-    var cancellableSet: Set<AnyCancellable> = []
+    private let API = APIClient()
+    
+    private var forumStatsLoadingProcess: AnyCancellable?
+    private var followLoadingProcess: AnyCancellable?
     
     init(gameId: Int) {
         self.gameId = gameId
         self.forumNextPageStartIndex = nil
-        self.isLoaded = false
         self.isFollowed = nil
         self.threadCount = nil
         self.followerCount = nil
         
         self.fetchForumStats()
+    }
+    
+    deinit {
+        forumStatsLoadingProcess?.cancel()
+        followLoadingProcess?.cancel()
     }
     
     func fetchForumStats() {
@@ -44,26 +49,26 @@ class ForumOtherDataStore: ObservableObject {
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
             processingRequestsTaskGroup.enter()
-            session.dataTaskPublisher(for: request)
+            self.forumStatsLoadingProcess = session.dataTaskPublisher(for: request)
                 .map(\.data)
                 .decode(type: ForumStatsResponse.self, decoder: self.API.getJSONDecoder())
                 .receive(on: RunLoop.main)
                 .sink(receiveCompletion: { completion in
                     switch completion {
                     case .finished:
-                        processingRequestsTaskGroup.leave()
+                        self.forumStatsLoadingProcess?.cancel()
                         break
                     case .failure(let error):
                         print("error: ", error)
-                        processingRequestsTaskGroup.leave()
                         break
                     }
+                    processingRequestsTaskGroup.leave()
+                    
                 }, receiveValue: { [unowned self] tempForumStatsResponse in
                     self.isFollowed = tempForumStatsResponse.isFollowed
                     self.threadCount = tempForumStatsResponse.threadCount
                     self.followerCount = tempForumStatsResponse.followerCount
                 })
-                .store(in: &self.cancellableSet)
         }
     }
     
@@ -76,24 +81,23 @@ class ForumOtherDataStore: ObservableObject {
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
             processingRequestsTaskGroup.enter()
-            session.dataTaskPublisher(for: request)
+            self.followLoadingProcess = session.dataTaskPublisher(for: request)
                 .receive(on: RunLoop.main)
                 .sink(receiveCompletion: { completion in
                     switch completion {
                     case .finished:
+                        self.followLoadingProcess?.cancel()
                         self.isFollowed = true
                         self.followerCount! += 1
-                        processingRequestsTaskGroup.leave()
                         break
                     case .failure(let error):
                         print("error: ", error)
-                        processingRequestsTaskGroup.leave()
                         break
                     }
+                    processingRequestsTaskGroup.leave()
                 }, receiveValue: { _ in
                     print("done")
                 })
-                .store(in: &self.cancellableSet)
         }
     }
     
@@ -106,47 +110,53 @@ class ForumOtherDataStore: ObservableObject {
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
             processingRequestsTaskGroup.enter()
-            session.dataTaskPublisher(for: request)
+            self.followLoadingProcess? = session.dataTaskPublisher(for: request)
                 .receive(on: RunLoop.main)
                 .sink(receiveCompletion: { completion in
                     switch completion {
                     case .finished:
+                        self.followLoadingProcess?.cancel()
                         self.isFollowed = false
                         self.followerCount! -= 1
-                        processingRequestsTaskGroup.leave()
                         break
                     case .failure(let error):
                         print("error: ", error)
-                        processingRequestsTaskGroup.leave()
                         break
                     }
+                    processingRequestsTaskGroup.leave()
                 }, receiveValue: { _ in
                     print("done")
                 })
-                .store(in: &self.cancellableSet)
         }
     }
 }
 
 class ForumDataStore: ObservableObject {
-    @Published var threadsList: [Int]
+    @Published var threadsList: [Int]?
     
     var threadDataStores: [Int: ThreadDataStore]
     var game: Game
     
     let API = APIClient()
     var cancellableSet: Set<AnyCancellable> = []
+    var loadingProcess: AnyCancellable?
     
     init(game: Game) {
-        self.threadsList = []
+        self.threadsList = nil
         self.threadDataStores = [:]
         self.game = game
-        //
         //        print("created forum for game: " + String(game.id))
     }
     
     deinit {
-        //        print("destroyed forum for game: " + String(game.id))
+        cancelLoadingProcess()
+        cancellableSet.forEach { $0.cancel() }
+    }
+    
+    
+    func cancelLoadingProcess() {
+        loadingProcess?.cancel()
+        loadingProcess = nil
     }
     
     func insertGameHistory() {
@@ -183,16 +193,15 @@ class ForumDataStore: ObservableObject {
         }
     }
     
-    func fetchThreads(start:Int = 0, count:Int = 10, refresh: Bool = false, containerWidth: CGFloat, forumOtherDataStore: ForumOtherDataStore) {
+    func fetchThreads(start:Int = 0, count:Int = 10, refresh: Bool = false, containerWidth: CGFloat, forumOtherDataStore: ForumOtherDataStore, maxImageHeight: CGFloat) {
         if forumOtherDataStore.isLoadingNextPage == true {
             return
         }
         
         DispatchQueue.main.async {
             if refresh == true {
-                forumOtherDataStore.isLoaded = false
                 self.threadDataStores = [:]
-                self.threadsList = []
+                self.threadsList = nil
                 forumOtherDataStore.forumNextPageStartIndex = nil
             }
         }
@@ -210,18 +219,15 @@ class ForumDataStore: ObservableObject {
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
             processingRequestsTaskGroup.enter()
-            session.dataTaskPublisher(for: request)
+            self.loadingProcess = session.dataTaskPublisher(for: request)
                 .map(\.data)
                 .decode(type: ThreadsResponse.self, decoder: self.API.getJSONDecoder())
                 .receive(on: RunLoop.main)
                 .sink(receiveCompletion: { completion in
                     switch completion {
                     case .finished:
-                        if start == 0 {
-                            forumOtherDataStore.isLoaded = true
-                        } else {
-                            forumOtherDataStore.isLoadingNextPage = false
-                        }
+                        self.cancelLoadingProcess()
+                        forumOtherDataStore.isLoadingNextPage = false
                         processingRequestsTaskGroup.leave()
                         break
                     case .failure(let error):
@@ -231,10 +237,8 @@ class ForumDataStore: ObservableObject {
                     }
                 }, receiveValue: { [unowned self] tempThreadsResponse in
                     if tempThreadsResponse.threadsResponse.count == 0 && forumOtherDataStore.forumNextPageStartIndex == nil {
-                        DispatchQueue.main.async {
-                            forumOtherDataStore.forumNextPageStartIndex = -1
-                            forumOtherDataStore.isLoaded = true
-                        }
+                        self.threadsList = []
+                        forumOtherDataStore.forumNextPageStartIndex = -1
                         return
                     }
                     
@@ -253,7 +257,7 @@ class ForumDataStore: ObservableObject {
                         
                         let author = thread.users[0]
                         
-                        let threadDataStore = ThreadDataStore(gameId: self.game.id, thread: thread, vote: myVote, author: author, emojiArr: thread.emojis!.emojisIdArr, emojiReactionCount: thread.emojis!.emojiReactionCountDict, userArrPerEmoji: thread.emojis!.userArrPerEmojiDict, didReactToEmojiDict: thread.emojis!.didReactToEmojiDict, containerWidth: containerWidth)
+                        let threadDataStore = ThreadDataStore(gameId: self.game.id, thread: thread, vote: myVote, author: author, emojiArr: thread.emojis!.emojisIdArr, emojiReactionCount: thread.emojis!.emojiReactionCountDict, userArrPerEmoji: thread.emojis!.userArrPerEmojiDict, didReactToEmojiDict: thread.emojis!.didReactToEmojiDict, containerWidth: containerWidth, maxImageHeight: maxImageHeight)
                         
                         self.threadDataStores[thread.id] = threadDataStore
                     }
@@ -268,19 +272,23 @@ class ForumDataStore: ObservableObject {
                         return
                     }
                     
-                    self.threadsList += newThreadsList
+                    if self.threadsList != nil {
+                        self.threadsList! += newThreadsList
+                    } else {
+                        self.threadsList = newThreadsList
+                    }
                 })
-                .store(in: &self.cancellableSet)
         }
     }
     
     func submitThread(forumDataStore: ForumDataStore, title: String, flair: Int, content: NSTextStorage, imageData: [UUID: Data], imagesArray: [UUID], userId:
-        Int, containerWidth: CGFloat, forumOtherDataStore: ForumOtherDataStore) {
+        Int, containerWidth: CGFloat, forumOtherDataStore: ForumOtherDataStore, maxImageHeight: CGFloat) {
         
         let cloudinary = CLDCloudinary(configuration: CLDConfiguration(cloudName: "dzengcdn", apiKey: "348513889264333", secure: true))
         let taskGroup = DispatchGroup()
-        
-        var imageUrls : [String] = []
+        var imageUrls: [String] = []
+        var imageWidths: [String] = []
+        var imageHeights: [String] = []
         
         if imagesArray.count != 0 {
             for id in imagesArray {
@@ -290,12 +298,14 @@ class ForumDataStore: ObservableObject {
                 
                 taskGroup.enter()
                 let preprocessChain = CLDImagePreprocessChain()
-                    .addStep(CLDPreprocessHelpers.limit(width: 500, height: 500))
-                    .addStep(CLDPreprocessHelpers.dimensionsValidator(minWidth: 10, maxWidth: 500, minHeight: 10, maxHeight: 500))
+                    .addStep(CLDPreprocessHelpers.limit(width: 800, height: 800))
+                    .addStep(CLDPreprocessHelpers.dimensionsValidator(minWidth: 10, maxWidth: 800, minHeight: 10, maxHeight: 800))
                 _ = cloudinary.createUploader().upload(data: imageData[id]!, uploadPreset: "cyr1nlwn", preprocessChain: preprocessChain)
                     .response({response, error in
                         if error == nil {
                             imageUrls.append(response!.secureUrl!)
+                            imageWidths.append(String(response!.width!))
+                            imageHeights.append(String(response!.height!))
                             taskGroup.leave()
                         }
                     })
@@ -304,7 +314,7 @@ class ForumDataStore: ObservableObject {
         
         taskGroup.notify(queue: DispatchQueue.global()) {
             let params = ["game_id": String(forumDataStore.game.id)]
-            let json: [String: Any] = ["title": title, "content_string": content.string, "content_attributes": ["attributes": TextViewHelper.parseTextStorageAttributesAsBitRep(content: content)], "flair": flair, "image_urls": ["urls": imageUrls]]
+            let json: [String: Any] = ["title": title, "content_string": content.string, "content_attributes": ["attributes": TextViewHelper.parseTextStorageAttributesAsBitRep(content: content)], "flair": flair, "image_urls": ["urls": imageUrls], "image_widths": ["widths": imageWidths], "image_heights": ["heights": imageHeights]]
             
             let url = self.API.generateURL(resource: Resource.threads, endPoint: EndPoint.postThreadByGameId, params: params)
             let request = self.API.generateRequest(url: url!, method: .POST, json: json)
@@ -333,12 +343,12 @@ class ForumDataStore: ObservableObject {
                         let vote = tempNewThreadResponse.voteResponse
                         
                         DispatchQueue.main.async {
-                            self.threadDataStores[tempThread.id] = ThreadDataStore(gameId: forumDataStore.game.id, thread: tempThread, vote: vote, author: tempThread.users[0], emojiArr: tempThread.emojis!.emojisIdArr, emojiReactionCount: tempThread.emojis!.emojiReactionCountDict, userArrPerEmoji: tempThread.emojis!.userArrPerEmojiDict, didReactToEmojiDict: tempThread.emojis!.didReactToEmojiDict, containerWidth: containerWidth)
+                            self.threadDataStores[tempThread.id] = ThreadDataStore(gameId: forumDataStore.game.id, thread: tempThread, vote: vote, author: tempThread.users[0], emojiArr: tempThread.emojis!.emojisIdArr, emojiReactionCount: tempThread.emojis!.emojiReactionCountDict, userArrPerEmoji: tempThread.emojis!.userArrPerEmojiDict, didReactToEmojiDict: tempThread.emojis!.didReactToEmojiDict, containerWidth: containerWidth, maxImageHeight: maxImageHeight)
                             
                             //                            self.childThreadSubs[tempThread.id] = self.threadDataStores[tempThread.id]!.objectWillChange.receive(on: DispatchQueue.main).sink(receiveValue: {[weak self] _ in self?.objectWillChange.send()
                             //                            })
                             //
-                            self.threadsList.insert(tempThread.id, at: 0)
+                            self.threadsList!.insert(tempThread.id, at: 0)
                             forumOtherDataStore.threadCount! += 1
                         }
                     })
@@ -372,46 +382,45 @@ extension Date {
     func get(_ components: Calendar.Component..., calendar: Calendar = Calendar.current) -> DateComponents {
         return calendar.dateComponents(Set(components), from: self)
     }
-
+    
     func get(_ component: Calendar.Component, calendar: Calendar = Calendar.current) -> Int {
         return calendar.component(component, from: self)
     }
 }
 
 class ThreadDataStore: ObservableObject {
-    @Published var childCommentList: [Int]
-    @Published var childComments: [Int: CommentDataStore]
+    @Published private(set) var childCommentList: [Int]?
+    private(set) var childComments: [Int: CommentDataStore]
+    var desiredHeight: CGFloat
+    var textStorage: NSTextStorage
     
-    
-    @Published var desiredHeight: CGFloat
-    @Published var textStorage: NSTextStorage
-    @Published var imageLoaders: [Int: ImageLoader] = [:]
-    @Published var imageArr: [Int] = []
-    @Published var isHidden: Bool = false
-    
-    @Published var threadNextPageStartIndex: Int?
-    
-    //    private var childCommentSubs = [Int: AnyCancellable]()
+    private(set) var imageLoaders: [Int: ImageLoader] = [:]
     private var imageLoaderSubs = [Int: AnyCancellable]()
     
-    @ObservedObject var emojis: EmojiDataStore
+    @Published private(set) var imageArr: [Int] = []
+    @Published private(set) var isHidden: Bool = false
+    @ObservedObject private(set) var emojis: EmojiDataStore
     private var emojisSub: AnyCancellable?
     
-    @Published var areCommentsLoaded: Bool = false
-    @Published var isLoadingNextPage: Bool = false
-    @Environment(\.imageCache) var cache: ImageCache
+    @Published private(set) var isLoadingNextPage: Bool = false
+    @Environment(\.imageCache) private var cache: ImageCache
     
-    var threadImagesHeight: CGFloat = 0
-    var gameId: Int
-    var thread: Thread
-    var vote: Vote?
-    var author: User
-    var relativeDateString: String?
+    private(set) var gameId: Int
+    private(set) var thread: Thread
+    private(set) var vote: Vote?
+    private(set) var author: User
+    private(set) var relativeDateString: String?
     
-    let API = APIClient()
-    var cancellableSet: Set<AnyCancellable> = []
+    private let API = APIClient()
+    private var cancellableSet: Set<AnyCancellable> = []
+    private var loadingProcess: AnyCancellable?
     
-    init(gameId: Int, thread: Thread, vote: Vote?, author: User, emojiArr: [Int], emojiReactionCount: [Int: Int], userArrPerEmoji: [Int: [User]], didReactToEmojiDict: [Int: Bool], containerWidth: CGFloat) {
+    private(set) var containerWidth: CGFloat
+    private var spacingBetweenImages: CGFloat = 10
+    private(set) var maxImageHeight: CGFloat = 0
+    private(set) var imageDimensions: [(width: CGFloat, height: CGFloat)] = []
+    
+    init(gameId: Int, thread: Thread, vote: Vote?, author: User, emojiArr: [Int], emojiReactionCount: [Int: Int], userArrPerEmoji: [Int: [User]], didReactToEmojiDict: [Int: Bool], containerWidth: CGFloat, maxImageHeight: CGFloat) {
         
         let currDate = Date()
         if currDate.timeIntervalSince1970 - thread.created.timeIntervalSince1970 <= 30 {
@@ -426,21 +435,77 @@ class ThreadDataStore: ObservableObject {
         let textStorage = generateTextStorageFromJson(contentString: thread.contentString, contentAttributes: thread.contentAttributes)
         
         self.textStorage = textStorage
+        self.containerWidth = containerWidth
         self.desiredHeight = textStorage.height(containerWidth: containerWidth)
         self.gameId = gameId
         self.thread = thread
         self.vote = vote
         self.author = author
         
-        self.childCommentList = []
+        self.childCommentList = nil
         self.childComments = [:]
         
         self.emojis = EmojiDataStore(serializedEmojiArr: emojiArr, emojiReactionCount: emojiReactionCount, userArrPerEmoji: userArrPerEmoji, didReactToEmojiDict: didReactToEmojiDict)
         self.emojisSub = emojis.objectWillChange.receive(on: DispatchQueue.main).sink(receiveValue: {[weak self] _ in self?.objectWillChange.send()
         })
         
+        self.calculateImagesDimensions(imageWidths: thread.imageWidths, imageHeights: thread.imageHeights, maxImageHeightLimit: maxImageHeight)
+        
         self.mountImages()
-        self.loadImages()
+        //        self.loadImages()
+    }
+    
+    deinit {
+        cancelLoadingProcess()
+        cancellableSet.forEach { $0.cancel() }
+    }
+    
+    func calculateImagesDimensions(imageWidths: ImageWidths, imageHeights: ImageHeights, maxImageHeightLimit: CGFloat) {
+        var dimensions: [(width: CGFloat, height: CGFloat)] = []
+        var maximumHeight: CGFloat = 0
+        var totalScaledWidth: CGFloat = 0
+        let numImages = imageWidths.widths.count
+        
+        for i in 0..<numImages {
+            let cgHeight = CGFloat(truncating: NumberFormatter().number(from: imageHeights.heights[i])!)
+            let scaleDownHeight = min(cgHeight, maxImageHeightLimit)
+            
+            let overHeightScaleDownFactor = scaleDownHeight / cgHeight
+            let scaledWidth = overHeightScaleDownFactor * CGFloat(truncating: NumberFormatter().number(from: imageWidths.widths[i])!)
+            
+            totalScaledWidth += scaledWidth
+            dimensions.append((scaledWidth, scaleDownHeight))
+            maximumHeight = max(maximumHeight, cgHeight)
+        }
+        
+        let availableWidth = self.containerWidth - CGFloat(numImages) * spacingBetweenImages
+        
+        var scaleFactorDueToWidthConstraint: CGFloat = 1
+        if availableWidth < totalScaledWidth {
+            scaleFactorDueToWidthConstraint = availableWidth / totalScaledWidth
+        }
+        
+        for i in 0..<numImages {
+            dimensions[i].width *= scaleFactorDueToWidthConstraint
+            dimensions[i].height *= scaleFactorDueToWidthConstraint
+            
+            self.maxImageHeight = max(self.maxImageHeight, dimensions[i].height)
+        }
+        
+        self.imageDimensions = dimensions
+        return
+    }
+    
+    func cancelLoadingProcess() {
+        loadingProcess?.cancel()
+        loadingProcess = nil
+    }
+    
+    func addCommentToChildList(commentDataStore: CommentDataStore) {
+        if self.childComments[commentDataStore.comment.id] == nil {
+            self.childCommentList!.append(commentDataStore.comment.id)
+            self.childComments[commentDataStore.comment.id] = commentDataStore
+        }
     }
     
     func mountImages() {
@@ -451,22 +516,30 @@ class ThreadDataStore: ObservableObject {
         }
     }
     
+    //    func getCopyDataStore() -> ThreadDataStore {
+    //        var emojiArr: [Int] = []
+    //
+    //        for row in self.emojis.emojiArr {
+    //            for emoji in row {
+    //                if emoji == 999 {
+    //                    continue
+    //                }
+    //                emojiArr.append(emoji)
+    //            }
+    //        }
+    //
+    //        let detailThreadDataStore = ThreadDataStore(gameId: self.gameId, thread: self.thread, vote: self.vote, author: self.author, emojiArr: emojiArr, emojiReactionCount: self.emojis.emojiCount, userArrPerEmoji: self.emojis.usersArrReactToEmoji, didReactToEmojiDict: self.emojis.didReactToEmoji, containerWidth: self.containerWidth)
+    //
+    //        self.threadDetailDataStore = detailThreadDataStore
+    //        return self.threadDetailDataStore!
+    //    }
+    
     func loadImages() {
         let taskGroup = DispatchGroup()
         
         for index in imageArr {
             imageLoaders[index]!.load(dispatchGroup: taskGroup)
         }
-        
-        // need to add on server side remember image size
-        //        taskGroup.notify(queue: .global()) {
-        //            var maxHeight: CGFloat = 0
-        //            for index in self.imageArr {
-        //                maxHeight = max(maxHeight, self.imageLoaders[index]!.imageHeight!)
-        //            }
-        //
-        //            self.threadImagesHeight = maxHeight
-        //        }
     }
     
     func upvoteByExistingVoteId(taskGroup: DispatchGroup? = nil) {
@@ -984,7 +1057,7 @@ class ThreadDataStore: ObservableObject {
                     let commentDataStore = CommentDataStore(ancestorThreadId: self.thread.id, gameId: self.gameId, comment: tempMainComment, vote: tempVote, author: User(id: keychainService.getUserId(), username: keychainService.getUserName()), containerWidth: containerWidth)
                     
                     self.childComments[tempMainComment.id] = commentDataStore
-                    self.childCommentList.insert(tempMainComment.id, at: 0)
+                    self.childCommentList!.insert(tempMainComment.id, at: 0)
                     
                     UIApplication.shared.endEditing()
                 })
@@ -992,46 +1065,32 @@ class ThreadDataStore: ObservableObject {
         }
     }
     
-    func fetchCommentTreeByThreadId(start:Int = 0, count:Int = 100, size:Int = 250, refresh: Bool = false, containerWidth: CGFloat, leadPadding: CGFloat) {
-        
-        //        if refresh == true {
-        //            self.childCommentSubs = [:]
-        
-        //            DispatchQueue.main.async {
-        //                self.areCommentsLoaded = false
-        //                self.childCommentList = []
-        //            }
-        //        }
+    func fetchCommentTreeByThreadId(start:Int = 0, count:Int = 20, size:Int = 50, refresh: Bool = false, containerWidth: CGFloat, leadPadding: CGFloat) {
+        if self.loadingProcess != nil {
+            return
+        }
         
         if start != 0 {
-            DispatchQueue.main.async {
-                self.isLoadingNextPage = true
-            }
+            self.isLoadingNextPage = true
         }
         
         let params = ["parent_thread_id": String(self.thread.id), "start": String(start), "count": String(count), "size": String(size)]
         let url = API.generateURL(resource: Resource.comments, endPoint: EndPoint.getCommentTreeByThreadId, params: params)
         let request = API.generateRequest(url: url!, method: .GET)
-        
         self.API.accessTokenRefreshHandler(request: request)
         let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
             processingRequestsTaskGroup.enter()
-            session.dataTaskPublisher(for: request)
+            self.loadingProcess = session.dataTaskPublisher(for: request)
                 .map(\.data)
                 .decode(type: CommentsResponse.self, decoder: self.API.getJSONDecoder())
                 .receive(on: RunLoop.main)
                 .sink(receiveCompletion: { completion in
                     switch completion {
                     case .finished:
-                        if start == 0 {
-                            self.areCommentsLoaded = true
-                        }
-                        
-                        if start != 0 {
-                            self.isLoadingNextPage = false
-                        }
+                        self.cancelLoadingProcess()
+                        self.isLoadingNextPage = false
                         processingRequestsTaskGroup.leave()
                         break
                     case .failure(let error):
@@ -1100,8 +1159,7 @@ class ThreadDataStore: ObservableObject {
                         if levelCount > 0 {
                             let parentCommentId = levelArr[x]
                             
-                            levelStore[parentCommentId]!.childCommentList.append(commentId)
-                            levelStore[parentCommentId]!.childComments[commentId] = nextLevelStore[commentId]
+                            levelStore[parentCommentId]!.addCommentToChildList(commentDataStore: nextLevelStore[commentId]!)
                             //                            levelStore[parentCommentId]!.childCommentSubs[commentId] = nextLevelStore[commentId]!.objectWillChange.receive(on: DispatchQueue.main).sink(receiveValue: {[weak self] _ in self?.objectWillChange.send()
                             //                            })
                         }
@@ -1120,35 +1178,39 @@ class ThreadDataStore: ObservableObject {
                         self.childComments[commentId] = firstLevelStore[commentId]!
                     }
                     
-                    self.childCommentList += firstLevelArr
+                    if self.childCommentList == nil {
+                        
+                        self.childCommentList = firstLevelArr
+                    } else {
+                        self.childCommentList! += firstLevelArr
+                    }
                 })
-                .store(in: &self.cancellableSet)
         }
     }
 }
 
 class CommentDataStore: ObservableObject {
-    @Published var childCommentList: [Int]
-    @Published var childComments: [Int: CommentDataStore]
-    
-    
-    @Published var textStorage: NSTextStorage
-    @Published var isHidden: Bool = false
-    @Published var desiredHeight: CGFloat
+    @Published private(set) var childCommentList: [Int]
     @Published var isLoadingNextPage: Bool = false
-    @Published var comment: Comment
+    @Published var isHidden: Bool = false
     @Published var vote: Vote?
     @Published var isVoting: Bool = false
     
-    var relativeDateString: String?
-    var ancestorThreadId: Int
-    var gameId: Int
-    var author: User
-    let API = APIClient()
-    var cancellableSet: Set<AnyCancellable> = []
+    var textStorage: NSTextStorage
+    var desiredHeight: CGFloat
+    
+    private(set) var childComments: [Int: CommentDataStore]
+    private(set) var comment: Comment
+    private(set) var relativeDateString: String?
+    private(set) var ancestorThreadId: Int
+    private(set) var gameId: Int
+    private(set) var author: User
+    
+    private let API = APIClient()
+    private var cancellableSet: Set<AnyCancellable> = []
+    private var loadingProcess: AnyCancellable?
     
     init(ancestorThreadId: Int, gameId: Int, comment: Comment, vote: Vote?, author: User, containerWidth: CGFloat) {
-        
         self.ancestorThreadId = ancestorThreadId
         self.gameId = gameId
         self.comment = comment
@@ -1171,6 +1233,16 @@ class CommentDataStore: ObservableObject {
         
         self.childCommentList = []
         self.childComments = [:]
+    }
+    
+    deinit {
+        cancelLoadingProcess()
+        cancellableSet.forEach { $0.cancel() }
+    }
+    
+    func cancelLoadingProcess() {
+        loadingProcess?.cancel()
+        loadingProcess = nil
     }
     
     func upvoteByExistingVoteId(taskGroup: DispatchGroup? = nil) {
@@ -1252,6 +1324,13 @@ class CommentDataStore: ObservableObject {
                     print("done")
                 })
                 .store(in: &self.cancellableSet)
+        }
+    }
+    
+    func addCommentToChildList(commentDataStore: CommentDataStore) {
+        if self.childComments[commentDataStore.comment.id] == nil {
+            self.childCommentList.append(commentDataStore.comment.id)
+            self.childComments[commentDataStore.comment.id] = commentDataStore
         }
     }
     
@@ -1559,11 +1638,12 @@ class CommentDataStore: ObservableObject {
         }
     }
     
-    func fetchCommentTreeByCommentId(start:Int = 0, count:Int = 10, size:Int = 50, refresh: Bool = false, containerWidth: CGFloat, leadPadding: CGFloat) {
-        
-        DispatchQueue.main.async {
-            self.isLoadingNextPage = true
+    func fetchCommentTreeByCommentId(start:Int = 0, count:Int = 20, size:Int = 50, refresh: Bool = false, containerWidth: CGFloat, leadPadding: CGFloat) {
+        if self.loadingProcess != nil {
+            return
         }
+        
+        self.isLoadingNextPage = true
         
         //        if refresh == true {
         //            //            self.childCommentSubs = [:]
@@ -1582,13 +1662,14 @@ class CommentDataStore: ObservableObject {
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
             processingRequestsTaskGroup.enter()
-            session.dataTaskPublisher(for: request)
+            self.loadingProcess = session.dataTaskPublisher(for: request)
                 .map(\.data)
                 .decode(type: CommentsResponse.self, decoder: self.API.getJSONDecoder())
                 .receive(on: RunLoop.main)
                 .sink(receiveCompletion: { completion in
                     switch completion {
                     case .finished:
+                        self.cancelLoadingProcess()
                         self.isLoadingNextPage = false
                         processingRequestsTaskGroup.leave()
                         break
@@ -1658,8 +1739,6 @@ class CommentDataStore: ObservableObject {
                             
                             levelStore[parentCommentId]!.childCommentList.append(commentId)
                             levelStore[parentCommentId]!.childComments[commentId] = nextLevelStore[commentId]
-                            //                                    levelStore[parentCommentId]!.childCommentSubs[commentId] = nextLevelStore[commentId]!.objectWillChange.receive(on: DispatchQueue.main).sink(receiveValue: {[weak self] _ in self?.objectWillChange.send()
-                            //                                    })
                         }
                         
                         i += 1
@@ -1676,7 +1755,6 @@ class CommentDataStore: ObservableObject {
                     
                     self.childCommentList += firstLevelArr
                 })
-                .store(in: &self.cancellableSet)
         }
     }
     
@@ -1714,7 +1792,6 @@ class CommentDataStore: ObservableObject {
                     let commentDataStore = CommentDataStore(ancestorThreadId: self.ancestorThreadId, gameId: self.gameId, comment: tempChildComment, vote: tempVote, author: user, containerWidth: containerWidth)
                     
                     self.childComments[tempChildComment.id] = commentDataStore
-                    
                     
                     var reversedChildCommentList = self.childCommentList
                     reversedChildCommentList.reverse()

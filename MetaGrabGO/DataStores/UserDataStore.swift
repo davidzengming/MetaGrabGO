@@ -48,16 +48,24 @@ struct KeyChainService {
     }
 }
 
-class UserDataStore: ObservableObject {
+final class UserDataStore: ObservableObject {
     
-    @Published var isAuthenticated: Bool = false
+    @Published private(set) var isAuthenticated: Bool = false
     
-    let API = APIClient()
-    var isAutologinEnabled = true
-
+    private let API = APIClient()
+    private(set) var isAutologinEnabled = true
+    
+    func logout() {
+        self.isAutologinEnabled = false
+        self.isAuthenticated = false
+    }
+    
     func autologin() {
         if self.isAutologinEnabled == true {
-            acquireToken()
+            if KeyChain.load(key: "metagrab.hasLoggedInBefore") == nil {
+                return
+            }
+//            acquireToken()
         }
     }
     
@@ -77,7 +85,6 @@ class UserDataStore: ObservableObject {
         } else {
             loadedPassword = password!
         }
-        
         
         let request = API.generateRequest(url: url!, method: .POST, json: nil, bodyData: "username=\(loadedUsername)&password=\(loadedPassword)")
         
@@ -102,6 +109,7 @@ class UserDataStore: ObservableObject {
                         let token: Token = load(jsonData: jsonString.data(using: .utf8)!)
                         self.isAuthenticated = true
                         
+                        _ = KeyChain.save(key: "metagrab.hasLoggedInBefore", data: "true".data(using: String.Encoding.utf8)!)
                         _ = KeyChain.save(key: "metagrab.username", data: loadedUsername.data(using: String.Encoding.utf8)!)
                         _ = KeyChain.save(key: "metagrab.password", data: loadedPassword.data(using: String.Encoding.utf8)!)
                         _ = KeyChain.save(key: "metagrab.tokenaccess", data: token.access.data(using: String.Encoding.utf8)!)

@@ -34,19 +34,19 @@ struct FancyPantsEditorView: View {
     var commentId: Int?
     var isOmniBar: Bool
     
-    @State var isBold: Bool = false
-    @State var isItalic: Bool = false
-    @State var isStrikethrough: Bool = false
-    @State var isDashBulletList: Bool = false
-    @State var isNumberedBulletList: Bool = false
-    @State var didChangeBold: Bool = false
-    @State var didChangeItalic: Bool = false
-    @State var didChangeStrikethrough: Bool = false
-    @State var didChangeBulletList: Bool = false
-    @State var didChangeNumberedBulletList: Bool = false
+    @State private var isBold: Bool = false
+    @State private var isItalic: Bool = false
+    @State private var isStrikethrough: Bool = false
+    @State private var isDashBulletList: Bool = false
+    @State private var isNumberedBulletList: Bool = false
+    @State private var didChangeBold: Bool = false
+    @State private var didChangeItalic: Bool = false
+    @State private var didChangeStrikethrough: Bool = false
+    @State private var didChangeBulletList: Bool = false
+    @State private var didChangeNumberedBulletList: Bool = false
     
-    @State var hasText: Bool = false
-    @State var isAttributesEditorOn: Bool = false
+    @State private var hasText: Bool = false
+    @State private var isAttributesEditorOn: Bool = false
     
     var submit: ((CGFloat) -> Void)?
     var width: CGFloat
@@ -54,51 +54,51 @@ struct FancyPantsEditorView: View {
     var togglePickedCommentId: ((CommentDataStore?, CGFloat) -> Void)?
     var mainCommentContainerWidth: CGFloat?
 
-    func toggleAttributesEditor() {
+    private func toggleAttributesEditor() {
         self.isAttributesEditorOn = !self.isAttributesEditorOn
     }
     
-    func toggleBold() {
+    private func toggleBold() {
         self.isBold = !self.isBold
     }
     
-    func turnOnDidChangeBold() {
+    private func turnOnDidChangeBold() {
         self.didChangeBold = true
     }
     
-    func toggleItalic() {
+    private func toggleItalic() {
         self.isItalic = !self.isItalic
     }
     
-    func turnOnDidChangeItalic() {
+    private func turnOnDidChangeItalic() {
         self.didChangeItalic = true
     }
     
-    func toggleStrikethrough() {
+    private func toggleStrikethrough() {
         self.isStrikethrough = !self.isStrikethrough
     }
     
-    func turnOnDidChangeStrikethrough() {
+    private func turnOnDidChangeStrikethrough() {
         self.didChangeStrikethrough = true
     }
     
-    func toggleBulletList() {
+    private func toggleBulletList() {
         self.isDashBulletList = !self.isDashBulletList
     }
     
-    func turnOnDidChangeBulletList() {
+    private func turnOnDidChangeBulletList() {
         self.didChangeBulletList = true
     }
     
-    func toggleNumberBulletList() {
+    private func toggleNumberBulletList() {
         self.isNumberedBulletList = !self.isNumberedBulletList
     }
     
-    func turnOnDidChangeNumberedBulletList() {
+    private func turnOnDidChangeNumberedBulletList() {
         self.didChangeNumberedBulletList = true
     }
     
-    func toggleFancyPantsEditorBar() {
+    private func toggleFancyPantsEditorBar() {
         self.showFancyPantsEditorBar = !self.showFancyPantsEditorBar
     }
     

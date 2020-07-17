@@ -9,10 +9,10 @@
 import SwiftUI
 
 struct GameHubView: View {
-    @EnvironmentObject var userDataStore: UserDataStore
-    @EnvironmentObject var globalGamesDataStore: GlobalGamesDataStore
+    @EnvironmentObject private var userDataStore: UserDataStore
+    @EnvironmentObject private var globalGamesDataStore: GlobalGamesDataStore
     
-    @State var selectedTab = 0
+    @State private var selectedTab = 0
     
     init() {
         // To remove only extra separators below the list:

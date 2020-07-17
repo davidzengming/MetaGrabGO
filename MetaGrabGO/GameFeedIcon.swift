@@ -10,8 +10,8 @@ import SwiftUI
 import Combine
 
 struct GameFeedIcon : View {
-    @EnvironmentObject var recentFollowDataStore: RecentFollowDataStore
-    @Environment(\.imageCache) var cache: ImageCache
+    @EnvironmentObject private var recentFollowDataStore: RecentFollowDataStore
+    @Environment(\.imageCache) private var cache: ImageCache
     
     @ObservedObject var imageLoader: ImageLoader
     @State private var showModal = false

@@ -9,8 +9,8 @@
 import SwiftUI
 
 struct ImageModalView: View {
-    @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
-    @Environment(\.imageCache) var cache: ImageCache
+    @Environment(\.presentationMode) private var presentationMode: Binding<PresentationMode>
+    @Environment(\.imageCache) private var cache: ImageCache
     @Binding var threadDataStore: ThreadDataStore?
     @Binding var currentImageModalIndex: Int?
     

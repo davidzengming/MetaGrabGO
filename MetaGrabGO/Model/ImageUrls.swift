@@ -12,3 +12,11 @@ import SwiftUI
 struct ImageUrls: Hashable, Codable {
     var urls: [String]
 }
+
+struct ImageWidths: Hashable, Codable {
+    var widths: [String]
+}
+
+struct ImageHeights: Hashable, Codable {
+    var heights: [String]
+}

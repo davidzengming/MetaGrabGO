@@ -18,13 +18,13 @@ struct EmojiPickerPopupView: View {
     var togglePickedUser: (User) -> Void
     var togglePickedThreadId: (Int, CGFloat) -> Void
     
-    func dismissView() {
+    private func dismissView() {
         self.togglePickedThreadId(-1, CGFloat(0))
         self.toggleBottomBarState(.inActive)
         self.turnBottomPopup(false)
     }
     
-    func addEmoji(emojiId: Int) {
+    private func addEmoji(emojiId: Int) {
         let taskGroup = DispatchGroup()
 
         switch emojiId {

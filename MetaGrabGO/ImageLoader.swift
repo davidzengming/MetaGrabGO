@@ -10,16 +10,14 @@ import Foundation
 import SwiftUI
 import Combine
 
-class ImageLoader: ObservableObject {
-    @Published var downloadedImage: UIImage?
+final class ImageLoader: ObservableObject {
+    @Published private(set) var downloadedImage: UIImage?
     
     private var cache: ImageCache?
     private var url: URL
     private var cancellable: AnyCancellable?
-    
     private var whereIsThisFrom: String
-    
-    var imageHeight: CGFloat?
+    private var imageHeight: CGFloat?
     
     init(url: String, cache: ImageCache?, whereIsThisFrom: String, loadManually: Bool = false) {
         self.url = URL(string: url)!
@@ -32,22 +30,25 @@ class ImageLoader: ObservableObject {
         }
     }
     
+    deinit {
+        self.cancellable?.cancel()
+    }
+    
     func load(dispatchGroup: DispatchGroup? = nil) {
-//        print("loading", self.whereIsThisFrom)
-//        
-        dispatchGroup?.enter()
+        if cancellable != nil {
+            return
+        }
         
+//        print("loading", self.whereIsThisFrom)
+        //
+        dispatchGroup?.enter()
         if let image = cache?[self.url] {
             DispatchQueue.main.async {
                 self.imageHeight = image.size.height
-                
-                withAnimation() {
-                    self.downloadedImage = image
-                }
+                self.downloadedImage = image
                 
                 dispatchGroup?.leave()
             }
-            
             return
         }
         
@@ -58,27 +59,22 @@ class ImageLoader: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { completion in
                 switch completion {
-                    case .finished:
-                        dispatchGroup?.leave()
-                        break
-                    case .failure(let error):
-                        print("received error: ", error)
-                        dispatchGroup?.leave()
-                        
+                case .finished:
+                    self.cancellable?.cancel()
+                    dispatchGroup?.leave()
+                    break
+                case .failure(let error):
+                    print("received error: ", error)
+                    dispatchGroup?.leave()
                 }
             }, receiveValue: { image in
                 self.imageHeight = image!.size.height
                 self.downloadedImage = image
-        })
+            })
     }
     
     private func cache(_ image: UIImage?) {
         image.map { cache?[url] = $0 }
-    }
-    
-    deinit {
-        cancellable?.cancel()
-//        print("image loader being deinit" + self.whereIsThisFrom)
     }
     
     func cancel() {

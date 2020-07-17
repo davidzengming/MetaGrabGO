@@ -9,16 +9,16 @@
 import SwiftUI
 
 struct GenreRowView: View {
-    @EnvironmentObject var globalGamesDataStore: GlobalGamesDataStore
-    @ObservedObject var genreDataStore: GenreDataStore
-    @Environment(\.imageCache) var cache: ImageCache
+    @EnvironmentObject private var globalGamesDataStore: GlobalGamesDataStore
+    @ObservedObject private var genreDataStore: GenreDataStore
+    @Environment(\.imageCache) private var cache: ImageCache
     
     private let gameIconWidthMultiplier: CGFloat = 0.35
     private let goldenRatioConst: CGFloat = 1.618
     private let widthToHeightRatio: CGFloat = 1.4
     private let imageSizeHeightRatio: CGFloat = 0.55
     
-    var width: CGFloat
+    private var width: CGFloat
     
     init(genre: Genre, genreDataStore: GenreDataStore, globalGamesDataStore: GlobalGamesDataStore, width: CGFloat) {
         self.genreDataStore = genreDataStore

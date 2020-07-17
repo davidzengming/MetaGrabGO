@@ -16,13 +16,13 @@ struct EmojiBarThreadView: View {
     var togglePickedUser: (User) -> Void
     var togglePickedThreadId: (Int, CGFloat) -> Void
     
-    func onClickAddEmojiBubble() {
+    private func onClickAddEmojiBubble() {
         self.togglePickedThreadId(self.threadDataStore.thread.id, CGFloat(0))
         self.toggleBottomBarState(.addEmoji)
         self.turnBottomPopup(true)
     }
     
-    func onClickEmoji(emojiId: Int) {
+    private func onClickEmoji(emojiId: Int) {
         switch emojiId {
         case 0:
             if self.threadDataStore.vote != nil {
@@ -73,11 +73,11 @@ struct EmojiBarThreadView: View {
     
     var body: some View {
         HStack(spacing: 5) {
-            VStack(alignment: .leading) {
+            VStack(alignment: .leading, spacing: 5) {
                 ForEach(self.threadDataStore.emojis.emojiArr.indices, id: \.self) { row in
                     HStack {
                         ForEach(self.threadDataStore.emojis.emojiArr[row], id: \.self) { emojiId in
-                            VStack(alignment: .leading) {
+                            VStack(alignment: .leading, spacing: 0) {
                                 if emojiId == 999 {
                                     HStack {
                                         Image(systemName: "plus.bubble.fill")
@@ -91,6 +91,7 @@ struct EmojiBarThreadView: View {
                                         }
                                     }
                                     .frame(alignment: .leading)
+                                    .padding(2.5)
                                 } else {
                                     HStack {
                                         Image(uiImage: appWideAssets.emojis[emojiId]!!)

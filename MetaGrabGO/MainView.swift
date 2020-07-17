@@ -2,7 +2,7 @@ import SwiftUI
 
 // Entry point into view
 struct MainView: View {
-    @EnvironmentObject var userDataStore: UserDataStore
+    @EnvironmentObject private var userDataStore: UserDataStore
     
     var body: some View {
         ZStack {

@@ -9,17 +9,17 @@
 import Foundation
 
 class EmojiDataStore: ObservableObject {
-    @Published var emojiArr = [[Int]]()
-    @Published var emojiCount = [Int: Int]()
-    @Published var didReactToEmoji = [Int: Bool]()
+    @Published private(set) var emojiArr = [[Int]]()
+    @Published private(set) var emojiCount = [Int: Int]()
+    @Published private(set) var didReactToEmoji = [Int: Bool]()
     
-    @Published var usersArrReactToEmoji = [Int: [User]]()
-    @Published var usersSetReactToEmoji = [Int: Set<Int>]()
+    @Published private(set) var usersArrReactToEmoji = [Int: [User]]()
+    @Published private(set) var usersSetReactToEmoji = [Int: Set<Int>]()
+    
+    @Published var isLoading = false
     
     let maxEmojisPerThread = 10
     let maxEmojiCountPerRow = 5
-    
-    @Published var isLoading = false
     
     init(serializedEmojiArr: [Int], emojiReactionCount: [Int: Int], userArrPerEmoji: [Int: [User]], didReactToEmojiDict: [Int: Bool]) {
         emojiArr = getInitialEmojiArray(emojiArr: serializedEmojiArr, emojiReactionCount: emojiReactionCount)

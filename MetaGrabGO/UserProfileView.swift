@@ -44,9 +44,9 @@ struct UserProfileView: View {
     }
     
     private func logout() {
-        self.userDataStore.isAutologinEnabled = false
+        self.userDataStore.logout()
         self.recentFollowDataStore.shouldRefreshDataStore = true
-        self.userDataStore.isAuthenticated = false
+        
     }
     
     var body: some View {

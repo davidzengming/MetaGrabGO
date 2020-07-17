@@ -26,7 +26,7 @@ extension UIFont {
     }
 }
 
-class TextViewHelper {
+final class TextViewHelper {
     static var attrMap : [[NSAttributedString.Key: Bool] : Int]?
     
     static func calculateTextViewHeight(textView: UITextView) -> CGFloat {

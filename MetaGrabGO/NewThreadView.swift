@@ -15,26 +15,26 @@ struct IdentifiableImageContainer: Identifiable {
 }
 
 struct NewThreadView: View {
-    @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
-
+    @Environment(\.presentationMode) private var presentationMode: Binding<PresentationMode>
+    
     @ObservedObject var forumDataStore: ForumDataStore
     @ObservedObject var forumOtherDataStore: ForumOtherDataStore
     
     var containerWidth: CGFloat
     
-    @State var title: String = ""
-    @State var flair = 0
-    @State var content: NSTextStorage = NSTextStorage(string: "")
+    @State private var title: String = ""
+    @State private var flair = 0
+    @State private var content: NSTextStorage = NSTextStorage(string: "")
     
-    @State var showImagePicker = false
-    @State var imagesDict: [UUID: Image] = [:]
-    @State var dataDict: [UUID: Data] = [:]
-    @State var imagesArray: [UUID] = [UUID()]
-    @State var clickedImageIndex : Int?
-    @State var isFirstResponder = true
-    @State var didBecomeFirstResponder = false
+    @State private var showImagePicker = false
+    @State private var imagesDict: [UUID: Image] = [:]
+    @State private var dataDict: [UUID: Data] = [:]
+    @State private var imagesArray: [UUID] = [UUID()]
+    @State private var clickedImageIndex : Int?
+    @State private var isFirstResponder = true
+    @State private var didBecomeFirstResponder = false
     
-    let maxNumImages = 3
+    private let maxNumImages = 3
     
     init(forumDataStore: ForumDataStore, forumOtherDataStore: ForumOtherDataStore, containerWidth: CGFloat) {
         self.forumDataStore = forumDataStore
@@ -42,13 +42,13 @@ struct NewThreadView: View {
         self.containerWidth = containerWidth
     }
     
-    func submitThread() {
+    func submitThread(maxImageHeight: CGFloat) {
         if self.showImagePicker == true {
             self.showImagePicker = false
-            self.forumDataStore.submitThread(forumDataStore: self.forumDataStore, title: self.title, flair: self.flair, content: self.content, imageData: self.dataDict, imagesArray: self.imagesArray, userId: keychainService.getUserId(), containerWidth: self.containerWidth, forumOtherDataStore: self.forumOtherDataStore)
+            self.forumDataStore.submitThread(forumDataStore: self.forumDataStore, title: self.title, flair: self.flair, content: self.content, imageData: self.dataDict, imagesArray: self.imagesArray, userId: keychainService.getUserId(), containerWidth: self.containerWidth, forumOtherDataStore: self.forumOtherDataStore, maxImageHeight: maxImageHeight)
             self.presentationMode.wrappedValue.dismiss()
         } else {
-            self.forumDataStore.submitThread(forumDataStore: self.forumDataStore, title: self.title, flair: self.flair, content: self.content, imageData: self.dataDict, imagesArray: self.imagesArray, userId: keychainService.getUserId(), containerWidth: self.containerWidth, forumOtherDataStore: self.forumOtherDataStore)
+            self.forumDataStore.submitThread(forumDataStore: self.forumDataStore, title: self.title, flair: self.flair, content: self.content, imageData: self.dataDict, imagesArray: self.imagesArray, userId: keychainService.getUserId(), containerWidth: self.containerWidth, forumOtherDataStore: self.forumOtherDataStore, maxImageHeight: maxImageHeight)
             self.presentationMode.wrappedValue.dismiss()
         }
     }
@@ -68,57 +68,71 @@ struct NewThreadView: View {
         GeometryReader { a in
             VStack {
                 TextField("Add a title! (Optional)", text: self.$title)
+                    .frame(width: a.size.width * 0.9, alignment: .leading)
                     .autocapitalization(.none)
                     .cornerRadius(5, corners: [.bottomLeft, .bottomRight, .topLeft, .topRight])
-                    .padding(.horizontal, 5)
-                    .padding()
+                    .padding(.top, 20)
+                    .padding(.horizontal)
                 
-                HStack(spacing: 25) {
+                HStack(spacing: 20) {
                     ForEach(self.imagesArray, id: \.self) { id in
                         ZStack {
                             if self.imagesDict[id] != nil {
-                                self.imagesDict[id]!.resizable()
-                                    .frame(width: 100, height: 100, alignment: .leading)
-                            }
-                            Button(action: {
-                                self.clickedImageIndex = self.imagesArray.firstIndex(of: id)!
-                                self.showImagePicker = true
-                            }) {
-                                UploadDashPlaceholderButton()
-                                    .foregroundColor(Color.gray)
-                                    .frame(width: 100, height: 100, alignment: .leading)
-                                    .background(Color(.tertiarySystemBackground))
-                                    .opacity(self.imagesDict[id] != nil ? 0.2 : 1)
-                            }
-                            .buttonStyle(PlainButtonStyle())
-                            
-                            if self.imagesDict[id] != nil {
+                                ZStack(alignment: .topTrailing) {
+                                    Button(action: {
+                                        self.clickedImageIndex = self.imagesArray.firstIndex(of: id)!
+                                        self.showImagePicker = true
+                                    }) {
+                                        self.imagesDict[id]!
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fit)
+                                            .cornerRadius(5)
+                                    }
+                                    .buttonStyle(PlainButtonStyle())
+                                    
+                                    Button(action: {
+                                        self.clickedImageIndex = self.imagesArray.firstIndex(of: id)!
+                                        self.removeImage()
+                                    }) {
+                                        Image(systemName: "minus.circle.fill")
+                                            .resizable()
+                                            .frame(width: a.size.height * 0.035, height: a.size.height * 0.035)
+                                            .offset(x: a.size.height * 0.035 * 0.5, y: -a.size.height * 0.035 * 0.5)
+                                    }
+                                    .foregroundColor(Color.red)
+                                }
+                                
+                            } else {
                                 Button(action: {
                                     self.clickedImageIndex = self.imagesArray.firstIndex(of: id)!
-                                    self.removeImage()
+                                    self.showImagePicker = true
                                 }) {
-                                    Image(systemName: "minus.circle.fill")
-                                        .resizable()
-                                        .frame(width: 25, height: 25)
+                                    UploadDashPlaceholderButton()
+                                        .foregroundColor(Color.gray)
+                                        .frame(width: a.size.height * 0.15, height: a.size.height * 0.15 , alignment: .leading)
+                                        .aspectRatio(contentMode: .fit)
+                                        .cornerRadius(5)
+                                        .background(Color(.tertiarySystemBackground))
+                                        .opacity(self.imagesDict[id] != nil ? 0.1 : 1)
                                 }
-                                .foregroundColor(Color.red)
-                                .offset(x: 50, y: -50)
+                                .buttonStyle(PlainButtonStyle())
                             }
                         }
                     }
-                    Spacer()
                 }
+                .frame(width: a.size.width * 0.9, height: a.size.height * 0.15, alignment: .leading)
                 .padding()
                 
                 FancyPantsEditorView(existedTextStorage: .constant(NSTextStorage(string: "")), desiredHeight: .constant(0), newTextStorage: self.$content, isEditable: .constant(true), isFirstResponder: self.$isFirstResponder, didBecomeFirstResponder: self.$didBecomeFirstResponder, showFancyPantsEditorBar: .constant(false), isNewContent: true, isThread: true, isOmniBar: false, width: a.size.width, height: a.size.height)
-                    .frame(minWidth: 0, maxWidth: a.size.width, minHeight: 0, maxHeight: a.size.height * 0.5, alignment: .leading)
+                    .frame(minWidth: a.size.width * 0.9, maxWidth: a.size.width * 0.9, minHeight: 0, maxHeight: a.size.height * 0.5, alignment: .leading)
                     .background(Color(.tertiarySystemBackground))
                     .cornerRadius(5, corners: [.bottomLeft, .bottomRight, .topLeft, .topRight])
                     .overlay(
                         RoundedRectangle(cornerRadius: 5)
                             .stroke(Color.black, lineWidth: 2)
                 )
-                    .padding()
+                    .padding(.horizontal)
+                    .padding(.bottom)
                     .transition(.move(edge: .bottom))
                     .animation(.default)
                 Spacer()
@@ -134,7 +148,7 @@ struct NewThreadView: View {
             }
                 
             .navigationBarTitle(Text("Post to \(self.forumDataStore.game.name)"))
-            .navigationBarItems(trailing: Button(action: self.submitThread) {
+            .navigationBarItems(trailing: Button(action: { self.submitThread(maxImageHeight: a.size.height * 0.15) }) {
                 Text("Submit")
             })
         }

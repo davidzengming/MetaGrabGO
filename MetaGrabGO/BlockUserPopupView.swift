@@ -16,12 +16,12 @@ struct BlockUserPopupView: View {
     var togglePickedUser: (User) -> Void
     var togglePickedThreadId: (Int, CGFloat) -> Void
 
-    func dismissView() {
+    private func dismissView() {
         self.toggleBottomBarState(.inActive)
         self.turnBottomPopup(false)
     }
 
-    func blockUser() {
+    private func blockUser() {
         let taskGroup = DispatchGroup()
         self.blockHiddenDataStore.blockUser(targetBlockUser: self.pickedUser, taskGroup: taskGroup)
         

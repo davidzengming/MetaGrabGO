@@ -9,8 +9,8 @@
 import SwiftUI
 
 struct PopularGamesView: View {
-    @EnvironmentObject var globalGamesDataStore: GlobalGamesDataStore
-    @ObservedObject var popularListDataStore: PopularListDataStore
+    @EnvironmentObject private var globalGamesDataStore: GlobalGamesDataStore
+    @ObservedObject private var popularListDataStore: PopularListDataStore
     
     init(popularListDataStore: PopularListDataStore) {
         self.popularListDataStore = popularListDataStore

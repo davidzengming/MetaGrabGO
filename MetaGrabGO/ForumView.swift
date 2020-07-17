@@ -37,7 +37,6 @@ struct BottomBarView: View {
     
     var width: CGFloat
     var height: CGFloat
-    
     var turnBottomPopup: (Bool) -> Void
     var toggleBottomBarState: (BottomBarState) -> Void
     var togglePickedUser: (User) -> Void
@@ -177,55 +176,14 @@ struct ForumView: View {
     @ObservedObject var forumOtherDataStore: ForumOtherDataStore
     @ObservedObject var gameIconLoader: ImageLoader
     
-    @State var isBottomPopupOn = false
-    @State var bottomBarState: BottomBarState = .addEmoji
-    @State var pickedThreadId: Int = -1
-    @State var pickedUser: User = User(id: -1, username: "placeholder")
+    @State private var isBottomPopupOn = false
+    @State private var bottomBarState: BottomBarState = .addEmoji
+    @State private var pickedThreadId: Int = -1
+    @State private var pickedUser: User = User(id: -1, username: "placeholder")
     
-    @State var isImageModalOn = false
-    @State var currentImageModalIndex: Int? = nil
-    @State var imageModalSelectedThreadStore: ThreadDataStore? = nil
-    
-    @Environment(\.colorScheme) var colorScheme
-    
-    func turnBottomPopup(state: Bool) {
-        if self.isBottomPopupOn != state {
-            self.isBottomPopupOn = state
-        }
-    }
-    
-    func toggleBottomBarState(state: BottomBarState) {
-        if self.bottomBarState == state {
-            return
-        }
-        self.bottomBarState = state
-    }
-    
-    func togglePickedThreadId(threadId: Int, futureContainerWidth: CGFloat) {
-        if self.pickedThreadId == threadId {
-            return
-        }
-        self.pickedThreadId = threadId
-    }
-    
-    func togglePickedUser(user: User) {
-        if self.pickedUser == user {
-            return
-        }
-        self.pickedUser = user
-    }
-    
-    func toggleImageModal(threadDataStore: ThreadDataStore?, currentImageModalIndex: Int?) {
-        if threadDataStore != nil {
-            self.imageModalSelectedThreadStore = threadDataStore
-            self.currentImageModalIndex = currentImageModalIndex
-            self.isImageModalOn = true
-        } else {
-            self.isImageModalOn = false
-            self.currentImageModalIndex = nil
-            self.imageModalSelectedThreadStore = nil
-        }
-    }
+    @State private var isImageModalOn = false
+    @State private var currentImageModalIndex: Int? = nil
+    @State private var imageModalSelectedThreadStore: ThreadDataStore? = nil
     
     init(forumDataStore: ForumDataStore, forumOtherDataStore: ForumOtherDataStore, gameIconLoader: ImageLoader) {
         self.forumDataStore = forumDataStore
@@ -253,6 +211,45 @@ struct ForumView: View {
         // To remove all separators including the actual ones:
         UITableView.appearance().separatorStyle = .none
         //        UITableView.appearance().separatorColor = .clear
+    }
+    
+    private func turnBottomPopup(state: Bool) {
+        if self.isBottomPopupOn != state {
+            self.isBottomPopupOn = state
+        }
+    }
+    
+    private func toggleBottomBarState(state: BottomBarState) {
+        if self.bottomBarState == state {
+            return
+        }
+        self.bottomBarState = state
+    }
+    
+    private func togglePickedThreadId(threadId: Int, futureContainerWidth: CGFloat) {
+        if self.pickedThreadId == threadId {
+            return
+        }
+        self.pickedThreadId = threadId
+    }
+    
+    private func togglePickedUser(user: User) {
+        if self.pickedUser == user {
+            return
+        }
+        self.pickedUser = user
+    }
+    
+    private func toggleImageModal(threadDataStore: ThreadDataStore?, currentImageModalIndex: Int?) {
+        if threadDataStore != nil {
+            self.imageModalSelectedThreadStore = threadDataStore
+            self.currentImageModalIndex = currentImageModalIndex
+            self.isImageModalOn = true
+        } else {
+            self.isImageModalOn = false
+            self.currentImageModalIndex = nil
+            self.imageModalSelectedThreadStore = nil
+        }
     }
     
     private func followGame() {
@@ -310,7 +307,7 @@ struct ForumView: View {
                         .cornerRadius(15, corners: [.topLeft, .topRight])
                         .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
                         
-                        if self.forumOtherDataStore.isLoaded == false {
+                        if self.forumDataStore.threadsList == nil {
                             VStack {
                                 ActivityIndicator()
                                     .frame(width: a.size.width * 0.3, height: a.size.width * 0.3)
@@ -320,8 +317,8 @@ struct ForumView: View {
                             .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
                             .background(Color(UIColor(named: "pseudoTertiaryBackground")!))
                         } else {
-                            if self.forumOtherDataStore.isLoaded == true && self.forumDataStore.threadsList.count > 0 {
-                                ForEach(self.forumDataStore.threadsList, id: \.self) { threadId in
+                            if self.forumDataStore.threadsList!.count > 0 {
+                                ForEach(self.forumDataStore.threadsList!, id: \.self) { threadId in
                                     VStack(spacing: 0) {
                                         Divider()
                                         ThreadRow(threadDataStore: self.forumDataStore.threadDataStores[threadId]!, turnBottomPopup: { state in self.turnBottomPopup(state: state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state: state)}, togglePickedUser: { pickedUser in self.togglePickedUser(user: pickedUser)}, togglePickedThreadId: { (pickedThreadId, futureContainerWidth) in self.togglePickedThreadId(threadId: pickedThreadId, futureContainerWidth: futureContainerWidth)}, width: a.size.width * 0.9, height: a.size.height, toggleImageModal : { (threadDataStore, currentImageModalIndex) in self.toggleImageModal(threadDataStore: threadDataStore, currentImageModalIndex: currentImageModalIndex) })
@@ -331,7 +328,7 @@ struct ForumView: View {
                                     .listRowBackground(Color(UIColor(named: "pseudoTertiaryBackground")!))
                                 }
                                 
-                                ForumLoadMoreView(forumDataStore: self.forumDataStore, forumOtherDataStore: self.forumOtherDataStore, containerWidth: a.size.width * 0.81)
+                                ForumLoadMoreView(forumDataStore: self.forumDataStore, forumOtherDataStore: self.forumOtherDataStore, containerWidth: a.size.width * 0.81, maxImageHeight: a.size.height * 0.15)
                                     .frame(width: a.size.width, height: a.size.height * 0.1)
                                     .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
                                     // hacky bug fix for rounded corner creating a tiny black line between 2 views
@@ -359,8 +356,8 @@ struct ForumView: View {
                     .frame(width: a.size.width, height: a.size.height)
                     .navigationBarTitle(Text(self.forumDataStore.game.name), displayMode: .inline)
                     .onAppear() {
-                        if self.forumOtherDataStore.isLoaded == false {
-                            self.forumDataStore.fetchThreads(containerWidth: a.size.width * 0.81, forumOtherDataStore: self.forumOtherDataStore)
+                        if self.forumDataStore.threadsList == nil {
+                            self.forumDataStore.fetchThreads(containerWidth: a.size.width * 0.81, forumOtherDataStore: self.forumOtherDataStore, maxImageHeight: a.size.height * 0.15)
                             self.forumDataStore.insertGameHistory()
                         }
                         
@@ -402,9 +399,7 @@ struct ActivityIndicator: View {
                     Circle()
                         .fill(Color(.secondaryLabel))
                         .frame(width: geometry.size.width / 5, height: geometry.size.height / 5)
-                        .scaleEffect(!self.isAnimating ? 1 - CGFloat(index) / 5 : 0.2 + CGFloat(index) / 5)
                         .offset(y: geometry.size.width / 10 - geometry.size.height / 2)
-                    
                 }.frame(width: geometry.size.width, height: geometry.size.height)
                     .rotationEffect(!self.isAnimating ? .degrees(0) : .degrees(360))
                     .animation(Animation

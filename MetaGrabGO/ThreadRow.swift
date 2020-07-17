@@ -9,20 +9,20 @@
 import SwiftUI
 
 struct ThreadRow : View {
-    @ObservedObject var threadDataStore: ThreadDataStore
+    @ObservedObject private var threadDataStore: ThreadDataStore
     
-    var turnBottomPopup: (Bool) -> Void
-    var toggleBottomBarState: (BottomBarState) -> Void
-    var togglePickedUser: (User) -> Void
-    var togglePickedThreadId: (Int, CGFloat) -> Void
-    var width: CGFloat
-    var height: CGFloat
-    var toggleImageModal: (ThreadDataStore?, Int?) -> Void
+    private var turnBottomPopup: (Bool) -> Void
+    private var toggleBottomBarState: (BottomBarState) -> Void
+    private var togglePickedUser: (User) -> Void
+    private var togglePickedThreadId: (Int, CGFloat) -> Void
+    private var width: CGFloat
+    private var height: CGFloat
+    private var toggleImageModal: (ThreadDataStore?, Int?) -> Void
     
-    let formatter = RelativeDateTimeFormatter()
+    private let formatter = RelativeDateTimeFormatter()
     
-    let threadsFromBottomToGetReadyToLoadNextPage = 1
-    let threadsPerNewPageCount = 10
+    private let threadsFromBottomToGetReadyToLoadNextPage = 1
+    private let threadsPerNewPageCount = 10
     
     init(threadDataStore: ThreadDataStore, turnBottomPopup: @escaping (Bool) -> Void, toggleBottomBarState: @escaping (BottomBarState) -> Void, togglePickedUser: @escaping (User) -> Void, togglePickedThreadId: @escaping (Int, CGFloat) -> Void, width: CGFloat, height: CGFloat, toggleImageModal: @escaping (ThreadDataStore?, Int?) -> Void) {
         self.threadDataStore = threadDataStore
@@ -33,10 +33,10 @@ struct ThreadRow : View {
         self.width = width
         self.height = height
         self.toggleImageModal = toggleImageModal
-        print("remaking thread row: ", threadDataStore.thread.id)
+//        print("remaking thread row: ", threadDataStore.thread.id)
     }
     
-    func onClickUser() {
+    private func onClickUser() {
         if self.threadDataStore.author.id == keychainService.getUserId() {
             print("Cannot report self.")
             return
@@ -64,20 +64,21 @@ struct ThreadRow : View {
                             self.onClickUser()
                     }
                     
-                    Text("replied " + self.threadDataStore.relativeDateString!)
+                    Text("sent " + self.threadDataStore.relativeDateString!)
                         .font(.subheadline)
                         .foregroundColor(Color(.secondaryLabel))
                 }
                 Spacer()
             }
-            .frame(width: self.width, height: self.height * 0.04, alignment: .leading)
-            .padding(.bottom, 10)
+            .frame(width: self.width, height: UIFont.preferredFont(forTextStyle: .body).pointSize * 2, alignment: .leading)
+            .padding(.bottom, 20)
             
-            NavigationLink(destination: LazyView{ ThreadView(threadDataStore: self.threadDataStore) }) {
+            NavigationLink(destination: LazyView{ ThreadView(threadDataStore: self.threadDataStore)}) {
                 VStack(alignment: .leading, spacing: 0) {
                     if self.threadDataStore.thread.title.count > 0 {
                         Text(self.threadDataStore.thread.title)
                             .fontWeight(.medium)
+                            .frame(width: self.width * 0.9, height: self.height * 0.05, alignment: .leading)
                     }
                     
                     FancyPantsEditorView(existedTextStorage: self.$threadDataStore.textStorage, desiredHeight: self.$threadDataStore.desiredHeight,  newTextStorage: .constant(NSTextStorage(string: "")), isEditable: .constant(false), isFirstResponder: .constant(false), didBecomeFirstResponder: .constant(false), showFancyPantsEditorBar: .constant(false), isNewContent: false, isThread: true, threadId: self.threadDataStore.thread.id, isOmniBar: false, width: self.width, height: self.height)
@@ -85,15 +86,16 @@ struct ThreadRow : View {
                 }
             }
             .buttonStyle(PlainButtonStyle())
-            .padding(.bottom, 10)
+            .padding(.bottom, 20)
             
             if self.threadDataStore.imageArr.count > 0 {
-                HStack(spacing: 10) {
+                HStack(spacing: 10) { // spacingBetweenImages
                     ForEach(self.threadDataStore.imageArr, id: \.self) { index in
                         VStack {
                             if self.threadDataStore.imageLoaders[index]!.downloadedImage != nil {
                                 Image(uiImage: self.threadDataStore.imageLoaders[index]!.downloadedImage!)
                                     .resizable()
+                                    .frame(width: self.threadDataStore.imageDimensions[index].width, height: self.threadDataStore.imageDimensions[index].height)
                                     .aspectRatio(contentMode: .fit)
                                     .cornerRadius(5)
                                     .onTapGesture {
@@ -101,20 +103,23 @@ struct ThreadRow : View {
                                 }
                             } else {
                                 Rectangle()
-                                    .fill(Color(UIColor(named: "pseudoTertiaryBackground")!))
+                                    .fill(Color(.systemGray5))
+                                    .frame(width: self.threadDataStore.imageDimensions[index].width, height: self.threadDataStore.imageDimensions[index].height)
                                     .aspectRatio(contentMode: .fit)
                                     .cornerRadius(5)
                                     .onTapGesture {
                                         self.toggleImageModal(self.threadDataStore, index)
                                 }
+                                .onAppear() {
+                                    self.threadDataStore.imageLoaders[index]!.load()
+                                }
                             }
                         }
-                        
+                        .animation(.easeIn(duration: 0.5))
                     }
                 }
-                .frame(minWidth: 0, maxWidth: self.width * 0.9, minHeight: self.height * 0.15, maxHeight: self.height * 0.15, alignment: .leading)
-                .padding(.vertical, 10)
-                .padding(.bottom, 10)
+                .frame(width: self.width * 0.9, height: self.threadDataStore.maxImageHeight, alignment: .leading)
+                .padding(.bottom, 20)
             }
             
             HStack(spacing: 10) {
@@ -162,16 +167,17 @@ struct ThreadRow : View {
             
             EmojiBarThreadView(threadDataStore: self.threadDataStore, turnBottomPopup: { state in self.turnBottomPopup(state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state)}, togglePickedUser: { pickedUser in self.togglePickedUser(pickedUser)}, togglePickedThreadId: { (pickedThreadId, futureContainerWidth) in self.togglePickedThreadId(pickedThreadId, futureContainerWidth) })
         }
-        .padding(.all, 20)
-        .padding(.vertical, 10)
+        .padding(.vertical, 30)
         .frame(width: self.width, height:
-            ceil(self.height * 0.04 + 10
+            ceil(UIFont.preferredFont(forTextStyle: .body).pointSize * 2 + 20
                 + min(self.threadDataStore.desiredHeight, 200) + 10
-                + (self.threadDataStore.imageLoaders.count > 0 ? (self.height * 0.15) : 0) + 30
+                + (self.threadDataStore.thread.title.count > 0 ? self.height * 0.05 : 0)
+                + (self.threadDataStore.maxImageHeight > 0 ? self.threadDataStore.maxImageHeight + 30 : 0)
                 + self.height * 0.025
-                + CGFloat(self.threadDataStore.emojis.emojiArr.count) * 40
-                + 40
-                + 20)
+                + CGFloat(self.threadDataStore.emojis.emojiArr.count) * 25
+                + (self.threadDataStore.emojis.emojiArr.count == 2 ? 5 : 0) // spacing from second row
+                + 60
+                )
             //        .background(Color.white)
             , alignment: .center)
             .buttonStyle(PlainButtonStyle())

@@ -9,19 +9,19 @@
 import Foundation
 import Combine
 
-class BlockHiddenDataStore: ObservableObject {
-    @Published var hiddenThreadIdArr = [Int]()
-    @Published var hiddenCommentIdArr = [Int]()
-    @Published var blacklistedUsersById = [Int: User]()
-    @Published var hiddenThreadsById = [Int: HiddenThread]()
-    @Published var hiddenCommentsById = [Int: HiddenComment]()
-    @Published var isUserBlockedByUserId = [Int: Bool]()
-    @Published var isThreadHiddenByThreadId = [Int: Bool]()
-    @Published var isCommentHiddenByCommentId = [Int: Bool]()
-    @Published var blacklistedUserIdArr = [Int]()
+final class BlockHiddenDataStore: ObservableObject {
+    @Published private(set) var hiddenThreadIdArr = [Int]()
+    @Published private(set) var hiddenCommentIdArr = [Int]()
+    @Published private(set) var blacklistedUsersById = [Int: User]()
+    @Published private(set) var hiddenThreadsById = [Int: HiddenThread]()
+    @Published private(set) var hiddenCommentsById = [Int: HiddenComment]()
+    @Published private(set) var isUserBlockedByUserId = [Int: Bool]()
+    @Published private(set) var isThreadHiddenByThreadId = [Int: Bool]()
+    @Published private(set) var isCommentHiddenByCommentId = [Int: Bool]()
+    @Published private(set) var blacklistedUserIdArr = [Int]()
     
-    let API = APIClient()
-    var cancellableSet: Set<AnyCancellable> = []
+    private let API = APIClient()
+    private var cancellableSet: Set<AnyCancellable> = []
     
     func hideThread(threadId: Int) {
         let json: [String: Any] = ["hide_thread_id": threadId]

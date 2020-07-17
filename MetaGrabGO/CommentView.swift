@@ -11,25 +11,24 @@ import SwiftUI
 
 
 struct CommentView : View {
-    @ObservedObject var commentDataStore: CommentDataStore
+    @ObservedObject private var commentDataStore: CommentDataStore
+    @State private var isEditable: Bool = false
     
-    @State var isEditable: Bool = false
+    private var ancestorThreadId: Int
+    private let formatter = RelativeDateTimeFormatter()
+    private var width: CGFloat
+    private var height: CGFloat
+    private var leadPadding: CGFloat
+    private let level: Int
+    private let leadLineWidth: CGFloat = 3
+    private let verticalPadding: CGFloat = 10
+    private let outerPadding : CGFloat = 0
     
-    var ancestorThreadId: Int
-    let formatter = RelativeDateTimeFormatter()
-    var width: CGFloat
-    var height: CGFloat
-    var leadPadding: CGFloat
-    let level: Int
-    let leadLineWidth: CGFloat = 3
-    let verticalPadding: CGFloat = 10
-    let outerPadding : CGFloat = 0
-    
-    var turnBottomPopup: (Bool) -> Void
-    var toggleBottomBarState: (BottomBarState) -> Void
-    var togglePickedUser: (User) -> Void
-    var togglePickedCommentId: (CommentDataStore?, CGFloat) -> Void
-    var toggleDidBecomeFirstResponder: () -> Void
+    private var turnBottomPopup: (Bool) -> Void
+    private var toggleBottomBarState: (BottomBarState) -> Void
+    private var togglePickedUser: (User) -> Void
+    private var togglePickedCommentId: (CommentDataStore?, CGFloat) -> Void
+    private var toggleDidBecomeFirstResponder: () -> Void
     
     init(commentDataStore: CommentDataStore, ancestorThreadId: Int, width: CGFloat, height: CGFloat, leadPadding: CGFloat, level: Int, turnBottomPopup: @escaping (Bool) -> Void, toggleBottomBarState: @escaping (BottomBarState) -> Void, togglePickedUser: @escaping (User) -> Void, togglePickedCommentId: @escaping (CommentDataStore?, CGFloat) -> Void, toggleDidBecomeFirstResponder: @escaping () -> Void) {
         self.commentDataStore = commentDataStore
@@ -44,10 +43,10 @@ struct CommentView : View {
         self.togglePickedUser = togglePickedUser
         self.togglePickedCommentId = togglePickedCommentId
         self.toggleDidBecomeFirstResponder = toggleDidBecomeFirstResponder
-        //        print("comment view was created: ", self.commentDataStore.comment.id)
+//        print("comment view was created: ", self.commentDataStore.comment.id)
     }
     
-    func onClickUser() {
+    private func onClickUser() {
         if self.commentDataStore.author.id == keychainService.getUserId() {
             print("Cannot report self.")
             return
@@ -76,7 +75,7 @@ struct CommentView : View {
     //        return ((isNegative ? "-" : "" ) + concatVotesStr)
     //    }
     //
-    func onClickUpvoteButton() {
+    private func onClickUpvoteButton() {
         if self.commentDataStore.vote != nil {
             if self.commentDataStore.vote!.direction == 1 {
                 self.commentDataStore.deleteVote()
@@ -90,7 +89,7 @@ struct CommentView : View {
         }
     }
     
-    func onClickDownvoteButton() {
+    private func onClickDownvoteButton() {
         if self.commentDataStore.vote != nil {
             if self.commentDataStore.vote!.direction == -1 {
                 self.commentDataStore.deleteVote()
@@ -131,11 +130,12 @@ struct CommentView : View {
                                                     .aspectRatio(contentMode: .fit)
                                                     .foregroundColor(Color.orange)
                                             }
-                                            .frame(height: self.height * 0.04)
+                                            .frame(height: UIFont.preferredFont(forTextStyle: .body).pointSize * 2)
                                             
                                             VStack(alignment: .leading, spacing: 0) {
                                                 HStack {
                                                     Text(self.commentDataStore.author.username)
+                                                        .fontWeight(.medium)
                                                         .onTapGesture {
                                                             self.onClickUser()
                                                     }
@@ -239,11 +239,12 @@ struct CommentView : View {
             if self.commentDataStore.childCommentList.count < self.commentDataStore.comment.numChilds {
                 if self.commentDataStore.isLoadingNextPage == true {
                     ActivityIndicator()
-                        .frame(width: self.width - self.leadPadding - 10 - self.leadLineWidth - 20, height: self.height * 0.20)
+                        .frame(width: self.width * 0.1, height: self.height * 0.1)
                         .modifier(CenterModifier())
                         .foregroundColor(appWideAssets.colors["darkButNotBlack"]!)
                 } else {
                     HStack {
+                        Spacer()
                         MoreCommentsView(commentDataStore: self.commentDataStore, width: self.width - self.leadPadding - 10 - self.leadLineWidth - 20, leadLineWidth: self.leadLineWidth, verticalPadding: self.verticalPadding, level: self.level + 1)
                     }
                     .frame(width: self.width)

@@ -8,10 +8,16 @@
 
 import Foundation
 
-class GlobalGamesDataStore: ObservableObject {
-    var games: [Int: Game]
+final class GlobalGamesDataStore: ObservableObject {
+    private(set) var games: [Int: Game]
     
     init() {
         self.games = [:]
+    }
+    
+    func addGame(game: Game) {
+        if games[game.id] == nil {
+            self.games[game.id] = game
+        }
     }
 }

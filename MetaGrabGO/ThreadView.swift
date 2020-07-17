@@ -27,31 +27,31 @@ struct CenterModifier: ViewModifier {
 }
 
 struct ThreadView : View {
-    @ObservedObject var threadDataStore: ThreadDataStore
+    @ObservedObject private var threadDataStore: ThreadDataStore
     
-    let formatter = RelativeDateTimeFormatter()
-    let outerPadding : CGFloat = 0
+    private let formatter = RelativeDateTimeFormatter()
+    private let outerPadding : CGFloat = 0
     
-    @State var isEditable = false
-    @State var isBottomPopupOn = false
-    @State var bottomBarState: BottomBarState = .fancyBar
-    @State var pickedThreadId: Int = -1
-    @State var pickedCommentId: CommentDataStore?
+    @State private var isEditable = false
+    @State private var isBottomPopupOn = false
+    @State private var bottomBarState: BottomBarState = .fancyBar
+    @State private var pickedThreadId: Int = -1
+    @State private var pickedCommentId: CommentDataStore?
     
-    @State var pickedUser: User = User(id: -1, username: "placeholder")
+    @State private var pickedUser: User = User(id: -1, username: "placeholder")
     
     // reply bar
-    @State var replyContent = NSTextStorage(string: "")
-    @State var replyBarDesiredHeight: CGFloat = 20 // subject to font size changes
-    @State var keyboardHeight: CGFloat = 0
-    @State var replyFutureContainerWidth: CGFloat = 0
+    @State private var replyContent = NSTextStorage(string: "")
+    @State private var replyBarDesiredHeight: CGFloat = 20 // subject to font size changes
+    @State private var keyboardHeight: CGFloat = 0
+    @State private var replyFutureContainerWidth: CGFloat = 0
     
-    @State var isImageModalOn = false
-    @State var currentImageModalIndex: Int? = nil
-    @State var imageModalSelectedThreadStore: ThreadDataStore? = nil
+    @State private var isImageModalOn = false
+    @State private var currentImageModalIndex: Int? = nil
+    @State private var imageModalSelectedThreadStore: ThreadDataStore? = nil
     
-    @State var isFirstResponder: Bool = false
-    @State var didBecomeFirstResponder: Bool = false
+    @State private var isFirstResponder: Bool = false
+    @State private var didBecomeFirstResponder: Bool = false
     
     
     init(threadDataStore: ThreadDataStore) {
@@ -60,20 +60,20 @@ struct ThreadView : View {
         self.pickedThreadId = threadDataStore.thread.id
     }
     
-    func turnBottomPopup(state: Bool) {
+    private func turnBottomPopup(state: Bool) {
         if self.isBottomPopupOn != state {
             self.isBottomPopupOn = state
         }
     }
     
-    func toggleBottomBarState(state: BottomBarState) {
+    private func toggleBottomBarState(state: BottomBarState) {
         if self.bottomBarState == state {
             return
         }
         self.bottomBarState = state
     }
     
-    func togglePickedThreadId(threadId: Int, futureContainerWidth: CGFloat) {
+    private func togglePickedThreadId(threadId: Int, futureContainerWidth: CGFloat) {
         if self.pickedThreadId == threadId {
             return
         }
@@ -85,7 +85,7 @@ struct ThreadView : View {
         self.pickedThreadId = threadId
     }
     
-    func togglePickedCommentId(commentId: CommentDataStore?, futureContainerWidth: CGFloat) {
+    private func togglePickedCommentId(commentId: CommentDataStore?, futureContainerWidth: CGFloat) {
         if commentId != nil && self.pickedCommentId != nil && self.pickedCommentId!.comment.id == commentId!.comment.id {
             return
         }
@@ -98,25 +98,25 @@ struct ThreadView : View {
         self.pickedCommentId = commentId
     }
     
-    func toggleDidBecomeFirstResponder() {
+    private func toggleDidBecomeFirstResponder() {
         self.didBecomeFirstResponder = true
     }
     
-    func togglePickedUser(user: User) {
+    private func togglePickedUser(user: User) {
         if self.pickedUser == user {
             return
         }
         self.pickedUser = user
     }
     
-    func toggleReplyFutureContainerWidth(width: CGFloat) {
+    private func toggleReplyFutureContainerWidth(width: CGFloat) {
         if self.replyFutureContainerWidth == width {
             return
         }
         self.replyFutureContainerWidth = width
     }
     
-    func onClickUser() {
+    private func onClickUser() {
         if self.threadDataStore.author.id == keychainService.getUserId() {
             print("Cannot report self.")
             return
@@ -126,22 +126,22 @@ struct ThreadView : View {
         self.toggleBottomBarState(state: .blockUser)
         self.turnBottomPopup(state: true)
     }
+    //
+    //    func scrollToOriginalThread() {
+    //    }
+    //
+    //    func shareToSocialMedia() {
+    //    }
     
-    func scrollToOriginalThread() {
-    }
-    
-    func shareToSocialMedia() {
-    }
-    
-    func endEditing() {
+    private func endEditing() {
         UIApplication.shared.endEditing()
     }
     
-    func fetchNextPage(containerWidth: CGFloat) {
-        self.threadDataStore.fetchCommentTreeByThreadId(start: self.threadDataStore.childCommentList.count, refresh: true, containerWidth: containerWidth, leadPadding: 20)
+    private func fetchNextPage(containerWidth: CGFloat) {
+        self.threadDataStore.fetchCommentTreeByThreadId(start: self.threadDataStore.childCommentList!.count, refresh: true, containerWidth: containerWidth, leadPadding: 20)
     }
     
-    func toggleImageModal(threadDataStore: ThreadDataStore?, currentImageModalIndex: Int?) {
+    private func toggleImageModal(threadDataStore: ThreadDataStore?, currentImageModalIndex: Int?) {
         if threadDataStore != nil {
             self.imageModalSelectedThreadStore = threadDataStore
             self.currentImageModalIndex = currentImageModalIndex
@@ -153,7 +153,7 @@ struct ThreadView : View {
         }
     }
     
-    func submit(mainCommentContainerWidth: CGFloat) {
+    private func submit(mainCommentContainerWidth: CGFloat) {
         //        print("submitted")
         
         if pickedCommentId != nil {
@@ -187,10 +187,11 @@ struct ThreadView : View {
                                             .aspectRatio(contentMode: .fit)
                                             .foregroundColor(Color.orange)
                                     }
-                                    .frame(height: a.size.height * 0.04)
+                                    .frame(height: UIFont.preferredFont(forTextStyle: .body).pointSize * 2)
                                     
                                     VStack(alignment: .leading, spacing: 0) {
                                         Text(self.threadDataStore.author.username)
+                                            .fontWeight(.medium)
                                             .onTapGesture {
                                                 self.onClickUser()
                                         }
@@ -202,9 +203,9 @@ struct ThreadView : View {
                                     
                                     Spacer()
                                 }
-                                .frame(width: a.size.width * 0.9, height: a.size.height * 0.04)
+                                .frame(width: a.size.width * 0.9, height: UIFont.preferredFont(forTextStyle: .body).pointSize * 2)
                                 .padding(.top, 20)
-                                .padding(.bottom, 10)
+                                .padding(.bottom, 20)
                                 .modifier(CenterModifier())
                                 
                                 if self.threadDataStore.thread.title.count > 0 {
@@ -218,43 +219,45 @@ struct ThreadView : View {
                                     self.toggleDidBecomeFirstResponder()}) {
                                         FancyPantsEditorView(existedTextStorage: self.$threadDataStore.textStorage, desiredHeight: self.$threadDataStore.desiredHeight,  newTextStorage: .constant(NSTextStorage(string: "")), isEditable: .constant(false), isFirstResponder: .constant(false), didBecomeFirstResponder: .constant(false), showFancyPantsEditorBar: .constant(false), isNewContent: false, isThread: true, threadId: self.threadDataStore.thread.id, isOmniBar: false, width: a.size.width * 0.9, height: a.size.height)
                                             .frame(width: a.size.width * 0.9, height: self.threadDataStore.desiredHeight + (self.isEditable ? 20 : 0))
-                                            .padding(.bottom, 10)
+                                            
                                 }
                                 .modifier(CenterModifier())
+                                .padding(.bottom, 20)
                                 
                                 if self.threadDataStore.imageArr.count != 0 {
                                     VStack(alignment: .leading, spacing: 0) {
                                         HStack(spacing: 10) {
                                             ForEach(self.threadDataStore.imageArr, id: \.self) { index in
-                                                Group {
+                                                VStack {
                                                     if self.threadDataStore.imageLoaders[index]!.downloadedImage != nil {
                                                         Image(uiImage: self.threadDataStore.imageLoaders[index]!.downloadedImage!)
                                                             .resizable()
+                                                            .frame(width: self.threadDataStore.imageDimensions[index].width, height: self.threadDataStore.imageDimensions[index].height)
                                                             .aspectRatio(contentMode: .fit)
                                                             .cornerRadius(5)
-                                                            
                                                             .onTapGesture {
                                                                 self.toggleImageModal(threadDataStore: self.threadDataStore, currentImageModalIndex: index)
                                                         }
                                                     } else {
                                                         Rectangle()
-                                                            .fill(Color(UIColor(named: "pseudoTertiaryBackground")!))
+                                                            .fill(Color(.systemGray4))
+                                                            .frame(width: self.threadDataStore.imageDimensions[index].width, height: self.threadDataStore.imageDimensions[index].height)
                                                             .aspectRatio(contentMode: .fit)
                                                             .cornerRadius(5)
-                                                            .frame(minWidth: a.size.width * 0.05, maxWidth: a.size.width * 0.25, minHeight: a.size.height * 0.1, maxHeight: a.size.height * 0.15, alignment: .center)
                                                             .onTapGesture {
                                                                 self.toggleImageModal(threadDataStore: self.threadDataStore, currentImageModalIndex: index)
                                                         }
                                                     }
                                                 }
+                                                .animation(.easeIn(duration: 0.5))
                                             }
                                         }
-                                        .frame(minWidth: 0, maxWidth: a.size.width * 0.81, minHeight: 0, maxHeight: a.size.height * 0.15, alignment: .leading)
-                                        .padding(.bottom, 20)
-                                        .padding(.top, 10)
+                                        .frame(width: a.size.width * 0.81, height: self.threadDataStore.maxImageHeight, alignment: .leading)
                                     }
                                     .frame(width: a.size.width * 0.9, alignment: .leading)
                                     .modifier(CenterModifier())
+                                    .padding(.bottom, 20)
+
                                 }
                                 
                                 HStack(spacing: 10) {
@@ -306,67 +309,53 @@ struct ThreadView : View {
                             }
                             .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
                             
-                            if self.threadDataStore.areCommentsLoaded {
-                                if !self.threadDataStore.childCommentList.isEmpty {
-                                    Divider()
-                                    ForEach(self.threadDataStore.childCommentList, id: \.self) { commentId in
-                                        CommentView(commentDataStore: self.threadDataStore.childComments[commentId]!, ancestorThreadId: self.threadDataStore.thread.id, width: a.size.width * 0.9, height: a.size.height, leadPadding: 0, level: 0, turnBottomPopup: { state in self.turnBottomPopup(state: state) }, toggleBottomBarState: { state in self.toggleBottomBarState(state: state) }, togglePickedUser: { user in self.togglePickedUser(user: user) }, togglePickedCommentId: { (commentId, futureContainerWidth) in self.togglePickedCommentId(commentId: commentId, futureContainerWidth: futureContainerWidth) }, toggleDidBecomeFirstResponder: self.toggleDidBecomeFirstResponder)
-                                            .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
+                            if self.threadDataStore.childCommentList != nil && self.threadDataStore.childCommentList!.count > 0 {
+                                Divider()
+                                ForEach(self.threadDataStore.childCommentList!, id: \.self) { commentId in
+                                    CommentView(commentDataStore: self.threadDataStore.childComments[commentId]!, ancestorThreadId: self.threadDataStore.thread.id, width: a.size.width * 0.9, height: a.size.height, leadPadding: 0, level: 0, turnBottomPopup: { state in self.turnBottomPopup(state: state) }, toggleBottomBarState: { state in self.toggleBottomBarState(state: state) }, togglePickedUser: { user in self.togglePickedUser(user: user) }, togglePickedCommentId: { (commentId, futureContainerWidth) in self.togglePickedCommentId(commentId: commentId, futureContainerWidth: futureContainerWidth) }, toggleDidBecomeFirstResponder: self.toggleDidBecomeFirstResponder)
+                                        .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
+                                        .onAppear() {
+                                            if commentId == self.threadDataStore.childCommentList!.last! {
+                                                self.fetchNextPage(containerWidth: a.size.width * 0.9)
+                                            }
                                     }
-                                } else {
-                                    Divider()
-                                    VStack {
-                                        Image(systemName: "pencil.circle.fill")
-                                            .resizable()
-                                            .scaledToFit()
-                                            .frame(width: a.size.width * 0.3, height: a.size.width * 0.3)
-                                            .padding()
-                                            .foregroundColor(Color(.lightGray))
-                                        Text("Don't leave the poster hanging.")
-                                            .bold()
-                                            .foregroundColor(Color(.lightGray))
-                                            .padding()
-                                    }
-                                    .frame(height: a.size.height / 2)
-                                    .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
-                                    .modifier(CenterModifier())
                                 }
                             } else {
+                                Divider()
                                 VStack {
-                                    ActivityIndicator()
-                                        .frame(width: a.size.width, height: a.size.height * 0.20)
+                                    Image(systemName: "pencil.circle.fill")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: a.size.width * 0.3, height: a.size.width * 0.3)
+                                        .padding()
+                                        .foregroundColor(Color(.lightGray))
+                                    Text("Don't leave the poster hanging.")
+                                        .bold()
+                                        .foregroundColor(Color(.lightGray))
+                                        .padding()
                                 }
                                 .frame(height: a.size.height / 2)
                                 .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
                                 .modifier(CenterModifier())
+                                .animation(nil)
                             }
                             
-                            if self.threadDataStore.childCommentList.count < self.threadDataStore.thread.numChilds && self.threadDataStore.areCommentsLoaded == true {
-                                if self.threadDataStore.isLoadingNextPage == true {
-                                    ActivityIndicator()
-                                        .frame(height: a.size.height * 0.20)
-                                        .foregroundColor(appWideAssets.colors["darkButNotBlack"]!)
-                                        .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
-                                        .modifier(CenterModifier())
-                                } else {
-                                    HStack {
-                                        Image(systemName: "arrowtriangle.down.fill")
-                                            .resizable()
-                                            .frame(width: a.size.height * 0.02, height: a.size.height * 0.02)
-                                        Text("View more comments (\(self.threadDataStore.thread.numChilds - self.threadDataStore.childCommentList.count) replies)")
-                                            .frame(width: a.size.width * 0.9, height: a.size.height * 0.05, alignment: .leading)
+                            VStack {
+                                if self.threadDataStore.childCommentList != nil && self.threadDataStore.childCommentList!.count < self.threadDataStore.thread.numChilds{
+                                    if self.threadDataStore.isLoadingNextPage == true {
+                                        ActivityIndicator()
+                                            .frame(width: a.size.width * 0.1, height: a.size.height * 0.1)
+                                            .foregroundColor(appWideAssets.colors["darkButNotBlack"]!)
+                                            .modifier(CenterModifier())
                                             .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
-                                        Spacer()
-                                    }
-                                    .onTapGesture {
-                                            self.fetchNextPage(containerWidth: a.size.width * 0.9)
                                     }
                                 }
                             }
+                            .animation(nil)
                         }
                         .frame(width: a.size.width, height: a.size.height - (20 + 20 + 40))
                         .onAppear() {
-                            if self.threadDataStore.areCommentsLoaded == false {
+                            if self.threadDataStore.childCommentList == nil {
                                 self.threadDataStore.fetchCommentTreeByThreadId(refresh: true, containerWidth: a.size.width * 0.9, leadPadding: 20)
                             }
                         }

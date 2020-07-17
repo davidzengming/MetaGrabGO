@@ -8,7 +8,21 @@
 
 import Foundation
 
-struct GamesTimeLineResponse: Hashable, Codable {
+struct GamesTimeLineResponseAtEpochTime: Hashable, Codable {
     var gameArr: [Game]
     var timeScores: [Double]
+    var hasPrevPage: Bool
+    var hasNextPage: Bool
+}
+
+struct GamesTimeLineResponseBeforeEpochTime: Hashable, Codable {
+    var gameArr: [Game]
+    var timeScores: [Double]
+    var hasPrevPage: Bool
+}
+
+struct GamesTimeLineResponseAfterEpochTime: Hashable, Codable {
+    var gameArr: [Game]
+    var timeScores: [Double]
+    var hasNextPage: Bool
 }

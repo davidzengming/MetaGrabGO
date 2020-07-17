@@ -13,51 +13,53 @@ struct ForumLoadMoreView: View {
     @ObservedObject var forumDataStore: ForumDataStore
     @ObservedObject var forumOtherDataStore: ForumOtherDataStore
     var containerWidth: CGFloat
+    var maxImageHeight: CGFloat
     
     private func fetchNextPage() {
         if self.forumOtherDataStore.isLoadingNextPage == true {
             return
         }
         
-        self.forumDataStore.fetchThreads(start: self.forumOtherDataStore.forumNextPageStartIndex!, containerWidth: self.containerWidth, forumOtherDataStore: self.forumOtherDataStore)
+        self.forumDataStore.fetchThreads(start: self.forumOtherDataStore.forumNextPageStartIndex!, containerWidth: self.containerWidth, forumOtherDataStore: self.forumOtherDataStore, maxImageHeight: maxImageHeight)
     }
     
     var body: some View {
         GeometryReader { a in
             ZStack(alignment: .top) {
-                if self.forumOtherDataStore.isLoaded && self.forumOtherDataStore.forumNextPageStartIndex != nil && self.forumOtherDataStore.forumNextPageStartIndex != -1 {
+                if self.forumDataStore.threadsList != nil && self.forumOtherDataStore.forumNextPageStartIndex != nil && self.forumOtherDataStore.forumNextPageStartIndex != -1 {
                     VStack {
                         Rectangle()
                         .fill(appWideAssets.colors["darkButNotBlack"]!)
                             .frame(height: a.size.height * 0.25)
-                            
+                        .onAppear() {
+                            self.fetchNextPage()
+                        }
+//                        {
+//                            HStack(alignment: .center) {
+//                                Spacer()
+//                                Image(systemName: "chevron.compact.down")
+//                                    .foregroundColor(Color.white)
+//                                    .padding(.top, 10)
+//                                    .padding(.horizontal, 20)
+//                                    .padding(.bottom, 10)
+//                                Spacer()
+//                                Image(systemName: "chevron.compact.down")
+//                                    .foregroundColor(Color.white)
+//                                    .padding(.top, 10)
+//                                    .padding(.horizontal, 20)
+//                                    .padding(.bottom, 10)
+//                                Spacer()
+//                                Image(systemName: "chevron.compact.down")
+//                                    .foregroundColor(Color.white)
+//                                    .padding(.top, 10)
+//                                    .padding(.horizontal, 20)
+//                                    .padding(.bottom, 10)
+//                                Spacer()
+//                            }
+//
+//                        } else {
                         Spacer()
-                        if !self.forumOtherDataStore.isLoadingNextPage {
-                            HStack(alignment: .center) {
-                                Spacer()
-                                Image(systemName: "chevron.compact.down")
-                                    .foregroundColor(Color.white)
-                                    .padding(.top, 10)
-                                    .padding(.horizontal, 20)
-                                    .padding(.bottom, 10)
-                                Spacer()
-                                Image(systemName: "chevron.compact.down")
-                                    .foregroundColor(Color.white)
-                                    .padding(.top, 10)
-                                    .padding(.horizontal, 20)
-                                    .padding(.bottom, 10)
-                                Spacer()
-                                Image(systemName: "chevron.compact.down")
-                                    .foregroundColor(Color.white)
-                                    .padding(.top, 10)
-                                    .padding(.horizontal, 20)
-                                    .padding(.bottom, 10)
-                                Spacer()
-                            }
-                            .onAppear() {
-                                self.fetchNextPage()
-                            }
-                        } else {
+                        if self.forumOtherDataStore.isLoadingNextPage {
                             ActivityIndicator()
                                 .frame(width: a.size.height * 0.5, height: a.size.height * 0.5)
                                 .foregroundColor(Color.white)

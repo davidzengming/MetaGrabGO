@@ -22,6 +22,8 @@ struct Thread: Hashable, Codable, Identifiable {
     var numChilds: Int
     var numSubtreeNodes: Int
     var imageUrls: ImageUrls
+    var imageWidths: ImageWidths
+    var imageHeights: ImageHeights
     var created: Date
     var emojis: Emojis?
     var votes: [Vote]

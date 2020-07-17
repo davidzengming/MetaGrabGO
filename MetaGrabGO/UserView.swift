@@ -9,7 +9,7 @@
 import SwiftUI
 
 struct UserView: View {
-    @State var isRegisterPage = false
+    @State private var isRegisterPage = false
     
     var body: some View {
         VStack {
@@ -26,7 +26,7 @@ struct LoginUserView: View {
     @Binding var isRegisterPage: Bool
     @State private var name: String = ""
     @State private var password: String = ""
-    @EnvironmentObject var userDataStore: UserDataStore
+    @EnvironmentObject private var userDataStore: UserDataStore
     
     private func submit() {
         userDataStore.acquireToken(username: name, password: password)
