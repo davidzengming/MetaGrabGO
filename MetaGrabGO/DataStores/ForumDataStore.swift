@@ -35,8 +35,18 @@ class ForumOtherDataStore: ObservableObject {
     }
     
     deinit {
-        forumStatsLoadingProcess?.cancel()
-        followLoadingProcess?.cancel()
+        self.cancelForumStatsLoadingProcess()
+        self.cancelFollowLoadingProcess()
+    }
+    
+    func cancelForumStatsLoadingProcess() {
+        self.forumStatsLoadingProcess?.cancel()
+        self.forumStatsLoadingProcess = nil
+    }
+    
+    func cancelFollowLoadingProcess() {
+        self.followLoadingProcess?.cancel()
+        self.followLoadingProcess = nil
     }
     
     func fetchForumStats() {
@@ -45,9 +55,9 @@ class ForumOtherDataStore: ObservableObject {
         let request = API.generateRequest(url: url!, method: .GET)
         
         self.API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
             self.forumStatsLoadingProcess = session.dataTaskPublisher(for: request)
                 .map(\.data)
@@ -56,10 +66,12 @@ class ForumOtherDataStore: ObservableObject {
                 .sink(receiveCompletion: { completion in
                     switch completion {
                     case .finished:
-                        self.forumStatsLoadingProcess?.cancel()
+                        self.cancelForumStatsLoadingProcess()
                         break
                     case .failure(let error):
+                        #if DEBUG
                         print("error: ", error)
+                        #endif
                         break
                     }
                     processingRequestsTaskGroup.leave()
@@ -73,59 +85,69 @@ class ForumOtherDataStore: ObservableObject {
     }
     
     func followGame(gameId: Int) {
+        if self.followLoadingProcess != nil {
+            return
+        }
+        
         let url = API.generateURL(resource: Resource.games, endPoint: EndPoint.followGameByGameId, detail: String(gameId))
         let request = API.generateRequest(url: url!, method: .POST)
         
         self.API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
             self.followLoadingProcess = session.dataTaskPublisher(for: request)
                 .receive(on: RunLoop.main)
                 .sink(receiveCompletion: { completion in
                     switch completion {
                     case .finished:
-                        self.followLoadingProcess?.cancel()
                         self.isFollowed = true
                         self.followerCount! += 1
+                        self.cancelFollowLoadingProcess()
                         break
                     case .failure(let error):
+                        #if DEBUG
                         print("error: ", error)
+                        #endif
                         break
                     }
                     processingRequestsTaskGroup.leave()
                 }, receiveValue: { _ in
-                    print("done")
                 })
         }
     }
     
     func unfollowGame(gameId: Int) {
+        if self.followLoadingProcess != nil {
+            return
+        }
+        
         let url = API.generateURL(resource: Resource.games, endPoint: EndPoint.unfollowGameByGameId, detail: String(gameId))
         let request = API.generateRequest(url: url!, method: .POST)
         
         self.API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
-            self.followLoadingProcess? = session.dataTaskPublisher(for: request)
+            self.followLoadingProcess = session.dataTaskPublisher(for: request)
                 .receive(on: RunLoop.main)
                 .sink(receiveCompletion: { completion in
                     switch completion {
                     case .finished:
-                        self.followLoadingProcess?.cancel()
                         self.isFollowed = false
                         self.followerCount! -= 1
+                        self.cancelFollowLoadingProcess()
                         break
                     case .failure(let error):
+                        #if DEBUG
                         print("error: ", error)
+                        #endif
                         break
                     }
                     processingRequestsTaskGroup.leave()
                 }, receiveValue: { _ in
-                    print("done")
                 })
         }
     }
@@ -138,8 +160,9 @@ class ForumDataStore: ObservableObject {
     var game: Game
     
     let API = APIClient()
-    var cancellableSet: Set<AnyCancellable> = []
-    var loadingProcess: AnyCancellable?
+    private var cancellableSet: Set<AnyCancellable> = []
+    private var loadingProcess: AnyCancellable?
+    private var submitThreadProcess: AnyCancellable?
     
     init(game: Game) {
         self.threadsList = nil
@@ -151,12 +174,17 @@ class ForumDataStore: ObservableObject {
     deinit {
         cancelLoadingProcess()
         cancellableSet.forEach { $0.cancel() }
+        cancellableSet = []
     }
-    
     
     func cancelLoadingProcess() {
         loadingProcess?.cancel()
         loadingProcess = nil
+    }
+    
+    func cancelSubmitThreadProcess() {
+        submitThreadProcess?.cancel()
+        submitThreadProcess = nil
     }
     
     func insertGameHistory() {
@@ -170,20 +198,24 @@ class ForumDataStore: ObservableObject {
         let request = API.generateRequest(url: url!, method: .POST)
         
         self.API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
             session.dataTaskPublisher(for: request)
                 .receive(on: RunLoop.main)
                 .sink(receiveCompletion: { completion in
                     switch completion {
                     case .finished:
+                        #if DEBUG
                         print("success - added to game history")
+                        #endif
                         processingRequestsTaskGroup.leave()
                         break
                     case .failure(let error):
+                        #if DEBUG
                         print("error: ", error)
+                        #endif
                         processingRequestsTaskGroup.leave()
                         break
                     }
@@ -215,9 +247,9 @@ class ForumDataStore: ObservableObject {
         let request = API.generateRequest(url: url!, method: .GET)
         
         self.API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
             self.loadingProcess = session.dataTaskPublisher(for: request)
                 .map(\.data)
@@ -231,7 +263,9 @@ class ForumDataStore: ObservableObject {
                         processingRequestsTaskGroup.leave()
                         break
                     case .failure(let error):
+                        #if DEBUG
                         print("error: ", error)
+                        #endif
                         processingRequestsTaskGroup.leave()
                         break
                     }
@@ -284,6 +318,10 @@ class ForumDataStore: ObservableObject {
     func submitThread(forumDataStore: ForumDataStore, title: String, flair: Int, content: NSTextStorage, imageData: [UUID: Data], imagesArray: [UUID], userId:
         Int, containerWidth: CGFloat, forumOtherDataStore: ForumOtherDataStore, maxImageHeight: CGFloat) {
         
+        if self.submitThreadProcess != nil {
+            return
+        }
+        
         let cloudinary = CLDCloudinary(configuration: CLDConfiguration(cloudName: "dzengcdn", apiKey: "348513889264333", secure: true))
         let taskGroup = DispatchGroup()
         var imageUrls: [String] = []
@@ -320,21 +358,25 @@ class ForumDataStore: ObservableObject {
             let request = self.API.generateRequest(url: url!, method: .POST, json: json)
             
             self.API.accessTokenRefreshHandler(request: request)
-            let session = self.API.generateSession()
             
             refreshingRequestTaskGroup.notify(queue: .global()) {
+                let session = self.API.generateSession()
                 processingRequestsTaskGroup.enter()
-                session.dataTaskPublisher(for: request)
+                self.submitThreadProcess = session.dataTaskPublisher(for: request)
                     .map(\.data)
                     .decode(type: NewThreadResponse.self, decoder: self.API.getJSONDecoder())
                     .receive(on: RunLoop.main)
                     .sink(receiveCompletion: { completion in
                         switch completion {
                         case .finished:
+                            self.cancelSubmitThreadProcess()
                             processingRequestsTaskGroup.leave()
                             break
                         case .failure(let error):
+                            self.cancelSubmitThreadProcess()
+                            #if DEBUG
                             print("error: ", error)
+                            #endif
                             processingRequestsTaskGroup.leave()
                             break
                         }
@@ -352,7 +394,6 @@ class ForumDataStore: ObservableObject {
                             forumOtherDataStore.threadCount! += 1
                         }
                     })
-                    .store(in: &self.cancellableSet)
             }
         }
     }
@@ -402,6 +443,7 @@ class ThreadDataStore: ObservableObject {
     @ObservedObject private(set) var emojis: EmojiDataStore
     private var emojisSub: AnyCancellable?
     
+    @Published var hasNextPage: Bool = true
     @Published private(set) var isLoadingNextPage: Bool = false
     @Environment(\.imageCache) private var cache: ImageCache
     
@@ -414,6 +456,11 @@ class ThreadDataStore: ObservableObject {
     private let API = APIClient()
     private var cancellableSet: Set<AnyCancellable> = []
     private var loadingProcess: AnyCancellable?
+    
+    private var emojiLoadingProcess: AnyCancellable?
+    private var submitCommentProcess: AnyCancellable?
+    private var hideProcess: AnyCancellable?
+    private var sendReportProcess: AnyCancellable?
     
     private(set) var containerWidth: CGFloat
     private var spacingBetweenImages: CGFloat = 10
@@ -458,6 +505,32 @@ class ThreadDataStore: ObservableObject {
     deinit {
         cancelLoadingProcess()
         cancellableSet.forEach { $0.cancel() }
+        cancellableSet = []
+        
+        self.cancelSubmitCommentProcess()
+        self.cancelEmojiLoadingProcess()
+        self.cancelHideProcess()
+        self.cancelReportProcess()
+    }
+    
+    func cancelSubmitCommentProcess() {
+        self.submitCommentProcess?.cancel()
+        self.submitCommentProcess = nil
+    }
+    
+    func cancelEmojiLoadingProcess() {
+        self.emojiLoadingProcess?.cancel()
+        self.emojiLoadingProcess = nil
+    }
+    
+    func cancelHideProcess() {
+        self.hideProcess?.cancel()
+        self.hideProcess = nil
+    }
+    
+    func cancelReportProcess() {
+        self.sendReportProcess?.cancel()
+        self.sendReportProcess = nil
     }
     
     func calculateImagesDimensions(imageWidths: ImageWidths, imageHeights: ImageHeights, maxImageHeightLimit: CGFloat) {
@@ -535,33 +608,26 @@ class ThreadDataStore: ObservableObject {
     //    }
     
     func loadImages() {
-        let taskGroup = DispatchGroup()
-        
         for index in imageArr {
-            imageLoaders[index]!.load(dispatchGroup: taskGroup)
+            imageLoaders[index]!.load()
         }
     }
     
-    func upvoteByExistingVoteId(taskGroup: DispatchGroup? = nil) {
-        taskGroup?.enter()
-        
-        DispatchQueue.main.async {
-            if self.emojis.isLoading == true {
-                print("Already operating an emoji, abort.")
-                return
-            }
+    func upvoteByExistingVoteId() {
+        if self.emojiLoadingProcess != nil {
+            return
         }
-        
+
         let url = self.API.generateURL(resource: Resource.votes, endPoint: EndPoint.upvoteByExistingVoteId)
         let json: [String: Any] = ["vote_id": self.vote!.id]
         let request = self.API.generateRequest(url: url!, method: .POST, json: json)
         
         self.API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
-            session.dataTaskPublisher(for: request)
+            self.emojiLoadingProcess = session.dataTaskPublisher(for: request)
                 .receive(on: RunLoop.main)
                 .sink(receiveCompletion: { completion in
                     switch completion {
@@ -570,29 +636,25 @@ class ThreadDataStore: ObservableObject {
                         self.vote!.direction = 1
                         self.emojis.addEmojiToStore(emojiId: 0, user: User(id: keychainService.getUserId(), username: keychainService.getUserName()), newEmojiCount: self.thread.upvotes)
                         self.emojis.isLoading = false
-                        taskGroup?.leave()
+                        self.cancelEmojiLoadingProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     case .failure(let error):
+                        #if DEBUG
                         print("error: ", error)
+                        #endif
+                         self.cancelEmojiLoadingProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     }
                 }, receiveValue: { _ in
-                    print("done")
                 })
-                .store(in: &self.cancellableSet)
         }
     }
     
-    func downvoteByExistingVoteId(taskGroup: DispatchGroup? = nil) {
-        taskGroup?.enter()
-        
-        DispatchQueue.main.async {
-            if self.emojis.isLoading == true {
-                print("Already operating an emoji, abort.")
-                return
-            }
+    func downvoteByExistingVoteId() {
+        if self.emojiLoadingProcess != nil {
+            return
         }
         
         let url = self.API.generateURL(resource: Resource.votes, endPoint: EndPoint.downvoteByVoteId)
@@ -600,11 +662,11 @@ class ThreadDataStore: ObservableObject {
         let request = self.API.generateRequest(url: url!, method: .POST, json: json)
         
         self.API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
-            session.dataTaskPublisher(for: request)
+            self.emojiLoadingProcess = session.dataTaskPublisher(for: request)
                 .receive(on: RunLoop.main)
                 .sink(receiveCompletion: { completion in
                     switch completion {
@@ -613,28 +675,26 @@ class ThreadDataStore: ObservableObject {
                         self.vote!.direction = -1
                         self.emojis.addEmojiToStore(emojiId: 1, user: User(id: keychainService.getUserId(), username: keychainService.getUserName()), newEmojiCount: self.thread.downvotes)
                         self.emojis.isLoading = false
-                        taskGroup?.leave()
+                        self.cancelEmojiLoadingProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     case .failure(let error):
+                        #if DEBUG
                         print("error: ", error)
+                        #endif
+                        self.cancelEmojiLoadingProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     }
                 }, receiveValue: { _ in
-                    print("done")
+                    
                 })
-                .store(in: &self.cancellableSet)
         }
     }
     
-    func addNewUpvote(taskGroup: DispatchGroup? = nil) {
-        taskGroup?.enter()
-        DispatchQueue.main.async {
-            if self.emojis.isLoading == true {
-                print("Already operating an emoji, abort.")
-                return
-            }
+    func addNewUpvote() {
+        if self.emojiLoadingProcess != nil {
+            return
         }
         
         let url = self.API.generateURL(resource: Resource.votes, endPoint: EndPoint.addNewUpvoteByThreadId)
@@ -642,41 +702,40 @@ class ThreadDataStore: ObservableObject {
         let request = self.API.generateRequest(url: url!, method: .POST, json: json)
         
         self.API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
-            session.dataTaskPublisher(for: request)
+            self.emojiLoadingProcess = session.dataTaskPublisher(for: request)
                 .map(\.data)
                 .decode(type: Vote.self, decoder: self.API.getJSONDecoder())
                 .receive(on: RunLoop.main)
                 .sink(receiveCompletion: { completion in
                     switch completion {
                     case .finished:
+                        self.cancelEmojiLoadingProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     case .failure(let error):
+                        #if DEBUG
                         print("error: ", error)
+                        #endif
+                        self.cancelEmojiLoadingProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     }
                 }, receiveValue: { [unowned self] vote in
+                    self.vote = vote
                     self.thread.upvotes += 1
                     self.emojis.addEmojiToStore(emojiId: 0, user: User(id: keychainService.getUserId(), username: keychainService.getUserName()), newEmojiCount: self.thread.upvotes)
                     self.emojis.isLoading = false
-                    taskGroup?.leave()
                 })
-                .store(in: &self.cancellableSet)
         }
     }
     
-    func switchUpvote(taskGroup: DispatchGroup? = nil) {
-        taskGroup?.enter()
-        DispatchQueue.main.async {
-            if self.emojis.isLoading == true {
-                print("Already operating an emoji, abort.")
-                return
-            }
+    func switchUpvote() {
+        if self.emojiLoadingProcess != nil {
+            return
         }
         
         let url = self.API.generateURL(resource: Resource.votes, endPoint: EndPoint.switchUpvoteByThreadId)
@@ -684,11 +743,11 @@ class ThreadDataStore: ObservableObject {
         let request = self.API.generateRequest(url: url!, method: .POST, json: json)
         
         self.API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
-            session.dataTaskPublisher(for: request)
+            self.emojiLoadingProcess = session.dataTaskPublisher(for: request)
                 .receive(on: RunLoop.main)
                 .sink(receiveCompletion: { completion in
                     switch completion {
@@ -700,80 +759,80 @@ class ThreadDataStore: ObservableObject {
                         self.emojis.removeEmojiFromStore(emojiId: 1, user: User(id: keychainService.getUserId(), username: keychainService.getUserName()), newEmojiCount: self.thread.downvotes)
                         self.emojis.addEmojiToStore(emojiId: 0, user: User(id: keychainService.getUserId(), username: keychainService.getUserName()), newEmojiCount: self.thread.upvotes)
                         self.emojis.isLoading = false
-                        taskGroup?.leave()
+                        
+                        self.cancelEmojiLoadingProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     case .failure(let error):
+                        #if DEBUG
                         print("error: ", error)
+                        #endif
+                        self.cancelEmojiLoadingProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     }
                 }, receiveValue: { _ in
-                    print("done")
+                    
                 })
-                .store(in: &self.cancellableSet)
         }
     }
     
-    func addNewDownvote(taskGroup: DispatchGroup? = nil) {
-        taskGroup?.enter()
-        DispatchQueue.main.async {
-            if self.emojis.isLoading == true {
-                print("Already operating an emoji, abort.")
-                return
-            }
+    func addNewDownvote() {
+        if self.emojiLoadingProcess != nil {
+            return
         }
+        
         let url = self.API.generateURL(resource: Resource.votes, endPoint: EndPoint.addNewDownvoteByThreadId)
         let json: [String: Any] = ["thread_id": self.thread.id]
         let request = self.API.generateRequest(url: url!, method: .POST, json: json)
         
         self.API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
-            session.dataTaskPublisher(for: request)
+            self.emojiLoadingProcess = session.dataTaskPublisher(for: request)
                 .map(\.data)
                 .decode(type: Vote.self, decoder: self.API.getJSONDecoder())
                 .receive(on: RunLoop.main)
                 .sink(receiveCompletion: { completion in
                     switch completion {
                     case .finished:
+                        self.cancelEmojiLoadingProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     case .failure(let error):
+                        #if DEBUG
                         print("error: ", error)
+                        #endif
+                        self.cancelEmojiLoadingProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     }
                 }, receiveValue: { [unowned self] vote in
+                    self.vote = vote
                     self.thread.downvotes += 1
                     self.emojis.addEmojiToStore(emojiId: 1, user: User(id: keychainService.getUserId(), username: keychainService.getUserName()), newEmojiCount: self.thread.downvotes)
                     self.emojis.isLoading = false
-                    taskGroup?.leave()
                 })
-                .store(in: &self.cancellableSet)
         }
     }
     
-    func switchDownvote(taskGroup: DispatchGroup? = nil) {
-        taskGroup?.enter()
-        DispatchQueue.main.async {
-            if self.emojis.isLoading == true {
-                print("Already operating an emoji, abort.")
-                return
-            }
+    func switchDownvote() {
+        if self.emojiLoadingProcess != nil {
+            return
         }
+        
         let url = self.API.generateURL(resource: Resource.votes, endPoint: EndPoint.switchDownvoteByThreadId)
         let json: [String: Any] = ["vote_id": self.vote!.id]
         let request = self.API.generateRequest(url: url!, method: .POST, json: json)
         
         self.API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
-            session.dataTaskPublisher(for: request)
+            self.emojiLoadingProcess = session.dataTaskPublisher(for: request)
                 .receive(on: RunLoop.main)
                 .sink(receiveCompletion: { completion in
                     switch completion {
@@ -785,28 +844,26 @@ class ThreadDataStore: ObservableObject {
                         self.emojis.removeEmojiFromStore(emojiId: 0, user: User(id: keychainService.getUserId(), username: keychainService.getUserName()), newEmojiCount: self.thread.upvotes)
                         self.emojis.addEmojiToStore(emojiId: 1, user: User(id: keychainService.getUserId(), username: keychainService.getUserName()), newEmojiCount: self.thread.downvotes)
                         self.emojis.isLoading = false
-                        taskGroup?.leave()
+                        self.cancelEmojiLoadingProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     case .failure(let error):
+                        #if DEBUG
                         print("error: ", error)
+                        #endif
+                        self.cancelEmojiLoadingProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     }
                 }, receiveValue: { _ in
-                    print("done")
+                    
                 })
-                .store(in: &self.cancellableSet)
         }
     }
     
-    func addEmojiByThreadId(emojiId: Int, taskGroup: DispatchGroup? = nil) {
-        taskGroup?.enter()
-        DispatchQueue.main.async {
-            if self.emojis.isLoading == true {
-                print("Already operating an emoji, abort.")
-                return
-            }
+    func addEmojiByThreadId(emojiId: Int) {
+        if self.emojiLoadingProcess != nil {
+            return
         }
         
         let url = self.API.generateURL(resource: Resource.emojis, endPoint: EndPoint.addEmojiByThreadId)
@@ -814,11 +871,11 @@ class ThreadDataStore: ObservableObject {
         let request = self.API.generateRequest(url: url!, method: .POST, json: json)
         
         self.API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
-            session.dataTaskPublisher(for: request)
+            self.emojiLoadingProcess = session.dataTaskPublisher(for: request)
                 .map(\.data)
                 .decode(type: EmojiResponse.self, decoder: self.API.getJSONDecoder())
                 .receive(on: RunLoop.main)
@@ -826,40 +883,39 @@ class ThreadDataStore: ObservableObject {
                     switch completion {
                     case .finished:
                         self.emojis.isLoading = false
+                        self.cancelEmojiLoadingProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     case .failure(let error):
                         self.emojis.isLoading = false
+                        #if DEBUG
                         print("error: ", error)
+                        #endif
+                        self.cancelEmojiLoadingProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     }
                 }, receiveValue: { [unowned self] emojiResponse in
                     self.emojis.addEmojiToStore(emojiId: emojiId, user: User(id: keychainService.getUserId(), username: keychainService.getUserName()), newEmojiCount: emojiResponse.newEmojiCount)
-                    taskGroup?.leave()
                 })
-                .store(in: &self.cancellableSet)
         }
     }
     
-    func removeEmojiByThreadId(emojiId: Int, taskGroup: DispatchGroup? = nil) {
-        taskGroup?.enter()
-        DispatchQueue.main.async {
-            if self.emojis.isLoading == true {
-                print("Already operating an emoji, abort.")
-                return
-            }
+    func removeEmojiByThreadId(emojiId: Int) {
+        if self.emojiLoadingProcess != nil {
+            return
         }
+        
         let url = self.API.generateURL(resource: Resource.emojis, endPoint: EndPoint.removeEmojiByThreadId)
         let json: [String: Any] = ["thread_id": self.thread.id, "emoji_id": emojiId]
         let request = self.API.generateRequest(url: url!, method: .POST, json: json)
         
         self.API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
-            session.dataTaskPublisher(for: request)
+            self.emojiLoadingProcess = session.dataTaskPublisher(for: request)
                 .map(\.data)
                 .decode(type: EmojiResponse.self, decoder: self.API.getJSONDecoder())
                 .receive(on: RunLoop.main)
@@ -867,40 +923,38 @@ class ThreadDataStore: ObservableObject {
                     switch completion {
                     case .finished:
                         self.emojis.isLoading = false
+                        self.cancelEmojiLoadingProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     case .failure(let error):
                         self.emojis.isLoading = false
+                        self.cancelEmojiLoadingProcess()
+                        #if DEBUG
                         print("error: ", error)
+                        #endif
                         processingRequestsTaskGroup.leave()
                         break
                     }
                 }, receiveValue: { [unowned self] emojiResponse in
                     self.emojis.removeEmojiFromStore(emojiId: emojiId, user: User(id: keychainService.getUserId(), username: keychainService.getUserName()), newEmojiCount: emojiResponse.newEmojiCount)
-                    taskGroup?.leave()
                 })
-                .store(in: &self.cancellableSet)
         }
     }
     
-    func deleteVote(taskGroup: DispatchGroup? = nil) {
-        taskGroup?.enter()
-        DispatchQueue.main.async {
-            if self.emojis.isLoading == true {
-                print("Already operating an emoji, abort.")
-                return
-            }
+    func deleteVote() {
+        if self.emojiLoadingProcess != nil {
+            return
         }
         let url = self.API.generateURL(resource: Resource.votes, endPoint: EndPoint.deleteVoteByVoteIdThread)
         let json: [String: Any] = ["vote_id": self.vote!.id]
         let request = self.API.generateRequest(url: url!, method: .POST, json: json)
         
         self.API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
-            session.dataTaskPublisher(for: request)
+            self.emojiLoadingProcess = session.dataTaskPublisher(for: request)
                 .receive(on: RunLoop.main)
                 .sink(receiveCompletion: { completion in
                     switch completion {
@@ -917,156 +971,187 @@ class ThreadDataStore: ObservableObject {
                         self.emojis.removeEmojiFromStore(emojiId: originalVoteDirection == 1 ? 0 : 1, user: User(id: keychainService.getUserId(), username: keychainService.getUserName()), newEmojiCount: originalVoteDirection == 1 ? self.thread.upvotes : self.thread.downvotes)
                         
                         self.emojis.isLoading = false
-                        taskGroup?.leave()
+                        self.cancelEmojiLoadingProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     case .failure(let error):
+                        #if DEBUG
                         print("error: ", error)
+                        #endif
+                        self.cancelEmojiLoadingProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     }
                 }, receiveValue: { _ in
-                    print("done")
+                    
                 })
-                .store(in: &self.cancellableSet)
         }
     }
     
-    func sendReportByThreadId(reason: String, taskGroup: DispatchGroup? = nil) {
+    func sendReportByThreadId(reason: String, taskGroup: DispatchGroup?) {
+        if self.sendReportProcess != nil {
+            return
+        }
+        
         taskGroup?.enter()
         let url = self.API.generateURL(resource: Resource.reports, endPoint: EndPoint.addReportByThreadId)
         let json: [String: Any] = ["thread_id": self.thread.id, "report_reason": reason]
         let request = self.API.generateRequest(url: url!, method: .POST, json: json)
         
         self.API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
-            session.dataTaskPublisher(for: request)
+            self.sendReportProcess = session.dataTaskPublisher(for: request)
                 .receive(on: RunLoop.main)
                 .sink(receiveCompletion: { completion in
                     switch completion {
                     case .finished:
                         print("Report has been sent for thread: ", self.thread.id)
-                        taskGroup?.leave()
+                        self.cancelReportProcess()
                         processingRequestsTaskGroup.leave()
+                        taskGroup?.leave()
                         break
                     case .failure(let error):
+                        self.cancelReportProcess()
+                        #if DEBUG
                         print("error: ", error)
+                        #endif
                         processingRequestsTaskGroup.leave()
+                        taskGroup?.leave()
                         break
                     }
                 }, receiveValue: { _ in
-                    print("done")
+                    
                 })
-                .store(in: &self.cancellableSet)
         }
         
     }
     
     func hideThread(threadId: Int) {
+        if self.hideProcess != nil {
+            return
+        }
+        
         let json: [String: Any] = ["hide_thread_id": threadId]
         let url = API.generateURL(resource: Resource.usersProfile, endPoint: EndPoint.hideThreadByUserId)
         let request = API.generateRequest(url: url!, method: .POST, json: json)
         
         self.API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
-            session.dataTaskPublisher(for: request)
+            self.hideProcess = session.dataTaskPublisher(for: request)
                 .receive(on: RunLoop.main)
                 .sink(receiveCompletion: { completion in
                     switch completion {
                     case .finished:
                         self.isHidden = true
+                        self.cancelHideProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     case .failure(let error):
+                        #if DEBUG
                         print("error: ", error)
+                        #endif
+                        self.cancelHideProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     }
                 }, receiveValue: { _ in
-                    print("done")
+                    
                 })
-                .store(in: &self.cancellableSet)
         }
     }
     
     func unhideThread(threadId: Int) {
+        if self.hideProcess != nil {
+            return
+        }
+        
         let json: [String: Any] = ["unhide_thread_id": threadId]
         let url = API.generateURL(resource: Resource.usersProfile, endPoint: EndPoint.unhideThreadByUserId)
         let request = API.generateRequest(url: url!, method: .POST, json: json)
         
         self.API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
-            session.dataTaskPublisher(for: request)
+            self.hideProcess = session.dataTaskPublisher(for: request)
                 .receive(on: RunLoop.main)
                 .sink(receiveCompletion: { completion in
                     switch completion {
                     case .finished:
                         self.isHidden = false
+                        self.cancelHideProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     case .failure(let error):
+                        #if DEBUG
                         print("error: ", error)
+                        #endif
+                        self.cancelHideProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     }
                 }, receiveValue: { _ in
-                    print("done")
+                    
                 })
-                .store(in: &self.cancellableSet)
         }    }
     
     func postMainComment(content: NSTextStorage, containerWidth: CGFloat) {
+        if self.submitCommentProcess != nil {
+            return
+        }
+        
         let params = ["thread_id": String(self.thread.id)]
         let url = API.generateURL(resource: Resource.comments, endPoint: EndPoint.postCommentByThreadId, params: params)
         let json: [String: Any] = ["content_string": content.string, "content_attributes": ["attributes": TextViewHelper.parseTextStorageAttributesAsBitRep(content: content)]]
         let request = API.generateRequest(url: url!, method: .POST, json: json)
         
         self.API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
-            session.dataTaskPublisher(for: request)
+            self.submitCommentProcess = session.dataTaskPublisher(for: request)
                 .map(\.data)
                 .decode(type: NewCommentResponse.self, decoder: self.API.getJSONDecoder())
                 .receive(on: RunLoop.main)
                 .sink(receiveCompletion: { completion in
                     switch completion {
                     case .finished:
+                        self.cancelSubmitCommentProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     case .failure(let error):
+                        #if DEBUG
                         print("error: ", error)
+                        #endif
+                        self.cancelSubmitCommentProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     }
                 }, receiveValue: { [unowned self] tempNewCommentResponse in
                     let tempMainComment = tempNewCommentResponse.commentResponse
                     let tempVote = tempNewCommentResponse.voteResponse
-                    let user = tempNewCommentResponse.userResponse
+//                    let user = tempNewCommentResponse.userResponse
                     
-                    let commentDataStore = CommentDataStore(ancestorThreadId: self.thread.id, gameId: self.gameId, comment: tempMainComment, vote: tempVote, author: User(id: keychainService.getUserId(), username: keychainService.getUserName()), containerWidth: containerWidth)
+                    let commentDataStore = CommentDataStore(ancestorThreadId: self.thread.id, gameId: self.gameId, comment: tempMainComment, vote: tempVote, author: User(id: keychainService.getUserId(), username: keychainService.getUserName()), containerWidth: containerWidth, hasNextPage: false)
                     
                     self.childComments[tempMainComment.id] = commentDataStore
                     self.childCommentList!.insert(tempMainComment.id, at: 0)
                     
                     UIApplication.shared.endEditing()
                 })
-                .store(in: &self.cancellableSet)
         }
     }
     
     func fetchCommentTreeByThreadId(start:Int = 0, count:Int = 20, size:Int = 50, refresh: Bool = false, containerWidth: CGFloat, leadPadding: CGFloat) {
-        if self.loadingProcess != nil {
+        if self.loadingProcess != nil || self.hasNextPage == false {
             return
         }
         
@@ -1078,9 +1163,9 @@ class ThreadDataStore: ObservableObject {
         let url = API.generateURL(resource: Resource.comments, endPoint: EndPoint.getCommentTreeByThreadId, params: params)
         let request = API.generateRequest(url: url!, method: .GET)
         self.API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
             self.loadingProcess = session.dataTaskPublisher(for: request)
                 .map(\.data)
@@ -1094,11 +1179,14 @@ class ThreadDataStore: ObservableObject {
                         processingRequestsTaskGroup.leave()
                         break
                     case .failure(let error):
+                        #if DEBUG
                         print("error: ", error)
+                        #endif
                         processingRequestsTaskGroup.leave()
                         break
                     }
                 }, receiveValue: { [unowned self] serializedComments in
+                    
                     var levelArr = [Int]()
                     var levelStore = [Int: CommentDataStore]()
                     
@@ -1152,7 +1240,7 @@ class ThreadDataStore: ObservableObject {
                             vote = serializedComments.commentsResponse[i].votes[0]
                         }
                         
-                        let commentDataStore = CommentDataStore(ancestorThreadId: self.thread.id, gameId: self.gameId, comment:  serializedComments.commentsResponse[i], vote: vote, author: serializedComments.commentsResponse[i].users[0], containerWidth: containerWidth - leadPadding * CGFloat(levelCount))
+                        let commentDataStore = CommentDataStore(ancestorThreadId: self.thread.id, gameId: self.gameId, comment:  serializedComments.commentsResponse[i], vote: vote, author: serializedComments.commentsResponse[i].users[0], containerWidth: containerWidth - leadPadding * CGFloat(levelCount), hasNextPage: serializedComments.hasNextPage)
                         
                         nextLevelStore[commentId] = commentDataStore
                         
@@ -1184,6 +1272,8 @@ class ThreadDataStore: ObservableObject {
                     } else {
                         self.childCommentList! += firstLevelArr
                     }
+                    
+                    self.hasNextPage = serializedComments.hasNextPage
                 })
         }
     }
@@ -1195,6 +1285,8 @@ class CommentDataStore: ObservableObject {
     @Published var isHidden: Bool = false
     @Published var vote: Vote?
     @Published var isVoting: Bool = false
+    @Published var hasNextPage: Bool
+    @Published var showChildComments: Bool = true
     
     var textStorage: NSTextStorage
     var desiredHeight: CGFloat
@@ -1209,8 +1301,13 @@ class CommentDataStore: ObservableObject {
     private let API = APIClient()
     private var cancellableSet: Set<AnyCancellable> = []
     private var loadingProcess: AnyCancellable?
+    private var submitCommentProcess: AnyCancellable?
+    private var emojiLoadingProcess: AnyCancellable?
+    private var hideProcess: AnyCancellable?
+    private var reportProcess: AnyCancellable?
     
-    init(ancestorThreadId: Int, gameId: Int, comment: Comment, vote: Vote?, author: User, containerWidth: CGFloat) {
+    init(ancestorThreadId: Int, gameId: Int, comment: Comment, vote: Vote?, author: User, containerWidth: CGFloat, hasNextPage: Bool) {
+        self.hasNextPage = hasNextPage
         self.ancestorThreadId = ancestorThreadId
         self.gameId = gameId
         self.comment = comment
@@ -1238,6 +1335,10 @@ class CommentDataStore: ObservableObject {
     deinit {
         cancelLoadingProcess()
         cancellableSet.forEach { $0.cancel() }
+        cancellableSet = []
+        self.cancelHideProcess()
+        self.cancelReportProcess()
+        self.cancelEmojiLoadingProcess()
     }
     
     func cancelLoadingProcess() {
@@ -1245,14 +1346,33 @@ class CommentDataStore: ObservableObject {
         loadingProcess = nil
     }
     
-    func upvoteByExistingVoteId(taskGroup: DispatchGroup? = nil) {
-        taskGroup?.enter()
-        
-        DispatchQueue.main.async {
-            if self.isVoting == true {
-                print("Already operating a vote, abort.")
-                return
-            }
+    func cancelEmojiLoadingProcess() {
+        self.emojiLoadingProcess?.cancel()
+        self.emojiLoadingProcess = nil
+    }
+    
+    func cancelSubmitCommentProcess() {
+        self.submitCommentProcess?.cancel()
+        self.submitCommentProcess = nil
+    }
+    
+    func cancelHideProcess() {
+        self.hideProcess?.cancel()
+        self.hideProcess = nil
+    }
+    
+    func cancelReportProcess() {
+        self.reportProcess?.cancel()
+        self.reportProcess = nil
+    }
+    
+    func toggleShowChildComments() {
+        self.showChildComments.toggle()
+    }
+    
+    func upvoteByExistingVoteId() {
+        if self.emojiLoadingProcess != nil {
+            return
         }
         
         let url = self.API.generateURL(resource: Resource.votes, endPoint: EndPoint.upvoteByExistingVoteId)
@@ -1260,11 +1380,11 @@ class CommentDataStore: ObservableObject {
         let request = self.API.generateRequest(url: url!, method: .POST, json: json)
         
         self.API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
-            session.dataTaskPublisher(for: request)
+            self.emojiLoadingProcess = session.dataTaskPublisher(for: request)
                 .receive(on: RunLoop.main)
                 .sink(receiveCompletion: { completion in
                     switch completion {
@@ -1272,27 +1392,26 @@ class CommentDataStore: ObservableObject {
                         self.comment.upvotes += 1
                         self.vote!.direction = 1
                         self.isVoting = false
-                        taskGroup?.leave()
+                        self.cancelEmojiLoadingProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     case .failure(let error):
+                        #if DEBUG
                         print("error: ", error)
+                        #endif
+                        self.cancelEmojiLoadingProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     }
                 }, receiveValue: { _ in
-                    print("done")
+                    
                 })
-                .store(in: &self.cancellableSet)
         }
     }
     
-    func downvoteByExistingVoteId(taskGroup: DispatchGroup? = nil) {
-        DispatchQueue.main.async {
-            if self.isVoting == true {
-                print("Already operating a vote, abort.")
-                return
-            }
+    func downvoteByExistingVoteId() {
+        if self.emojiLoadingProcess != nil {
+            return
         }
         
         let url = self.API.generateURL(resource: Resource.votes, endPoint: EndPoint.downvoteByVoteId)
@@ -1300,30 +1419,32 @@ class CommentDataStore: ObservableObject {
         let request = self.API.generateRequest(url: url!, method: .POST, json: json)
         
         self.API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
-            session.dataTaskPublisher(for: request)
+            self.emojiLoadingProcess = session.dataTaskPublisher(for: request)
                 .receive(on: RunLoop.main)
-                .sink(receiveCompletion: { completion in
+                .sink(receiveCompletion: { completion in    
                     switch completion {
                     case .finished:
                         self.comment.downvotes += 1
                         self.vote!.direction = -1
                         self.isVoting = false
-                        taskGroup?.leave()
+                        self.cancelEmojiLoadingProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     case .failure(let error):
+                        #if DEBUG
                         print("error: ", error)
+                        #endif
+                        self.cancelEmojiLoadingProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     }
                 }, receiveValue: { _ in
-                    print("done")
+                    
                 })
-                .store(in: &self.cancellableSet)
         }
     }
     
@@ -1334,34 +1455,35 @@ class CommentDataStore: ObservableObject {
         }
     }
     
-    func addNewUpvote(taskGroup: DispatchGroup? = nil) {
-        taskGroup?.enter()
-        DispatchQueue.main.async {
-            if self.isVoting == true {
-                print("Already operating a vote, abort.")
-                return
-            }
+    func addNewUpvote() {
+        if self.emojiLoadingProcess != nil {
+            return
         }
+        
         let url = self.API.generateURL(resource: Resource.votes, endPoint: EndPoint.addNewUpvoteByCommentId)
         let json: [String: Any] = ["comment_id": comment.id]
         let request = self.API.generateRequest(url: url!, method: .POST, json: json)
         
         self.API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
-            session.dataTaskPublisher(for: request)
+            self.emojiLoadingProcess = session.dataTaskPublisher(for: request)
                 .map(\.data)
                 .decode(type: Vote.self, decoder: self.API.getJSONDecoder())
                 .receive(on: RunLoop.main)
                 .sink(receiveCompletion: { completion in
                     switch completion {
                     case .finished:
+                        self.cancelEmojiLoadingProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     case .failure(let error):
+                        #if DEBUG
                         print("error: ", error)
+                        #endif
+                        self.cancelEmojiLoadingProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     }
@@ -1369,19 +1491,13 @@ class CommentDataStore: ObservableObject {
                     self.vote = vote
                     self.comment.upvotes += 1
                     self.isVoting = false
-                    taskGroup?.leave()
                 })
-                .store(in: &self.cancellableSet)
         }
     }
     
-    func switchUpvote(taskGroup: DispatchGroup? = nil) {
-        taskGroup?.enter()
-        DispatchQueue.main.async {
-            if self.isVoting == true {
-                print("Already operating a vote, abort.")
-                return
-            }
+    func switchUpvote() {
+        if self.emojiLoadingProcess != nil {
+            return
         }
         
         let url = self.API.generateURL(resource: Resource.votes, endPoint: EndPoint.switchUpvoteByCommentId)
@@ -1389,11 +1505,11 @@ class CommentDataStore: ObservableObject {
         let request = self.API.generateRequest(url: url!, method: .POST, json: json)
         
         self.API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
-            session.dataTaskPublisher(for: request)
+            self.emojiLoadingProcess = session.dataTaskPublisher(for: request)
                 .receive(on: RunLoop.main)
                 .sink(receiveCompletion: { completion in
                     switch completion {
@@ -1401,51 +1517,53 @@ class CommentDataStore: ObservableObject {
                         self.vote!.direction = 1
                         self.comment.upvotes += 1
                         self.comment.downvotes -= 1
-                        
                         self.isVoting = false
-                        taskGroup?.leave()
+                        self.cancelEmojiLoadingProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     case .failure(let error):
+                        #if DEBUG
                         print("error: ", error)
+                        #endif
+                        self.cancelEmojiLoadingProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     }
                 }, receiveValue: { _ in
-                    print("done")
+                    
                 })
-                .store(in: &self.cancellableSet)
         }
     }
     
-    func addNewDownvote(taskGroup: DispatchGroup? = nil) {
-        taskGroup?.enter()
-        DispatchQueue.main.async {
-            if self.isVoting == true {
-                print("Already operating a vote, abort.")
-                return
-            }
+    func addNewDownvote() {
+        if self.emojiLoadingProcess != nil {
+            return
         }
+        
         let url = self.API.generateURL(resource: Resource.votes, endPoint: EndPoint.addNewDownvoteByCommentId)
         let json: [String: Any] = ["comment_id": self.comment.id]
         let request = self.API.generateRequest(url: url!, method: .POST, json: json)
         
         self.API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
-            session.dataTaskPublisher(for: request)
+            self.emojiLoadingProcess = session.dataTaskPublisher(for: request)
                 .map(\.data)
                 .decode(type: Vote.self, decoder: self.API.getJSONDecoder())
                 .receive(on: RunLoop.main)
                 .sink(receiveCompletion: { completion in
                     switch completion {
                     case .finished:
+                        self.cancelEmojiLoadingProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     case .failure(let error):
+                        #if DEBUG
                         print("error: ", error)
+                        #endif
+                        self.cancelEmojiLoadingProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     }
@@ -1453,30 +1571,24 @@ class CommentDataStore: ObservableObject {
                     self.vote = vote
                     self.comment.downvotes += 1
                     self.isVoting = false
-                    taskGroup?.leave()
                 })
-                .store(in: &self.cancellableSet)
         }
     }
     
-    func switchDownvote(taskGroup: DispatchGroup? = nil) {
-        taskGroup?.enter()
-        DispatchQueue.main.async {
-            if self.isVoting == true {
-                print("Already operating a vote, abort.")
-                return
-            }
+    func switchDownvote() {
+        if self.emojiLoadingProcess != nil {
+            return
         }
         let url = self.API.generateURL(resource: Resource.votes, endPoint: EndPoint.switchDownvoteByCommentId)
         let json: [String: Any] = ["vote_id": self.vote!.id]
         let request = self.API.generateRequest(url: url!, method: .POST, json: json)
         
         self.API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
-            session.dataTaskPublisher(for: request)
+            self.emojiLoadingProcess = session.dataTaskPublisher(for: request)
                 .receive(on: RunLoop.main)
                 .sink(receiveCompletion: { completion in
                     switch completion {
@@ -1485,39 +1597,37 @@ class CommentDataStore: ObservableObject {
                         self.comment.upvotes -= 1
                         self.comment.downvotes += 1
                         self.isVoting = false
-                        taskGroup?.leave()
+                        self.cancelEmojiLoadingProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     case .failure(let error):
+                        #if DEBUG
                         print("error: ", error)
+                        #endif
+                        self.cancelEmojiLoadingProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     }
                 }, receiveValue: { _ in
-                    print("done")
+                    
                 })
-                .store(in: &self.cancellableSet)
         }
     }
     
     func deleteVote(taskGroup: DispatchGroup? = nil) {
-        taskGroup?.enter()
-        DispatchQueue.main.async {
-            if self.isVoting == true {
-                print("Already operating a vote, abort.")
-                return
-            }
+        if self.emojiLoadingProcess != nil {
+            return
         }
         let url = self.API.generateURL(resource: Resource.votes, endPoint: EndPoint.deleteVoteByVoteIdComment)
         let json: [String: Any] = ["vote_id": self.vote!.id]
         let request = self.API.generateRequest(url: url!, method: .POST, json: json)
         
         self.API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
-            session.dataTaskPublisher(for: request)
+            self.emojiLoadingProcess = session.dataTaskPublisher(for: request)
                 .receive(on: RunLoop.main)
                 .sink(receiveCompletion: { completion in
                     switch completion {
@@ -1530,111 +1640,135 @@ class CommentDataStore: ObservableObject {
                         
                         self.vote!.direction = 0
                         self.isVoting = false
-                        taskGroup?.leave()
+                        self.cancelEmojiLoadingProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     case .failure(let error):
+                        #if DEBUG
                         print("error: ", error)
+                        #endif
+                        self.cancelEmojiLoadingProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     }
                 }, receiveValue: { _ in
-                    print("done")
+                    
                 })
-                .store(in: &self.cancellableSet)
         }
         
     }
     
     func sendReportByCommentId(reason: String, taskGroup: DispatchGroup? = nil) {
+        if self.reportProcess != nil {
+            return
+        }
+        
         taskGroup?.enter()
         let url = self.API.generateURL(resource: Resource.reports, endPoint: EndPoint.addReportByCommentId)
         let json: [String: Any] = ["comment_id": self.comment.id, "report_reason": reason]
         let request = self.API.generateRequest(url: url!, method: .POST, json: json)
         
         self.API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
-            session.dataTaskPublisher(for: request)
+            self.reportProcess = session.dataTaskPublisher(for: request)
                 .receive(on: RunLoop.main)
                 .sink(receiveCompletion: { completion in
                     switch completion {
                     case .finished:
                         print("Report has been sent for thread: ", self.comment.id)
+                        self.cancelReportProcess()
                         taskGroup?.leave()
                         processingRequestsTaskGroup.leave()
                         break
                     case .failure(let error):
+                        #if DEBUG
                         print("error: ", error)
+                        #endif
+                        self.cancelReportProcess()
+                        taskGroup?.leave()
                         processingRequestsTaskGroup.leave()
                         break
                     }
                 }, receiveValue: { _ in
-                    print("done")
+                    
                 })
-                .store(in: &self.cancellableSet)
         }
     }
     
     func hideComment() {
+        if self.hideProcess != nil {
+            return
+        }
+        
         let json: [String: Any] = ["hide_comment_id": self.comment.id]
         let url = API.generateURL(resource: Resource.usersProfile, endPoint: EndPoint.hideCommentByUserId)
         let request = API.generateRequest(url: url!, method: .POST, json: json)
         
         self.API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
-            session.dataTaskPublisher(for: request)
+            self.hideProcess = session.dataTaskPublisher(for: request)
                 .receive(on: RunLoop.main)
                 .sink(receiveCompletion: { completion in
                     switch completion {
                     case .finished:
                         self.isHidden = true
+                        self.cancelHideProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     case .failure(let error):
+                        #if DEBUG
                         print("error: ", error)
+                        #endif
+                        self.cancelHideProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     }
                 }, receiveValue: { _ in
-                    print("done")
+                    
                 })
-                .store(in: &self.cancellableSet)
         }
     }
     
     func unhideComment() {
+        if self.hideProcess != nil {
+            return
+        }
+        
         let json: [String: Any] = ["unhide_thread_id": self.comment.id]
         let url = API.generateURL(resource: Resource.usersProfile, endPoint: EndPoint.unhideCommentByUserId)
         let request = API.generateRequest(url: url!, method: .POST, json: json)
         
         self.API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
-            session.dataTaskPublisher(for: request)
+            self.hideProcess = session.dataTaskPublisher(for: request)
                 .receive(on: RunLoop.main)
                 .sink(receiveCompletion: { completion in
                     switch completion {
                     case .finished:
                         self.isHidden = false
+                        self.cancelHideProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     case .failure(let error):
+                        #if DEBUG
                         print("error: ", error)
+                        #endif
+                        self.cancelHideProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     }
                 }, receiveValue: { _ in
-                    print("done")
+                    
                 })
-                .store(in: &self.cancellableSet)
         }
     }
     
@@ -1658,9 +1792,9 @@ class CommentDataStore: ObservableObject {
         let request = API.generateRequest(url: url!, method: .GET)
         
         self.API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
             self.loadingProcess = session.dataTaskPublisher(for: request)
                 .map(\.data)
@@ -1674,7 +1808,9 @@ class CommentDataStore: ObservableObject {
                         processingRequestsTaskGroup.leave()
                         break
                     case .failure(let error):
+                        #if DEBUG
                         print("error: ", error)
+                        #endif
                         processingRequestsTaskGroup.leave()
                         break
                     }
@@ -1732,7 +1868,7 @@ class CommentDataStore: ObservableObject {
                             vote = serializedComments.commentsResponse[i].votes[0]
                         }
                         
-                        nextLevelStore[commentId] = CommentDataStore(ancestorThreadId: self.ancestorThreadId, gameId: self.gameId, comment:  serializedComments.commentsResponse[i], vote: vote, author: serializedComments.commentsResponse[i].users[0], containerWidth: containerWidth - leadPadding * CGFloat(levelCount))
+                        nextLevelStore[commentId] = CommentDataStore(ancestorThreadId: self.ancestorThreadId, gameId: self.gameId, comment:  serializedComments.commentsResponse[i], vote: vote, author: serializedComments.commentsResponse[i].users[0], containerWidth: containerWidth - leadPadding * CGFloat(levelCount), hasNextPage: serializedComments.hasNextPage)
                         
                         if levelCount > 0 {
                             let parentCommentId = levelArr[x]
@@ -1765,9 +1901,9 @@ class CommentDataStore: ObservableObject {
         let request = API.generateRequest(url: url!, method: .POST, json: json)
         
         self.API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
             session.dataTaskPublisher(for: request)
                 .map(\.data)
@@ -1780,7 +1916,9 @@ class CommentDataStore: ObservableObject {
                         processingRequestsTaskGroup.leave()
                         break
                     case .failure(let error):
+                        #if DEBUG
                         print("error: ", error)
+                        #endif
                         processingRequestsTaskGroup.leave()
                         break
                     }
@@ -1789,7 +1927,7 @@ class CommentDataStore: ObservableObject {
                     let tempVote = tempNewCommentResponse.voteResponse
                     let user = tempNewCommentResponse.userResponse
                     
-                    let commentDataStore = CommentDataStore(ancestorThreadId: self.ancestorThreadId, gameId: self.gameId, comment: tempChildComment, vote: tempVote, author: user, containerWidth: containerWidth)
+                    let commentDataStore = CommentDataStore(ancestorThreadId: self.ancestorThreadId, gameId: self.gameId, comment: tempChildComment, vote: tempVote, author: user, containerWidth: containerWidth, hasNextPage: false)
                     
                     self.childComments[tempChildComment.id] = commentDataStore
                     

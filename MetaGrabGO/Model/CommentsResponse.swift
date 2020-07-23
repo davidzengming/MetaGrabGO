@@ -11,4 +11,5 @@ import Foundation
 struct CommentsResponse: Hashable, Codable {
     var commentsResponse: [Comment]
     var commentBreaksArr: [Int]
+    var hasNextPage: Bool
 }

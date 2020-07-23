@@ -12,17 +12,17 @@ extension String {
     func index(from: Int) -> Index {
         return self.index(startIndex, offsetBy: from)
     }
-
+    
     func substring(from: Int) -> String {
         let fromIndex = index(from: from)
         return String(self[fromIndex...])
     }
-
+    
     func substring(to: Int) -> String {
         let toIndex = index(from: to)
         return String(self[..<toIndex])
     }
-
+    
     func substring(with r: Range<Int>) -> String {
         let startIndex = index(from: r.lowerBound)
         let endIndex = index(from: r.upperBound)
@@ -38,13 +38,14 @@ struct TimelineGamesView: View {
     @ObservedObject private var timelineDataStore: TimelineDataStore
     
     private let gameIconWidthMultiplier: CGFloat = 0.35
-    private let goldenRatioConst: CGFloat = 1.618
-    private let widthToHeightRatio: CGFloat = 1.4
-    private let imageSizeHeightRatio: CGFloat = 0.55
+    //    private let goldenRatioConst: CGFloat = 1.618
+    //    private let widthToHeightRatio: CGFloat = 1.4
+    //    private let imageSizeHeightRatio: CGFloat = 0.55
+    //
     
     init(timelineDataStore: TimelineDataStore) {
         self.timelineDataStore = timelineDataStore
-//        print("timeline view created")
+        //        print("timeline view created")
         
         // List related
         UITableView.appearance().backgroundColor = .clear
@@ -72,8 +73,8 @@ struct TimelineGamesView: View {
             appWideAssets.colors["darkButNotBlack"].edgesIgnoringSafeArea(.all)
             
             GeometryReader() { a in
-                List {
-                    if self.timelineDataStore.gamesArr != nil {
+                if self.timelineDataStore.gamesArr != nil {
+                    List {
                         ForEach(self.timelineDataStore.gamesArr!, id: \.self) { gameId in
                             Group {
                                 if self.timelineDataStore.gamesCalendars[gameId]!.isShowingYear {
@@ -120,6 +121,12 @@ struct TimelineGamesView: View {
                                                 .tracking(1)
                                                 .frame(width: a.size.width * 0.2)
                                                 .foregroundColor(Color.white)
+                                        } else {
+                                            // when isShowingDay is updated, there will be an empty space thus shifting the placement of this row
+                                            // add rectangle back to "fill" this gap
+                                            Rectangle()
+                                                .fill(Color.clear)
+                                                .frame(width: a.size.width * 0.2)
                                         }
                                     }
                                     .frame(width: 50)
@@ -168,22 +175,24 @@ struct TimelineGamesView: View {
                                     Rectangle()
                                         .fill(Color.gray)
                                         .frame(width: a.size.width * 0.1, height: a.size.width * 0.005)
-                                    .cornerRadius(5)
-                                    .shadow(radius: 5)
+                                        .cornerRadius(5)
+                                        .shadow(radius: 5)
                                     
                                     Spacer()
                                     
                                     GameFeedTimelineIcon(imageLoader: ImageLoader(url: self.globalGamesDataStore.games[gameId]!.icon, cache: self.cache, whereIsThisFrom: "timeline view, game:" + String(gameId)), game: self.globalGamesDataStore.games[gameId]!)
-                                        .frame(width: a.size.width * self.gameIconWidthMultiplier, height: a.size.width * self.gameIconWidthMultiplier * 1 / self.widthToHeightRatio / self.imageSizeHeightRatio * 0.8)
+                                        .frame(width: a.size.width * self.gameIconWidthMultiplier, height: a.size.width * self.gameIconWidthMultiplier * 1)
                                         .padding(.vertical, 10)
-                                    .shadow(radius: 5)
-                                    .onAppear() {
-                                        if self.timelineDataStore.gamesArr?.first == gameId {
-                                            self.loadPrevPage()
-                                        }
-                                        if self.timelineDataStore.gamesArr!.last == gameId {
-                                            self.loadNextPage()
-                                        }
+                                        .shadow(radius: 5)
+                                        .onAppear() {
+                                            print("hello", gameId)
+                                            if self.timelineDataStore.gamesArr!.first == gameId {
+                                                self.loadPrevPage()
+                                            }
+                                            if self.timelineDataStore.gamesArr!.last == gameId {
+                                                self.loadNextPage()
+                                            }
+                                            
                                     }
                                     Spacer()
                                 }
@@ -194,6 +203,7 @@ struct TimelineGamesView: View {
                         }
                     }
                 }
+                
             }
         }
         .onAppear() {
@@ -204,6 +214,7 @@ struct TimelineGamesView: View {
             }
         }
     }
+    
 }
 
 struct DummyLoadView: View {

@@ -43,18 +43,37 @@ final class RecentFollowDataStore: ObservableObject {
 
 final class HomeGamesDataStore: ObservableObject {
     @Published var isLoaded: Bool
-    
-    private var cancellableSet: Set<AnyCancellable> = []
+
     private let API = APIClient()
+    
+    private var gameHistoryProcess: AnyCancellable?
+    private var followGameProcess: AnyCancellable?
     
     init() {
         self.isLoaded = false
     }
     
+    deinit {
+        self.cancelGameHistoryProcess()
+        self.cancelFollowGameProcess()
+    }
+    
+    func cancelGameHistoryProcess() {
+        self.gameHistoryProcess?.cancel()
+        self.gameHistoryProcess = nil
+    }
+    
+    func cancelFollowGameProcess() {
+        self.followGameProcess?.cancel()
+        self.followGameProcess = nil
+    }
+    
     func updateGameHistory(visitedGamesDataStore: VisitedGamesDataStore, recentFollowDataStore: RecentFollowDataStore) {
         if recentFollowDataStore.recentVisitGames != visitedGamesDataStore.visitedGamesId {
             DispatchQueue.main.async {
-                visitedGamesDataStore.visitedGamesId = recentFollowDataStore.recentVisitGames
+                withAnimation {
+                    visitedGamesDataStore.visitedGamesId = recentFollowDataStore.recentVisitGames
+                }
             }
         }
     }
@@ -69,7 +88,9 @@ final class HomeGamesDataStore: ObservableObject {
             }
             
             DispatchQueue.main.async {
-                followGamesDataStore.followedGamesId = newFollowGamesList
+                withAnimation {
+                    followGamesDataStore.followedGamesId = newFollowGamesList
+                }
             }
         }
     }
@@ -82,21 +103,26 @@ final class HomeGamesDataStore: ObservableObject {
         let request = API.generateRequest(url: url!, method: .GET, json: nil)
         
         API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
-            session.dataTaskPublisher(for: request)
+
+            self.followGameProcess = session.dataTaskPublisher(for: request)
                 .map(\.data)
                 .decode(type: [Game].self, decoder: self.API.getJSONDecoder())
                 .receive(on: RunLoop.main)
                 .sink(receiveCompletion: { completion in
                     switch completion {
                     case .finished:
+                        self.cancelFollowGameProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     case .failure(let error):
+                        #if DEBUG
                         print("error: ", error)
+                        #endif
+                        self.cancelFollowGameProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     }
@@ -121,7 +147,6 @@ final class HomeGamesDataStore: ObservableObject {
                     
                     taskGroup?.leave()
                 })
-                .store(in: &self.cancellableSet)
         }
     }
     
@@ -132,21 +157,25 @@ final class HomeGamesDataStore: ObservableObject {
         let request = API.generateRequest(url: url!, method: .GET, json: nil)
         
         API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
-            session.dataTaskPublisher(for: request)
+            self.gameHistoryProcess = session.dataTaskPublisher(for: request)
                 .map(\.data)
                 .decode(type: GameHistoryResponse.self, decoder: self.API.getJSONDecoder())
                 .receive(on: RunLoop.main)
                 .sink(receiveCompletion: { completion in
                     switch completion {
                     case .finished:
+                        self.cancelGameHistoryProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     case .failure(let error):
+                        #if DEBUG
                         print("error: ", error)
+                        #endif
+                        self.cancelGameHistoryProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     }
@@ -168,7 +197,6 @@ final class HomeGamesDataStore: ObservableObject {
                     }
                     taskGroup?.leave()
                 })
-                .store(in: &self.cancellableSet)
         }
     }
 }

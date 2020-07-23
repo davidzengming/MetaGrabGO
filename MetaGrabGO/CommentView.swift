@@ -13,6 +13,7 @@ import SwiftUI
 struct CommentView : View {
     @ObservedObject private var commentDataStore: CommentDataStore
     @State private var isEditable: Bool = false
+    @State private var rotation = 0.0
     
     private var ancestorThreadId: Int
     private let formatter = RelativeDateTimeFormatter()
@@ -30,6 +31,9 @@ struct CommentView : View {
     private var togglePickedCommentId: (CommentDataStore?, CGFloat) -> Void
     private var toggleDidBecomeFirstResponder: () -> Void
     
+    private let avatarWidth = UIFont.preferredFont(forTextStyle: .body).pointSize * 2
+    private let avatarPadding: CGFloat = 10
+    
     init(commentDataStore: CommentDataStore, ancestorThreadId: Int, width: CGFloat, height: CGFloat, leadPadding: CGFloat, level: Int, turnBottomPopup: @escaping (Bool) -> Void, toggleBottomBarState: @escaping (BottomBarState) -> Void, togglePickedUser: @escaping (User) -> Void, togglePickedCommentId: @escaping (CommentDataStore?, CGFloat) -> Void, toggleDidBecomeFirstResponder: @escaping () -> Void) {
         self.commentDataStore = commentDataStore
         self.ancestorThreadId = ancestorThreadId
@@ -43,7 +47,7 @@ struct CommentView : View {
         self.togglePickedUser = togglePickedUser
         self.togglePickedCommentId = togglePickedCommentId
         self.toggleDidBecomeFirstResponder = toggleDidBecomeFirstResponder
-//        print("comment view was created: ", self.commentDataStore.comment.id)
+        //        print("comment view was created: ", self.commentDataStore.comment.id)
     }
     
     private func onClickUser() {
@@ -123,19 +127,18 @@ struct CommentView : View {
                             VStack(alignment: .trailing, spacing: 0) {
                                 VStack(alignment: .trailing, spacing: 0) {
                                     HStack(spacing: 0) {
-                                        HStack {
+                                        HStack(spacing: avatarPadding) {
                                             VStack(spacing: 0) {
                                                 Image(systemName: "person.circle.fill")
                                                     .resizable()
                                                     .aspectRatio(contentMode: .fit)
                                                     .foregroundColor(Color.orange)
                                             }
-                                            .frame(height: UIFont.preferredFont(forTextStyle: .body).pointSize * 2)
+                                            .frame(height: self.avatarWidth)
                                             
                                             VStack(alignment: .leading, spacing: 0) {
                                                 HStack {
                                                     Text(self.commentDataStore.author.username)
-                                                        .fontWeight(.medium)
                                                         .onTapGesture {
                                                             self.onClickUser()
                                                     }
@@ -184,15 +187,13 @@ struct CommentView : View {
                                     }
                                     .padding(.vertical, 5)
                                     
-                                    Button(action: {self.togglePickedCommentId(self.commentDataStore, self.width - self.leadPadding - 10 - self.leadLineWidth - 20)
+                                    Button(action: {self.togglePickedCommentId(self.commentDataStore, self.width - self.leadPadding - 10 - self.leadLineWidth - 20 - self.avatarWidth - self.avatarPadding)
                                         self.toggleDidBecomeFirstResponder()}) {
                                             FancyPantsEditorView(existedTextStorage: self.$commentDataStore.textStorage, desiredHeight: self.$commentDataStore.desiredHeight, newTextStorage: .constant(NSTextStorage(string: "")), isEditable: self.$isEditable, isFirstResponder: .constant(false), didBecomeFirstResponder: .constant(false), showFancyPantsEditorBar: .constant(false), isNewContent: false, isThread: false, isOmniBar: false, width: self.width, height: self.height)
-                                                
-                                                .frame(height: self.commentDataStore.desiredHeight + (self.isEditable ? 20 : 0), alignment: .leading)
+                                                .frame(width: self.width - self.leadPadding - (self.level > 0 ? self.leadLineWidth + 10: 0) - self.avatarWidth - self.avatarPadding, height: self.commentDataStore.desiredHeight + (self.isEditable ? 20 : 0), alignment: .leading)
                                                 .padding(.top, 10)
                                                 .padding(.bottom, 5)
                                     }
-                                    
                                     
                                     HStack {
                                         HStack {
@@ -221,10 +222,27 @@ struct CommentView : View {
                                             }
                                         }
                                         
+                                        if self.commentDataStore.comment.numChilds > 0 || self.commentDataStore.childCommentList.count > 0 {
+                                            HStack {
+                                                Image(systemName: "arrowtriangle.down.fill")
+                                                    .onTapGesture {
+                                                        if self.commentDataStore.showChildComments {
+                                                            self.rotation = -90
+                                                        } else {
+                                                            self.rotation = 0
+                                                        }
+                                                        self.commentDataStore.toggleShowChildComments()
+                                                }
+                                                .rotationEffect(.degrees(rotation))
+                                                .animation(.easeIn)
+                                                Text(String(self.commentDataStore.childCommentList.count))
+                                            }
+                                        }
+                                        
                                         Spacer()
                                     }
                                     .foregroundColor(.gray)
-                                    .frame(height: 20)
+                                    .frame(width: self.width - self.leadPadding - (self.level > 0 ? self.leadLineWidth + 10: 0) - self.avatarWidth - self.avatarPadding, height: 20)
                                 }
                             }
                             .frame(width: self.width - self.leadPadding - (self.level > 0 ? self.leadLineWidth + 10: 0), height: self.height * 0.04 + self.commentDataStore.desiredHeight + (self.isEditable ? 20 : 0) + 10 + 20 + 10 + 5, alignment: .leading)
@@ -236,25 +254,27 @@ struct CommentView : View {
             .frame(width: self.width)
             .modifier(CenterModifier())
             
-            if self.commentDataStore.childCommentList.count < self.commentDataStore.comment.numChilds {
-                if self.commentDataStore.isLoadingNextPage == true {
-                    ActivityIndicator()
-                        .frame(width: self.width * 0.1, height: self.height * 0.1)
+            if self.commentDataStore.showChildComments == true {
+                if self.commentDataStore.childCommentList.count < self.commentDataStore.comment.numChilds {
+                    if self.commentDataStore.isLoadingNextPage == true {
+                        ActivityIndicator()
+                            .frame(width: self.width * 0.1, height: self.height * 0.1)
+                            .modifier(CenterModifier())
+                            .foregroundColor(appWideAssets.colors["darkButNotBlack"]!)
+                    } else {
+                        HStack {
+                            Spacer()
+                            MoreCommentsView(commentDataStore: self.commentDataStore, width: self.width - self.leadPadding - 10 - self.leadLineWidth - 20, leadLineWidth: self.leadLineWidth, verticalPadding: self.verticalPadding, level: self.level + 1)
+                        }
+                        .frame(width: self.width)
                         .modifier(CenterModifier())
-                        .foregroundColor(appWideAssets.colors["darkButNotBlack"]!)
-                } else {
-                    HStack {
-                        Spacer()
-                        MoreCommentsView(commentDataStore: self.commentDataStore, width: self.width - self.leadPadding - 10 - self.leadLineWidth - 20, leadLineWidth: self.leadLineWidth, verticalPadding: self.verticalPadding, level: self.level + 1)
                     }
-                    .frame(width: self.width)
-                    .modifier(CenterModifier())
                 }
-            }
-            
-            if self.commentDataStore.childCommentList.count > 0 {
-                ForEach(self.commentDataStore.childCommentList, id: \.self) { commentId in
-                    CommentView(commentDataStore: self.commentDataStore.childComments[commentId]!, ancestorThreadId: self.ancestorThreadId, width: self.width, height: self.height, leadPadding: self.leadPadding + 20, level: self.level + 1, turnBottomPopup: { state in self.turnBottomPopup(state) }, toggleBottomBarState: { state in self.toggleBottomBarState(state) }, togglePickedUser: { user in self.togglePickedUser(user) }, togglePickedCommentId: { (commentId, futureContainerWidth) in self.togglePickedCommentId(commentId, futureContainerWidth) }, toggleDidBecomeFirstResponder: self.toggleDidBecomeFirstResponder)
+                
+                if self.commentDataStore.childCommentList.count > 0 {
+                    ForEach(self.commentDataStore.childCommentList, id: \.self) { commentId in
+                        CommentView(commentDataStore: self.commentDataStore.childComments[commentId]!, ancestorThreadId: self.ancestorThreadId, width: self.width, height: self.height, leadPadding: self.leadPadding + 20, level: self.level + 1, turnBottomPopup: { state in self.turnBottomPopup(state) }, toggleBottomBarState: { state in self.toggleBottomBarState(state) }, togglePickedUser: { user in self.togglePickedUser(user) }, togglePickedCommentId: { (commentId, futureContainerWidth) in self.togglePickedCommentId(commentId, futureContainerWidth) }, toggleDidBecomeFirstResponder: self.toggleDidBecomeFirstResponder)
+                    }
                 }
             }
         }

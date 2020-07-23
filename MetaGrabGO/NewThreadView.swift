@@ -21,6 +21,7 @@ struct NewThreadView: View {
     @ObservedObject var forumOtherDataStore: ForumOtherDataStore
     
     var containerWidth: CGFloat
+    var maxImageHeight: CGFloat
     
     @State private var title: String = ""
     @State private var flair = 0
@@ -36,13 +37,14 @@ struct NewThreadView: View {
     
     private let maxNumImages = 3
     
-    init(forumDataStore: ForumDataStore, forumOtherDataStore: ForumOtherDataStore, containerWidth: CGFloat) {
+    init(forumDataStore: ForumDataStore, forumOtherDataStore: ForumOtherDataStore, containerWidth: CGFloat, maxImageHeight: CGFloat) {
         self.forumDataStore = forumDataStore
         self.forumOtherDataStore = forumOtherDataStore
         self.containerWidth = containerWidth
+        self.maxImageHeight = maxImageHeight
     }
     
-    func submitThread(maxImageHeight: CGFloat) {
+    func submitThread() {
         if self.showImagePicker == true {
             self.showImagePicker = false
             self.forumDataStore.submitThread(forumDataStore: self.forumDataStore, title: self.title, flair: self.flair, content: self.content, imageData: self.dataDict, imagesArray: self.imagesArray, userId: keychainService.getUserId(), containerWidth: self.containerWidth, forumOtherDataStore: self.forumOtherDataStore, maxImageHeight: maxImageHeight)
@@ -62,6 +64,15 @@ struct NewThreadView: View {
         if imagesDict[imagesArray.last!] != nil {
             imagesArray.append(UUID())
         }
+    }
+    
+    var submitButton: some View {
+        return Button(action: { self.submitThread() }) {
+            Text("Submit")
+                // MARK: Inconsistent color unless specified
+                .foregroundColor(Color.white)
+        }
+        .buttonStyle(PlainButtonStyle())
     }
     
     var body: some View {
@@ -146,11 +157,8 @@ struct NewThreadView: View {
                     .transition(.move(edge: .bottom))
                     .animation(.default)
             }
-                
-            .navigationBarTitle(Text("Post to \(self.forumDataStore.game.name)"))
-            .navigationBarItems(trailing: Button(action: { self.submitThread(maxImageHeight: a.size.height * 0.15) }) {
-                Text("Submit")
-            })
         }
+        .navigationBarTitle(Text("Post to \(self.forumDataStore.game.name)"))
+        .navigationBarItems(trailing: submitButton)
     }
 }

@@ -63,6 +63,7 @@ struct UserProfileView: View {
                                 .aspectRatio(contentMode: .fit)
                                 .frame(width: 30, height: 30)
                                 .foregroundColor(Color.orange)
+                            
                         }
                         
                         VStack(alignment: .trailing, spacing: 0) {
@@ -70,7 +71,16 @@ struct UserProfileView: View {
                         }
                     }
                     .foregroundColor(Color.white)
-                    .padding()
+                    .padding(.horizontal)
+                    .padding(.top)
+                    HStack(alignment: .top) {
+                        Spacer()
+                        Button(action: self.logout) {
+                            Text("Logout")
+                            .padding(.horizontal)
+                            .foregroundColor(Color.white)
+                        }
+                    }
                     
                     ScrollView {
                         VStack {
@@ -192,17 +202,6 @@ struct UserProfileView: View {
                             .frame(width: a.size.width * 0.9)
                             .background(appWideAssets.colors["notQuiteBlack"])
                             .padding()
-                            
-                            VStack {
-                                Button(action: self.logout) {
-                                    Text("LOGOUT")
-                                    .padding()
-                                    .background(Color.red)
-                                    .foregroundColor(Color.white)
-                                    .cornerRadius(10)
-                                }
-                            }
-                            .padding(50)
                         }
                         .frame(width: a.size.width, height: a.size.height)
                         .foregroundColor(Color.white)

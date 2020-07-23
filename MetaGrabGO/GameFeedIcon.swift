@@ -44,7 +44,7 @@ struct GameFeedIcon : View {
                         Image(systemName: "gamecontroller.fill")
                             .resizable()
                             .aspectRatio(contentMode: .fit)
-                            .padding(a.size.width * 0.07)
+                            .padding(a.size.width * 0.065)
                             .foregroundColor(Color.orange)
                     }
                     .frame(width: a.size.width / 2, height: a.size.height * 0.25)
@@ -60,7 +60,7 @@ struct GameFeedIcon : View {
                         Image(systemName: "text.bubble.fill")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                        .padding(a.size.width * 0.07)
+                        .padding(a.size.width * 0.065)
                         .frame(width: a.size.width / 2, height: a.size.height * 0.25)
                     }
                 }
@@ -106,7 +106,7 @@ struct GameFeedTimelineIcon : View {
                         Image(systemName: "gamecontroller.fill")
                             .resizable()
                             .aspectRatio(contentMode: .fit)
-                            .padding(a.size.width * 0.07)
+                            .padding(a.size.width * 0.065)
                             .foregroundColor(Color.orange)
                     }
                     .frame(width: a.size.width / 2, height: a.size.height * 0.25)
@@ -120,7 +120,7 @@ struct GameFeedTimelineIcon : View {
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .foregroundColor(Color.blue)
-                        .padding(a.size.width * 0.07)
+                        .padding(a.size.width * 0.065)
                         
                         .frame(width: a.size.width / 2, height: a.size.height * 0.25)
                         

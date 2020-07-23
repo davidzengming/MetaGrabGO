@@ -20,6 +20,7 @@ struct Comment: Hashable, Codable, Identifiable {
     var numChilds: Int
     var numSubtreeNodes: Int
     var created: Date
+    var hasNextPage: Bool
 //    var emojis: Emojis?
     var votes: [Vote]
     var users: [User]

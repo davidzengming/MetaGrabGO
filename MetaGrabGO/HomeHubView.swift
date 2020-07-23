@@ -19,11 +19,11 @@ struct FrontHubView: View {
     @Binding var selectedTab: Int
     
     private let gameIconWidthMultiplier: CGFloat = 0.35
-    private let goldenRatioConst: CGFloat = 1.618
-    private let widthToHeightRatio: CGFloat = 1.4
-    
-    private let imageSizeHeightRatio: CGFloat = 0.55
-    
+//    private let goldenRatioConst: CGFloat = 1.618
+//    private let widthToHeightRatio: CGFloat = 1.4
+//
+//    private let imageSizeHeightRatio: CGFloat = 0.55
+//
     init(homeGamesDataStore: HomeGamesDataStore, followGamesDataStore: FollowGamesDataStore, visitedGamesDataStore: VisitedGamesDataStore, selectedTab: Binding<Int>) {
         self.homeGamesDataStore = homeGamesDataStore
         self.followGamesDataStore = followGamesDataStore
@@ -59,15 +59,17 @@ struct FrontHubView: View {
                                             ForEach(self.visitedGamesDataStore.visitedGamesId, id: \.self) { gameId in
                                                 VStack {
                                                     GameFeedIcon(imageLoader: ImageLoader(url: self.globalGamesDataStore.games[gameId]!.icon, cache: self.cache, whereIsThisFrom: "front view, game:" + String(gameId)), game: self.globalGamesDataStore.games[gameId]!)
-                                                        .frame(width: a.size.width * self.gameIconWidthMultiplier, height: a.size.width * self.gameIconWidthMultiplier * 1 / self.widthToHeightRatio / self.imageSizeHeightRatio * 0.8)
+                                                        .frame(width: a.size.width * self.gameIconWidthMultiplier, height: a.size.width * self.gameIconWidthMultiplier * 1)
                                                         .shadow(radius: 5)
                                                 }
                                             }
                                         }
-                                        .frame(height: a.size.width * self.gameIconWidthMultiplier * 1 / self.widthToHeightRatio / self.imageSizeHeightRatio)
+                                        .frame(height: a.size.width * self.gameIconWidthMultiplier * 1 * 1.2)
+                                        .animation(.default)
                                     }
                                 }
                                 .padding(.bottom, 50)
+                                
                             } else {
                                 HStack {
                                     Spacer()
@@ -97,7 +99,7 @@ struct FrontHubView: View {
                                         }
                                         .foregroundColor(Color.white)
                                     }
-                                    .frame(width: a.size.width * 0.9, height: a.size.width * self.gameIconWidthMultiplier * 1 / self.widthToHeightRatio / self.imageSizeHeightRatio * 0.8)
+                                    .frame(width: a.size.width * 0.9, height: a.size.width * self.gameIconWidthMultiplier * 1)
                                     .overlay(
                                         RoundedRectangle(cornerRadius: 8)
                                             .strokeBorder(
@@ -126,14 +128,16 @@ struct FrontHubView: View {
                                             ForEach(self.followGamesDataStore.followedGamesId, id: \.self) { gameId in
                                                 VStack {
                                                     GameFeedIcon(imageLoader: ImageLoader(url: self.globalGamesDataStore.games[gameId]!.icon, cache: self.cache, whereIsThisFrom: "front view, game:" + String(gameId)), game: self.globalGamesDataStore.games[gameId]!)
-                                                        .frame(width: a.size.width * self.gameIconWidthMultiplier, height: a.size.width * self.gameIconWidthMultiplier * 1 / self.widthToHeightRatio / self.imageSizeHeightRatio * 0.8)
+                                                        .frame(width: a.size.width * self.gameIconWidthMultiplier, height: a.size.width * self.gameIconWidthMultiplier * 1)
                                                         .shadow(radius: 5)
                                                 }
                                             }
                                         }
-                                        .frame(height: a.size.width * self.gameIconWidthMultiplier * 1 / self.widthToHeightRatio / self.imageSizeHeightRatio)
+                                        .frame(height: a.size.width * self.gameIconWidthMultiplier * 1 * 1.2)
+                                        .animation(.default)
                                     }
                                 }
+                                
                             } else {
                                 HStack {
                                     Spacer()
@@ -164,7 +168,7 @@ struct FrontHubView: View {
                                         }
                                         .foregroundColor(Color.white)
                                     }
-                                    .frame(width: a.size.width * 0.9, height: a.size.width * self.gameIconWidthMultiplier * 1 / self.widthToHeightRatio / self.imageSizeHeightRatio * 0.8)
+                                    .frame(width: a.size.width * 0.9, height: a.size.width * self.gameIconWidthMultiplier * 1)
                                     .overlay(
                                         RoundedRectangle(cornerRadius: 8)
                                             .strokeBorder(

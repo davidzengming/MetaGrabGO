@@ -29,9 +29,8 @@ final class BlockHiddenDataStore: ObservableObject {
         let request = API.generateRequest(url: url!, method: .POST, json: json)
 
         API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
-
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
             session.dataTaskPublisher(for: request)
             .map(\.data)
@@ -44,12 +43,14 @@ final class BlockHiddenDataStore: ObservableObject {
                     processingRequestsTaskGroup.leave()
                     break
                 case .failure(let error):
+                    #if DEBUG
                     print("error: ", error)
+                    #endif
                     processingRequestsTaskGroup.leave()
                     break
                 }
             }, receiveValue: { _ in
-                print("done") })
+            })
             .store(in: &self.cancellableSet)
         }
     }
@@ -60,9 +61,9 @@ final class BlockHiddenDataStore: ObservableObject {
         let request = API.generateRequest(url: url!, method: .POST, json: json)
         
         API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
-
+        
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
             session.dataTaskPublisher(for: request)
             .map(\.data)
@@ -77,12 +78,14 @@ final class BlockHiddenDataStore: ObservableObject {
                     processingRequestsTaskGroup.leave()
                     break
                 case .failure(let error):
+                    #if DEBUG
                     print("error: ", error)
+                    #endif
                     processingRequestsTaskGroup.leave()
                     break
                 }
             }, receiveValue: { _ in
-                print("done") })
+            })
             .store(in: &self.cancellableSet)
         }
     }
@@ -93,9 +96,9 @@ final class BlockHiddenDataStore: ObservableObject {
         let request = API.generateRequest(url: url!, method: .POST, json: json)
         
         API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
             session.dataTaskPublisher(for: request)
             .map(\.data)
@@ -108,12 +111,14 @@ final class BlockHiddenDataStore: ObservableObject {
                     processingRequestsTaskGroup.leave()
                     break
                 case .failure(let error):
+                    #if DEBUG
                     print("error: ", error)
+                    #endif
                     processingRequestsTaskGroup.leave()
                     break
                 }
             }, receiveValue: { _ in
-                print("done") })
+            })
             .store(in: &self.cancellableSet)
         }
     }
@@ -124,9 +129,9 @@ final class BlockHiddenDataStore: ObservableObject {
         let request = API.generateRequest(url: url!, method: .POST, json: json)
         
         API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
             session.dataTaskPublisher(for: request)
             .map(\.data)
@@ -141,12 +146,14 @@ final class BlockHiddenDataStore: ObservableObject {
                     processingRequestsTaskGroup.leave()
                     break
                 case .failure(let error):
+                    #if DEBUG
                     print("error: ", error)
+                    #endif
                     processingRequestsTaskGroup.leave()
                     break
                 }
             }, receiveValue: { _ in
-                print("done") })
+            })
             .store(in: &self.cancellableSet)
         }
     }
@@ -157,9 +164,9 @@ final class BlockHiddenDataStore: ObservableObject {
         let request = API.generateRequest(url: url!, method: .POST, json: json)
         
         API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
             session.dataTaskPublisher(for: request)
             .map(\.data)
@@ -172,12 +179,14 @@ final class BlockHiddenDataStore: ObservableObject {
                     processingRequestsTaskGroup.leave()
                     break
                 case .failure(let error):
+                    #if DEBUG
                     print("error: ", error)
+                    #endif
                     processingRequestsTaskGroup.leave()
                     break
                 }
             }, receiveValue: { _ in
-                print("done") })
+            })
             .store(in: &self.cancellableSet)
         }
     }
@@ -188,9 +197,9 @@ final class BlockHiddenDataStore: ObservableObject {
         let request = API.generateRequest(url: url!, method: .POST, json: json)
         
         API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
             session.dataTaskPublisher(for: request)
             .map(\.data)
@@ -204,12 +213,14 @@ final class BlockHiddenDataStore: ObservableObject {
                     processingRequestsTaskGroup.leave()
                     break
                 case .failure(let error):
+                    #if DEBUG
                     print("error: ", error)
+                    #endif
                     processingRequestsTaskGroup.leave()
                     break
                 }
             }, receiveValue: { _ in
-                print("done") })
+            })
             .store(in: &self.cancellableSet)
         }
     }
@@ -219,9 +230,9 @@ final class BlockHiddenDataStore: ObservableObject {
         let request = API.generateRequest(url: url!, method: .GET, json: nil)
         
         self.API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
             session.dataTaskPublisher(for: request)
             .map(\.data)
@@ -233,7 +244,9 @@ final class BlockHiddenDataStore: ObservableObject {
                     processingRequestsTaskGroup.leave()
                     break
                 case .failure(let error):
+                    #if DEBUG
                     print("error: ", error)
+                    #endif
                     processingRequestsTaskGroup.leave()
                     break
                 }
@@ -256,9 +269,9 @@ final class BlockHiddenDataStore: ObservableObject {
         let request = API.generateRequest(url: url!, method: .GET, json: nil)
         
         self.API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
             session.dataTaskPublisher(for: request)
             .map(\.data)
@@ -270,7 +283,9 @@ final class BlockHiddenDataStore: ObservableObject {
                     processingRequestsTaskGroup.leave()
                     break
                 case .failure(let error):
+                    #if DEBUG
                     print("error: ", error)
+                    #endif
                     processingRequestsTaskGroup.leave()
                     break
                 }
@@ -294,9 +309,9 @@ final class BlockHiddenDataStore: ObservableObject {
         let request = API.generateRequest(url: url!, method: .GET, json: nil)
         
         self.API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
             session.dataTaskPublisher(for: request)
             .map(\.data)
@@ -308,7 +323,9 @@ final class BlockHiddenDataStore: ObservableObject {
                     processingRequestsTaskGroup.leave()
                     break
                 case .failure(let error):
+                    #if DEBUG
                     print("error: ", error)
+                    #endif
                     processingRequestsTaskGroup.leave()
                     break
                 }

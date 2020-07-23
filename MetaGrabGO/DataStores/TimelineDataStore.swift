@@ -37,8 +37,8 @@ final class TimelineDataStore: ObservableObject {
     @Published private(set) var isLoadingAfter = false
     @Published private(set) var isLoadingFirst = false
     
-    @Published private(set) var hasPrevPage = true
-    @Published private(set) var hasNextPage = true
+    @Published private(set) var hasPrevPage = false
+    @Published private(set) var hasNextPage = false
     
     private let API = APIClient()
     
@@ -53,12 +53,26 @@ final class TimelineDataStore: ObservableObject {
         self.endTime = currDate.secondsSince1970
     }
     
+    func cancelFirstLoadProcess() {
+        self.firstLoadProcess?.cancel()
+        self.firstLoadProcess = nil
+    }
+    
+    func cancelPrevLoadProcess() {
+        self.prevLoadProcess?.cancel()
+        self.prevLoadProcess = nil
+    }
+    
+    func cancelNextLoadProcess() {
+        self.nextLoadProcess?.cancel()
+        self.nextLoadProcess = nil
+    }
+    
     func fetchFirstLoadAtEpochTime(count: Int = 5, globalGamesDataStore: GlobalGamesDataStore) {
         if self.firstLoadProcess != nil {
             return
         }
-        
-        print("loading first")
+
         isLoadingFirst = true
         
         let params = ["time_point_in_epoch": String(self.startTime), "count": String(count)]
@@ -66,9 +80,9 @@ final class TimelineDataStore: ObservableObject {
         let request = API.generateRequest(url: url!, method: .GET, json: nil)
         
         self.API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
             self.firstLoadProcess = session.dataTaskPublisher(for: request)
                 .map(\.data)
@@ -77,18 +91,23 @@ final class TimelineDataStore: ObservableObject {
                 .sink(receiveCompletion: { completion in
                     switch completion {
                     case .finished:
-                        self.firstLoadProcess?.cancel()
+                        self.cancelFirstLoadProcess()
                         self.isLoadingFirst = false
                         processingRequestsTaskGroup.leave()
                         break
                     case .failure(let error):
+                        #if DEBUG
                         print("error: ", error)
+                        #endif
                         processingRequestsTaskGroup.leave()
                         break
                     }
                 }, receiveValue: { [unowned self] tempGamesTimelineResponse in
-                    var addedTimelineArr: [Int] = []
                     
+                    self.hasPrevPage = tempGamesTimelineResponse.hasPrevPage
+                    self.hasNextPage = tempGamesTimelineResponse.hasNextPage
+                    
+                    var addedTimelineArr: [Int] = []
                     var lastGameId: Int? = nil
                     if self.gamesArr != nil {
                         lastGameId = self.gamesArr!.last
@@ -128,29 +147,25 @@ final class TimelineDataStore: ObservableObject {
                     }
                     
                     self.gamesArr = addedTimelineArr
-                    self.hasPrevPage = tempGamesTimelineResponse.hasPrevPage
-                    self.hasNextPage = tempGamesTimelineResponse.hasNextPage
-                    
-                    print(self.hasNextPage, self.hasNextPage)
                 })
         }
     }
     
     func fetchGamesByBeforeEpochTime(count: Int = 5, globalGamesDataStore: GlobalGamesDataStore) {
-        if self.prevLoadProcess != nil {
+        if self.prevLoadProcess != nil || self.hasPrevPage == false {
             return
         }
+
         self.isLoadingPrev = true
         
-        print("loading prev")
         let params = ["time_point_in_epoch": String(self.startTime), "count": String(count)]
         let url = API.generateURL(resource: Resource.games, endPoint: EndPoint.getGamesBeforeEpochTime, params: params)
         let request = API.generateRequest(url: url!, method: .GET, json: nil)
         
         self.API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
             self.prevLoadProcess = session.dataTaskPublisher(for: request)
                 .map(\.data)
@@ -159,21 +174,22 @@ final class TimelineDataStore: ObservableObject {
                 .sink(receiveCompletion: { completion in
                     switch completion {
                     case .finished:
-                        self.prevLoadProcess?.cancel()
+                        self.cancelPrevLoadProcess()
                         self.isLoadingPrev = false
                         processingRequestsTaskGroup.leave()
                         break
                     case .failure(let error):
+                        #if DEBUG
                         print("error: ", error)
+                        #endif
                         processingRequestsTaskGroup.leave()
                         break
                     }
                 }, receiveValue: { [unowned self] tempGamesTimelineResponse in
                     var addedTimelineArr: [Int] = []
-                    
                     var lastGameId = self.gamesArr!.first
                     
-                    for i in (0..<tempGamesTimelineResponse.gameArr.count).reversed() {
+                    for i in (0..<tempGamesTimelineResponse.gameArr.count) {
                         let game = tempGamesTimelineResponse.gameArr[i]
                         globalGamesDataStore.addGame(game: game)
                         addedTimelineArr.append(game.id)
@@ -185,15 +201,15 @@ final class TimelineDataStore: ObservableObject {
                             
                             if newGameCalendar.year == lastGameCalendar.year {
                                 lastGameCalendar.isShowingYear = false
-                            }
-                            
-                            if newGameCalendar.month == lastGameCalendar.month {
-                                lastGameCalendar.isShowingMonth = false
-                                newGameCalendar.isLastDayInMonth = false
-                            }
-                            
-                            if newGameCalendar.day == lastGameCalendar.day {
-                                lastGameCalendar.isShowingDay = false
+                                
+                                if newGameCalendar.month == lastGameCalendar.month {
+                                    lastGameCalendar.isShowingMonth = false
+                                    newGameCalendar.isLastDayInMonth = false
+                                    
+                                    if newGameCalendar.day == lastGameCalendar.day {
+                                        lastGameCalendar.isShowingDay = false
+                                    }
+                                }
                             }
                         }
                         
@@ -202,8 +218,9 @@ final class TimelineDataStore: ObservableObject {
                     }
                     
                     if tempGamesTimelineResponse.timeScores.count > 0 {
-                        self.startTime = Int(tempGamesTimelineResponse.timeScores[0])
+                        self.startTime = Int(tempGamesTimelineResponse.timeScores[tempGamesTimelineResponse.timeScores.count - 1])
                     }
+
                     self.gamesArr = addedTimelineArr.reversed() + self.gamesArr!
                     self.hasPrevPage = tempGamesTimelineResponse.hasPrevPage
                 })
@@ -211,23 +228,21 @@ final class TimelineDataStore: ObservableObject {
     }
     
     func fetchGamesByAfterEpochTime(count: Int = 5, globalGamesDataStore: GlobalGamesDataStore) {
-        if self.nextLoadProcess != nil {
+        if self.nextLoadProcess != nil || self.hasNextPage == false {
             return
         }
         
         self.isLoadingAfter = true
         
-        print("loading after")
-        
         let API = APIClient()
-        let params = ["time_point_in_epoch": String(self.startTime), "count": String(count)]
+        let params = ["time_point_in_epoch": String(self.endTime), "count": String(count)]
         let url = API.generateURL(resource: Resource.games, endPoint: EndPoint.getGamesAfterEpochTime, params: params)
         let request = API.generateRequest(url: url!, method: .GET, json: nil)
         
         self.API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
             self.nextLoadProcess = session.dataTaskPublisher(for: request)
                 .map(\.data)
@@ -236,12 +251,14 @@ final class TimelineDataStore: ObservableObject {
                 .sink(receiveCompletion: { completion in
                     switch completion {
                     case .finished:
-                        self.nextLoadProcess?.cancel()
+                        self.cancelNextLoadProcess()
                         self.isLoadingAfter = false
                         processingRequestsTaskGroup.leave()
                         break
                     case .failure(let error):
+                        #if DEBUG
                         print("error: ", error)
+                        #endif
                         processingRequestsTaskGroup.leave()
                         break
                     }
@@ -262,15 +279,15 @@ final class TimelineDataStore: ObservableObject {
                             
                             if newGameCalendar.year == lastGameCalendar.year {
                                 newGameCalendar.isShowingYear = false
-                            }
-                            
-                            if newGameCalendar.month == lastGameCalendar.month {
-                                newGameCalendar.isShowingMonth = false
-                                lastGameCalendar.isLastDayInMonth = false
-                            }
-                            
-                            if newGameCalendar.day == lastGameCalendar.day {
-                                newGameCalendar.isShowingDay = false
+                                
+                                if newGameCalendar.month == lastGameCalendar.month {
+                                    newGameCalendar.isShowingMonth = false
+                                    lastGameCalendar.isLastDayInMonth = false
+                                    
+                                    if newGameCalendar.day == lastGameCalendar.day {
+                                        newGameCalendar.isShowingDay = false
+                                    }
+                                }
                             }
                         }
                         

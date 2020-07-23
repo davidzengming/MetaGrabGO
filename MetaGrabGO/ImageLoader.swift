@@ -31,23 +31,25 @@ final class ImageLoader: ObservableObject {
     }
     
     deinit {
-        self.cancellable?.cancel()
+        cancelProcess()
     }
     
-    func load(dispatchGroup: DispatchGroup? = nil) {
+    func cancelProcess() {
+        self.cancellable?.cancel()
+        self.cancellable = nil
+    }
+    
+    func load() {
         if cancellable != nil {
             return
         }
         
 //        print("loading", self.whereIsThisFrom)
         //
-        dispatchGroup?.enter()
         if let image = cache?[self.url] {
             DispatchQueue.main.async {
                 self.imageHeight = image.size.height
                 self.downloadedImage = image
-                
-                dispatchGroup?.leave()
             }
             return
         }
@@ -60,12 +62,11 @@ final class ImageLoader: ObservableObject {
             .sink(receiveCompletion: { completion in
                 switch completion {
                 case .finished:
-                    self.cancellable?.cancel()
-                    dispatchGroup?.leave()
+                    self.cancelProcess()
                     break
                 case .failure(let error):
+                    self.cancelProcess()
                     print("received error: ", error)
-                    dispatchGroup?.leave()
                 }
             }, receiveValue: { image in
                 self.imageHeight = image!.size.height
@@ -75,10 +76,6 @@ final class ImageLoader: ObservableObject {
     
     private func cache(_ image: UIImage?) {
         image.map { cache?[url] = $0 }
-    }
-    
-    func cancel() {
-        cancellable?.cancel()
     }
 }
 

@@ -11,12 +11,12 @@ import SwiftUI
 struct DummyImageModalView: View {
     @Binding var isImageModalOn: Bool
     @Binding var threadDataStore: ThreadDataStore?
-    @Binding var currentImageModalIndex: Int?
+    @Binding var currentImageModalIndex: Int
     
     var body: some View {
         Text("")
             .sheet(isPresented: self.$isImageModalOn) {
-                ImageModalView(threadDataStore: self.$threadDataStore, currentImageModalIndex: self.$currentImageModalIndex)
+                ImageModalView(threadDataStore: self.$threadDataStore, index: self.$currentImageModalIndex)
         }
     }
 }

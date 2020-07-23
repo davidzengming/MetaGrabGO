@@ -53,15 +53,22 @@ struct PopularGamesView: View {
                                     .padding(.top, 10)
                                     .shadow(radius: 5)
                                 
-                                Text("(" + self.popularListDataStore.genres[genreId]!.longName + ")")
-                                    .foregroundColor(Color.white)
-                                    .font(.system(size: a.size.width * 0.04, weight: .regular, design: .rounded))
-                                    .tracking(2)
-                                    .padding(.top, 10)
-                                    .shadow(radius: 5)
+//                                Text("(" + self.popularListDataStore.genres[genreId]!.longName + ")")
+//                                    .foregroundColor(Color.white)
+//                                    .font(.system(size: a.size.width * 0.04, weight: .regular, design: .rounded))
+//                                    .tracking(2)
+//                                    .padding(.top, 10)
+//                                    .shadow(radius: 5)
+                            }
+                            
+                            .onAppear() {
+                                if self.popularListDataStore.genresIdArr.last! == genreId {
+                                    self.popularListDataStore.fetchGenresByPage(start: self.popularListDataStore.nextPageStartIndex, globalGamesDataStore: self.globalGamesDataStore)
+                                }
                             }
 
                             GenreRowView(genre: self.popularListDataStore.genres[genreId]!, genreDataStore: self.popularListDataStore.genresDataStore[genreId]!, globalGamesDataStore: self.globalGamesDataStore, width: a.size.width - 10)
+                            
                         }
                         .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
                         .padding(.horizontal, 10)

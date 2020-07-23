@@ -132,13 +132,16 @@ struct FollowerStatsView: View {
                     .font(.system(size: self.width * 0.06))
                     .foregroundColor(Color.white)
                     .bold()
+                    .lineLimit(2)
                 
                 if self.forumOtherDataStore.threadCount != nil {
                     HStack(spacing: 10) {
                         Text("Posts " + String(self.forumOtherDataStore.threadCount!))
+                            .font(.subheadline)
                             .foregroundColor(Color.white)
-                        Text("Follows " + String(self.forumOtherDataStore.followerCount!))
-                            .foregroundColor(Color.white)
+                        Text("Followers " + String(self.forumOtherDataStore.followerCount!))
+                        .foregroundColor(Color.white)
+                        .font(.subheadline)
                     }
                     .font(.system(size: self.width * 0.04))
                 }
@@ -182,7 +185,7 @@ struct ForumView: View {
     @State private var pickedUser: User = User(id: -1, username: "placeholder")
     
     @State private var isImageModalOn = false
-    @State private var currentImageModalIndex: Int? = nil
+    @State private var currentImageModalIndex: Int = -1
     @State private var imageModalSelectedThreadStore: ThreadDataStore? = nil
     
     init(forumDataStore: ForumDataStore, forumOtherDataStore: ForumOtherDataStore, gameIconLoader: ImageLoader) {
@@ -240,14 +243,14 @@ struct ForumView: View {
         self.pickedUser = user
     }
     
-    private func toggleImageModal(threadDataStore: ThreadDataStore?, currentImageModalIndex: Int?) {
+    private func toggleImageModal(threadDataStore: ThreadDataStore?, currentImageModalIndex: Int) {
         if threadDataStore != nil {
             self.imageModalSelectedThreadStore = threadDataStore
             self.currentImageModalIndex = currentImageModalIndex
             self.isImageModalOn = true
         } else {
             self.isImageModalOn = false
-            self.currentImageModalIndex = nil
+            self.currentImageModalIndex = -1
             self.imageModalSelectedThreadStore = nil
         }
     }
@@ -276,7 +279,7 @@ struct ForumView: View {
                                     Image(uiImage: self.gameIconLoader.downloadedImage!)
                                         .resizable()
                                         .aspectRatio(contentMode: .fill)
-                                        .frame(width: a.size.width * 0.15, height: a.size.width * 0.15, alignment: .leading)
+                                        .frame(width: a.size.width * 0.15 * 4 / 3, height: a.size.width * 0.15, alignment: .leading)
                                         .cornerRadius(5, corners: [.topLeft, .topRight, .bottomLeft, .bottomRight])
                                         .overlay(
                                             RoundedRectangle(cornerRadius: 5)
@@ -288,8 +291,9 @@ struct ForumView: View {
                             }
                             .frame(width: a.size.width * 0.9)
                         }
-                        .frame(width: a.size.width, height: a.size.width * 0.15)
-                        .padding(.vertical, 30)
+                        .frame(width: a.size.width, height: a.size.width * 0.3)
+                        .padding(.top, 30)
+                        .padding(.bottom, 10)
                         .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
                         
                         VStack(spacing: 0) {
@@ -313,43 +317,46 @@ struct ForumView: View {
                                     .frame(width: a.size.width * 0.3, height: a.size.width * 0.3)
                             }
                             .frame(width: a.size.width, height: a.size.height * 0.5)
+                            .background(Color(UIColor(named: "pseudoTertiaryBackground")!))
                             .cornerRadius(15, corners: [.bottomLeft, .bottomRight])
                             .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
-                            .background(Color(UIColor(named: "pseudoTertiaryBackground")!))
                         } else {
-                            if self.forumDataStore.threadsList!.count > 0 {
-                                ForEach(self.forumDataStore.threadsList!, id: \.self) { threadId in
-                                    VStack(spacing: 0) {
-                                        Divider()
-                                        ThreadRow(threadDataStore: self.forumDataStore.threadDataStores[threadId]!, turnBottomPopup: { state in self.turnBottomPopup(state: state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state: state)}, togglePickedUser: { pickedUser in self.togglePickedUser(user: pickedUser)}, togglePickedThreadId: { (pickedThreadId, futureContainerWidth) in self.togglePickedThreadId(threadId: pickedThreadId, futureContainerWidth: futureContainerWidth)}, width: a.size.width * 0.9, height: a.size.height, toggleImageModal : { (threadDataStore, currentImageModalIndex) in self.toggleImageModal(threadDataStore: threadDataStore, currentImageModalIndex: currentImageModalIndex) })
-                                    }
-                                    .frame(width: a.size.width, alignment: .center)
-                                    .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
-                                    .listRowBackground(Color(UIColor(named: "pseudoTertiaryBackground")!))
-                                }
-                                
-                                ForumLoadMoreView(forumDataStore: self.forumDataStore, forumOtherDataStore: self.forumOtherDataStore, containerWidth: a.size.width * 0.81, maxImageHeight: a.size.height * 0.15)
-                                    .frame(width: a.size.width, height: a.size.height * 0.1)
-                                    .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
-                                    // hacky bug fix for rounded corner creating a tiny black line between 2 views
-                                    .padding(.top, -10)
-                            } else {
+                            ForEach(self.forumDataStore.threadsList!, id: \.self) { threadId in
                                 VStack(spacing: 0) {
-                                    Image(systemName: "pencil.circle.fill")
+                                    Divider()
+                                    ThreadRow(threadDataStore: self.forumDataStore.threadDataStores[threadId]!, turnBottomPopup: { state in self.turnBottomPopup(state: state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state: state)}, togglePickedUser: { pickedUser in self.togglePickedUser(user: pickedUser)}, togglePickedThreadId: { (pickedThreadId, futureContainerWidth) in self.togglePickedThreadId(threadId: pickedThreadId, futureContainerWidth: futureContainerWidth)}, width: a.size.width * 0.9, height: a.size.height, toggleImageModal : { (threadDataStore, currentImageModalIndex) in self.toggleImageModal(threadDataStore: threadDataStore, currentImageModalIndex: currentImageModalIndex) })
+                                }
+                                .frame(width: a.size.width, alignment: .center)
+                                .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
+                                .listRowBackground(Color(UIColor(named: "pseudoTertiaryBackground")!))
+                            }
+                            
+                            if self.forumOtherDataStore.forumNextPageStartIndex != nil && self.forumOtherDataStore.forumNextPageStartIndex! == -1 {
+                                VStack(spacing: 0) {
+                                    Divider()
+                                    Spacer()
+                                    Image(systemName: "message.circle.fill")
                                         .resizable()
                                         .scaledToFit()
                                         .frame(width: a.size.width * 0.3, height: a.size.width * 0.3)
                                         .padding()
-                                        .foregroundColor(Color(.lightGray))
-                                    Text("Create the very first post.")
+                                        .foregroundColor(Color(.secondaryLabel))
+                                    Text("~Share your own thoughts~")
                                         .bold()
-                                        .foregroundColor(Color(.lightGray))
+                                        .foregroundColor(Color(.secondaryLabel))
                                         .padding()
+                                    Spacer()
                                 }
                                 .frame(width: a.size.width, height: a.size.height * 0.5)
-                                .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
                                 .background(Color(UIColor(named: "pseudoTertiaryBackground")!))
                                 .cornerRadius(15, corners: [.bottomLeft, .bottomRight])
+                                .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
+                            } else {
+                                ForumLoadMoreView(forumDataStore: self.forumDataStore, forumOtherDataStore: self.forumOtherDataStore, containerWidth: a.size.width * 0.81, maxImageHeight: a.size.height * 0.15)
+                                .frame(width: a.size.width, height: a.size.height * 0.1)
+                                .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
+                                // hacky bug fix for rounded corner creating a tiny black line between 2 views
+                                .padding(.top, -10)
                             }
                         }
                     }
@@ -364,7 +371,7 @@ struct ForumView: View {
                         self.recentFollowDataStore.insertVisitGame(gameId: self.forumDataStore.game.id)
                     }
                     
-                    NavigationLink(destination: NewThreadView(forumDataStore: self.forumDataStore, forumOtherDataStore: self.forumOtherDataStore, containerWidth: a.size.width * 0.81)
+                    NavigationLink(destination: NewThreadView(forumDataStore: self.forumDataStore, forumOtherDataStore: self.forumOtherDataStore, containerWidth: a.size.width * 0.81, maxImageHeight: a.size.height * 0.15)
                     ) {
                         NewThreadButton()
                             .frame(width: min(a.size.width, a.size.height) * 0.12, height: min(a.size.width, a.size.height) * 0.12, alignment: .center)

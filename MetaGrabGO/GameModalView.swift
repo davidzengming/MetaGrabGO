@@ -23,8 +23,8 @@ struct GameModalView: View {
     var body: some View {
         NavigationView {
             GeometryReader { a in
-                VStack(alignment: .leading) {
-                    HStack(alignment: .center) {
+                VStack(alignment: .center) {
+                    HStack {
                         Image(systemName: "multiply")
                             .resizable()
                             .frame(width: a.size.height * 0.025, height: a.size.height * 0.025)
@@ -35,9 +35,7 @@ struct GameModalView: View {
                         Spacer()
                     }
                     .frame(width: a.size.width * 0.9, height: a.size.height * 0.05, alignment: .leading)
-                        
-                    .padding(.horizontal, a.size.width * 0.05)
-                    .padding(.vertical, a.size.height * 0.01)
+                    .padding(.top, a.size.height * 0.01)
                     
                     ScrollView {
                         VStack(alignment: .leading) {
@@ -53,18 +51,16 @@ struct GameModalView: View {
                                     if self.imageLoader.downloadedImage != nil {
                                         Image(uiImage: self.imageLoader.downloadedImage!)
                                             .resizable()
-                                            .frame(width: a.size.width * 0.8, height: a.size.height * 0.2)
-                                            .scaledToFill()
+                                            .frame(width: a.size.width * 0.7, height: a.size.width * 0.7 * 9 / 16)
                                             .shadow(radius: 5)
                                     } else {
                                         Rectangle()
                                             .fill(appWideAssets.colors["darkButNotBlack"]!)
-                                            .frame(width: a.size.width * 0.8, height: a.size.height * 0.2)
-                                            .scaledToFill()
+                                            .frame(width: a.size.width * 0.7, height: a.size.width * 0.7 * 9 / 16)
                                             .shadow(radius: 5)
                                     }
                                 }
-                                .frame(width: a.size.width * 0.9, height: a.size.height * 0.15)
+                                .frame(width: a.size.width * 0.9, height: a.size.width * 0.7 * 0.5)
                                 .background(appWideAssets.colors["notQuiteBlack"]!)
                                 Spacer()
                             }
@@ -157,6 +153,7 @@ struct GameModalView: View {
                             Spacer()
                         }
                     }
+                    .frame(width: a.size.width * 0.9)
                 }
             }
             .navigationBarTitle("")

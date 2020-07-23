@@ -11,12 +11,13 @@ import Combine
 
 final class PopularListDataStore: ObservableObject {
     @Published private(set) var genresIdArr: [Int]
+    @Published private(set) var hasNextPage: Bool = true
     
     private(set) var genresDataStore: [Int: GenreDataStore]
     private(set) var genres: [Int: Genre]
     private(set) var nextPageStartIndex: Int
-    private var cancellableSet: Set<AnyCancellable> = []
     private let API = APIClient()
+    private var loadingProcess: AnyCancellable?
     
     init(globalGamesDataStore: GlobalGamesDataStore) {
         self.genresIdArr = []
@@ -26,27 +27,39 @@ final class PopularListDataStore: ObservableObject {
         self.fetchGenresByPage(globalGamesDataStore: globalGamesDataStore)
     }
     
-    private func fetchGenresByPage(start: Int = 0, count: Int = 5, refresh: Bool = false, globalGamesDataStore: GlobalGamesDataStore) {
+    func cancelLoadingProcess() {
+        self.loadingProcess?.cancel()
+        self.loadingProcess = nil
+    }
+    
+    func fetchGenresByPage(start: Int = 0, count: Int = 5, refresh: Bool = false, globalGamesDataStore: GlobalGamesDataStore) {
+        if self.loadingProcess != nil || self.hasNextPage == false {
+            return
+        }
+
         let params = ["start": String(start), "count": String(count)]
         let url = self.API.generateURL(resource: Resource.genre, endPoint: EndPoint.getGenresByRange, params: params)
         let request = self.API.generateRequest(url: url!, method: .GET, json: nil)
         
-        API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
+        API.accessTokenRefreshHandler(request: request)        
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
-            session.dataTaskPublisher(for: request)
+            self.loadingProcess = session.dataTaskPublisher(for: request)
                 .map(\.data)
                 .decode(type: GenresPageResponse.self, decoder: self.API.getJSONDecoder())
                 .receive(on: RunLoop.main)
                 .sink(receiveCompletion: { completion in
                     switch completion {
                     case .finished:
+                        self.cancelLoadingProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     case .failure(let error):
+                        #if DEBUG
                         print("error: ", error)
+                        #endif
                         processingRequestsTaskGroup.leave()
                         break
                     }
@@ -67,8 +80,8 @@ final class PopularListDataStore: ObservableObject {
                     }
                     
                     self.genresIdArr += tempGenresIdArr
+                    self.hasNextPage = genresPageResponse.hasNextPage
                 })
-                .store(in: &self.cancellableSet)
         }
     }
 }
@@ -80,7 +93,7 @@ final class GenreDataStore: ObservableObject {
     private(set) var nextPageStartIndex: Int
     
     private let API = APIClient()
-    private var cancellableSet: Set<AnyCancellable> = []
+    private var genrePageLoadingProcess: AnyCancellable?
     
     init(genre: Genre, globalGamesDataStore: GlobalGamesDataStore) {
         self.genre = genre
@@ -90,6 +103,10 @@ final class GenreDataStore: ObservableObject {
         self.fetchGamesByGenrePage(globalGamesDataStore: globalGamesDataStore)
     }
     
+    func cancelGenrePageLoadingProcess() {
+        self.genrePageLoadingProcess?.cancel()
+        self.genrePageLoadingProcess = nil
+    }
     
     func fetchGamesByGenrePage(start: Int = 0, count: Int = 5, refresh: Bool = false, globalGamesDataStore: GlobalGamesDataStore) {
         self.isLoadingGames = true
@@ -99,11 +116,11 @@ final class GenreDataStore: ObservableObject {
         let request = self.API.generateRequest(url: url!, method: .GET, json: nil)
         
         self.API.accessTokenRefreshHandler(request: request)
-        let session = self.API.generateSession()
         
         refreshingRequestTaskGroup.notify(queue: .global()) {
+            let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
-            session.dataTaskPublisher(for: request)
+            self.genrePageLoadingProcess = session.dataTaskPublisher(for: request)
                 .map(\.data)
                 .decode(type: GamesPageResponse.self, decoder: self.API.getJSONDecoder())
                 .receive(on: RunLoop.main)
@@ -111,9 +128,13 @@ final class GenreDataStore: ObservableObject {
                     switch completion {
                     case .finished:
                         processingRequestsTaskGroup.leave()
+                        self.cancelGenrePageLoadingProcess()
                         break
                     case .failure(let error):
+                        #if DEBUG
                         print("error: ", error)
+                        #endif
+                        self.cancelGenrePageLoadingProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     }
@@ -133,7 +154,6 @@ final class GenreDataStore: ObservableObject {
                     self.gamesArr += gamesIdArr
                     self.isLoadingGames = false
                 })
-                .store(in: &self.cancellableSet)
         }
     }
 }

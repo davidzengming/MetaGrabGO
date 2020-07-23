@@ -25,8 +25,6 @@ struct EmojiPickerPopupView: View {
     }
     
     private func addEmoji(emojiId: Int) {
-        let taskGroup = DispatchGroup()
-
         switch emojiId {
         // Upvote
         case 0:
@@ -35,16 +33,16 @@ struct EmojiPickerPopupView: View {
                 case 1:
                     break
                 case 0:
-                    self.forumDataStore.threadDataStores[self.pickedThreadId]!.upvoteByExistingVoteId(taskGroup: taskGroup)
+                    self.forumDataStore.threadDataStores[self.pickedThreadId]!.upvoteByExistingVoteId()
                     break
                 case -1:
-                    self.forumDataStore.threadDataStores[self.pickedThreadId]!.switchUpvote(taskGroup: taskGroup)
+                    self.forumDataStore.threadDataStores[self.pickedThreadId]!.switchUpvote()
                     break
                 default:
                     print("Vote direction is invalid.")
                 }
             } else {
-                self.forumDataStore.threadDataStores[self.pickedThreadId]!.addNewUpvote(taskGroup: taskGroup)
+                self.forumDataStore.threadDataStores[self.pickedThreadId]!.addNewUpvote()
             }
             
             break
@@ -54,16 +52,16 @@ struct EmojiPickerPopupView: View {
                 case -1:
                     return
                 case 0:
-                    self.forumDataStore.threadDataStores[self.pickedThreadId]!.downvoteByExistingVoteId(taskGroup: taskGroup)
+                    self.forumDataStore.threadDataStores[self.pickedThreadId]!.downvoteByExistingVoteId()
                     break
                 case 1:
-                    self.forumDataStore.threadDataStores[self.pickedThreadId]!.switchDownvote(taskGroup: taskGroup)
+                    self.forumDataStore.threadDataStores[self.pickedThreadId]!.switchDownvote()
                     break
                 default:
                     print("Vote direction is invalid.")
                 }
             } else {
-                self.forumDataStore.threadDataStores[self.pickedThreadId]!.addNewDownvote(taskGroup: taskGroup)
+                self.forumDataStore.threadDataStores[self.pickedThreadId]!.addNewDownvote()
             }
             break
         default:
@@ -88,12 +86,10 @@ struct EmojiPickerPopupView: View {
                 }
             }
             
-            self.forumDataStore.threadDataStores[self.pickedThreadId]!.addEmojiByThreadId(emojiId: emojiId, taskGroup: taskGroup)
+            self.forumDataStore.threadDataStores[self.pickedThreadId]!.addEmojiByThreadId(emojiId: emojiId)
         }
         
-        taskGroup.notify(queue: .global()) {
-            self.dismissView()
-        }
+        self.dismissView()
     }
     
     var body: some View {
@@ -162,16 +158,16 @@ struct EmojiPickerPopupViewThreadVer: View {
                 case 1:
                     break
                 case 0:
-                    self.threadDataStore.upvoteByExistingVoteId(taskGroup: taskGroup)
+                    self.threadDataStore.upvoteByExistingVoteId()
                     break
                 case -1:
-                    self.threadDataStore.switchUpvote(taskGroup: taskGroup)
+                    self.threadDataStore.switchUpvote()
                     break
                 default:
                     print("Vote direction is invalid.")
                 }
             } else {
-                self.threadDataStore.addNewUpvote(taskGroup: taskGroup)
+                self.threadDataStore.addNewUpvote()
             }
             
             break
@@ -181,16 +177,16 @@ struct EmojiPickerPopupViewThreadVer: View {
                 case -1:
                     return
                 case 0:
-                    self.threadDataStore.downvoteByExistingVoteId(taskGroup: taskGroup)
+                    self.threadDataStore.downvoteByExistingVoteId()
                     break
                 case 1:
-                    self.threadDataStore.switchDownvote(taskGroup: taskGroup)
+                    self.threadDataStore.switchDownvote()
                     break
                 default:
                     print("Vote direction is invalid.")
                 }
             } else {
-                self.threadDataStore.addNewDownvote(taskGroup: taskGroup)
+                self.threadDataStore.addNewDownvote()
             }
             break
         default:
@@ -215,7 +211,7 @@ struct EmojiPickerPopupViewThreadVer: View {
                 }
             }
             
-            self.threadDataStore.addEmojiByThreadId(emojiId: emojiId, taskGroup: taskGroup)
+            self.threadDataStore.addEmojiByThreadId(emojiId: emojiId)
         }
         
         taskGroup.notify(queue: .global()) {

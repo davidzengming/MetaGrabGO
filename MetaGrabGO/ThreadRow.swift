@@ -17,14 +17,16 @@ struct ThreadRow : View {
     private var togglePickedThreadId: (Int, CGFloat) -> Void
     private var width: CGFloat
     private var height: CGFloat
-    private var toggleImageModal: (ThreadDataStore?, Int?) -> Void
+    private var toggleImageModal: (ThreadDataStore?, Int) -> Void
     
     private let formatter = RelativeDateTimeFormatter()
     
     private let threadsFromBottomToGetReadyToLoadNextPage = 1
     private let threadsPerNewPageCount = 10
+    private let avatarWidth = UIFont.preferredFont(forTextStyle: .body).pointSize * 2
+    private let avatarPadding: CGFloat = 10
     
-    init(threadDataStore: ThreadDataStore, turnBottomPopup: @escaping (Bool) -> Void, toggleBottomBarState: @escaping (BottomBarState) -> Void, togglePickedUser: @escaping (User) -> Void, togglePickedThreadId: @escaping (Int, CGFloat) -> Void, width: CGFloat, height: CGFloat, toggleImageModal: @escaping (ThreadDataStore?, Int?) -> Void) {
+    init(threadDataStore: ThreadDataStore, turnBottomPopup: @escaping (Bool) -> Void, toggleBottomBarState: @escaping (BottomBarState) -> Void, togglePickedUser: @escaping (User) -> Void, togglePickedThreadId: @escaping (Int, CGFloat) -> Void, width: CGFloat, height: CGFloat, toggleImageModal: @escaping (ThreadDataStore?, Int) -> Void) {
         self.threadDataStore = threadDataStore
         self.turnBottomPopup = turnBottomPopup
         self.toggleBottomBarState = toggleBottomBarState
@@ -49,7 +51,7 @@ struct ThreadRow : View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack {
+            HStack(spacing: self.avatarPadding) {
                 VStack(spacing: 0) {
                     Image(systemName: "person.circle.fill")
                         .resizable()
@@ -70,7 +72,7 @@ struct ThreadRow : View {
                 }
                 Spacer()
             }
-            .frame(width: self.width, height: UIFont.preferredFont(forTextStyle: .body).pointSize * 2, alignment: .leading)
+            .frame(width: self.width, height: self.avatarWidth, alignment: .leading)
             .padding(.bottom, 20)
             
             NavigationLink(destination: LazyView{ ThreadView(threadDataStore: self.threadDataStore)}) {
@@ -103,7 +105,7 @@ struct ThreadRow : View {
                                 }
                             } else {
                                 Rectangle()
-                                    .fill(Color(.systemGray5))
+                                    .fill(Color(.systemGray3))
                                     .frame(width: self.threadDataStore.imageDimensions[index].width, height: self.threadDataStore.imageDimensions[index].height)
                                     .aspectRatio(contentMode: .fit)
                                     .cornerRadius(5)
@@ -115,7 +117,7 @@ struct ThreadRow : View {
                                 }
                             }
                         }
-                        .animation(.easeIn(duration: 0.5))
+                        .animation(.easeIn(duration: 0.25))
                     }
                 }
                 .frame(width: self.width * 0.9, height: self.threadDataStore.maxImageHeight, alignment: .leading)
