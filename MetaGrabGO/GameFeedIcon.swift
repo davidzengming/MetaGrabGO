@@ -30,6 +30,9 @@ struct GameFeedIcon : View {
                         Rectangle()
                             .fill(appWideAssets.colors["darkButNotBlack"]!)
                             .frame(width: a.size.width, height: a.size.height * 0.75)
+                            .onAppear() {
+                                self.imageLoader.load()
+                        }
                     }
                 }
                 // there seems to be some optimization SwiftUI uses for .onAppear() that causes it not be called again when the struct is re-computed/initialized
@@ -80,6 +83,11 @@ struct GameFeedTimelineIcon : View {
     
     var game: Game
     
+    init(imageLoader: ImageLoader, game: Game) {
+        self.imageLoader = imageLoader
+        self.game = game
+    }
+    
     var body: some View {
         GeometryReader { a in
             VStack(spacing: 0) {
@@ -92,8 +100,12 @@ struct GameFeedTimelineIcon : View {
                         Rectangle()
                             .fill(appWideAssets.colors["darkButNotBlack"]!)
                             .frame(width: a.size.width, height: a.size.height * 0.75)
+                            .onAppear() {
+                                self.imageLoader.load()
+                            }
                     }
                 }
+                
                 // there seems to be some optimization SwiftUI uses for .onAppear() that causes it not be called again when the struct is re-computed/initialized
                 //                .onAppear() {
                 //                    self.imageLoader.load()

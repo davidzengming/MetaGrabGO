@@ -2,8 +2,6 @@ import SwiftUI
 
 // Entry point into view
 struct MainView: View {
-    @EnvironmentObject private var userDataStore: UserDataStore
-    
     var body: some View {
         ZStack {
             appWideAssets.colors["darkButNotBlack"]!
@@ -11,6 +9,7 @@ struct MainView: View {
             
             VStack {
                 GameHubView()
+                    .environmentObject(UserDataStore())
                     .environmentObject(RecentFollowDataStore())
                     .environmentObject(GlobalGamesDataStore())
             }

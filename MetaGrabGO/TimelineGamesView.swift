@@ -33,7 +33,6 @@ extension String {
 struct TimelineGamesView: View {
     @EnvironmentObject private var globalGamesDataStore: GlobalGamesDataStore
     @EnvironmentObject private var recentFollowDataStore: RecentFollowDataStore
-    @Environment(\.imageCache) private var cache: ImageCache
     
     @ObservedObject private var timelineDataStore: TimelineDataStore
     
@@ -180,16 +179,16 @@ struct TimelineGamesView: View {
                                     
                                     Spacer()
                                     
-                                    GameFeedTimelineIcon(imageLoader: ImageLoader(url: self.globalGamesDataStore.games[gameId]!.icon, cache: self.cache, whereIsThisFrom: "timeline view, game:" + String(gameId)), game: self.globalGamesDataStore.games[gameId]!)
+                                    GameFeedTimelineIcon(imageLoader: self.timelineDataStore.imageLoaders[gameId]!, game: self.globalGamesDataStore.games[gameId]!)
                                         .frame(width: a.size.width * self.gameIconWidthMultiplier, height: a.size.width * self.gameIconWidthMultiplier * 1)
                                         .padding(.vertical, 10)
                                         .shadow(radius: 5)
                                         .onAppear() {
-                                            print("hello", gameId)
-                                            if self.timelineDataStore.gamesArr!.first == gameId {
+                                            if self.timelineDataStore.gamesArr!.first == gameId && self.timelineDataStore.hasPrevPage {
                                                 self.loadPrevPage()
                                             }
-                                            if self.timelineDataStore.gamesArr!.last == gameId {
+                                            
+                                            if self.timelineDataStore.gamesArr!.last == gameId && self.timelineDataStore.hasNextPage {
                                                 self.loadNextPage()
                                             }
                                             
@@ -197,9 +196,12 @@ struct TimelineGamesView: View {
                                     Spacer()
                                 }
                                 .buttonStyle(PlainButtonStyle())
+                                .animation(.easeIn)
+                                
                             }
                             .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
                             .padding(.horizontal, 10)
+                            
                         }
                     }
                 }

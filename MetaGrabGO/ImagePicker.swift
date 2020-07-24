@@ -19,7 +19,6 @@ struct ImagePicker: UIViewControllerRepresentable {
     
     class Coordinator: NSObject, UINavigationControllerDelegate, UIImagePickerControllerDelegate {
         var parent: ImagePicker
-
         let maxNumImages = 3
         
         init(_ parent: ImagePicker) {

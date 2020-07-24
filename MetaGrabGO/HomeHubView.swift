@@ -58,7 +58,7 @@ struct FrontHubView: View {
                                         HStack(spacing: 20) {
                                             ForEach(self.visitedGamesDataStore.visitedGamesId, id: \.self) { gameId in
                                                 VStack {
-                                                    GameFeedIcon(imageLoader: ImageLoader(url: self.globalGamesDataStore.games[gameId]!.icon, cache: self.cache, whereIsThisFrom: "front view, game:" + String(gameId)), game: self.globalGamesDataStore.games[gameId]!)
+                                                    GameFeedIcon(imageLoader: self.visitedGamesDataStore.imageLoaders[gameId]!, game: self.globalGamesDataStore.games[gameId]!)
                                                         .frame(width: a.size.width * self.gameIconWidthMultiplier, height: a.size.width * self.gameIconWidthMultiplier * 1)
                                                         .shadow(radius: 5)
                                                 }
@@ -127,7 +127,7 @@ struct FrontHubView: View {
                                         HStack(spacing: 20) {
                                             ForEach(self.followGamesDataStore.followedGamesId, id: \.self) { gameId in
                                                 VStack {
-                                                    GameFeedIcon(imageLoader: ImageLoader(url: self.globalGamesDataStore.games[gameId]!.icon, cache: self.cache, whereIsThisFrom: "front view, game:" + String(gameId)), game: self.globalGamesDataStore.games[gameId]!)
+                                                    GameFeedIcon(imageLoader: self.followGamesDataStore.imageLoaders[gameId]!, game: self.globalGamesDataStore.games[gameId]!)
                                                         .frame(width: a.size.width * self.gameIconWidthMultiplier, height: a.size.width * self.gameIconWidthMultiplier * 1)
                                                         .shadow(radius: 5)
                                                 }
@@ -203,13 +203,11 @@ struct FrontHubView: View {
                             self.homeGamesDataStore.isLoaded = true
                             self.recentFollowDataStore.shouldRefreshDataStore = false
                         }
-                        
                     } else {
-                        self.homeGamesDataStore.updateFollowGames(followGamesDataStore: self.followGamesDataStore, recentFollowDataStore: self.recentFollowDataStore)
+                        self.homeGamesDataStore.updateFollowGames(followGamesDataStore: self.followGamesDataStore, recentFollowDataStore: self.recentFollowDataStore, globalGamesDataStore: self.globalGamesDataStore)
                         
-                        self.homeGamesDataStore.updateGameHistory(visitedGamesDataStore: self.visitedGamesDataStore, recentFollowDataStore: self.recentFollowDataStore)
+                        self.homeGamesDataStore.updateGameHistory(visitedGamesDataStore: self.visitedGamesDataStore, recentFollowDataStore: self.recentFollowDataStore, globalGamesDataStore: self.globalGamesDataStore)
                     }
-                    
                 }
             }
         }

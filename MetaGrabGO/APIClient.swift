@@ -66,6 +66,9 @@ enum EndPoint: String, CodingKey {
     case followGameByGameId = "follow_game_by_game_id"
     case unfollowGameByGameId = "unfollow_game_by_game_id"
     
+    // user_profile
+    case uploadProfileImage = "upload_profile_image"
+    
     // user
     case refreshToken = "token/refresh"
     case acquireToken = "token"

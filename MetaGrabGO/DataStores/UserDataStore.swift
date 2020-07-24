@@ -9,6 +9,7 @@
 import Foundation
 import SwiftUI
 import Combine
+import Cloudinary
 
 struct KeyChainService {
     
@@ -48,18 +49,42 @@ struct KeyChainService {
     }
 }
 
+final class MyUserImage {
+    var profileImageUrl: String
+    var profileImageWidth: String
+    var profileImageHeight: String
+    
+    init(profileImageUrl: String, profileImageWidth: String, profileImageHeight: String) {
+        self.profileImageUrl = profileImageUrl
+        self.profileImageWidth = profileImageWidth
+        self.profileImageHeight = profileImageHeight
+    }
+}
+
+var myUserImage: MyUserImage?
+
 final class UserDataStore: ObservableObject {
     
+    var profileImageLoader: ImageLoader?
+    var profileImageLoaderSub: AnyCancellable?
+    
     @Published private(set) var isAuthenticated: Bool = false
+    
+    @Environment(\.imageCache) private var cache: ImageCache
+    @Published private(set) var isLoadingPicture: Bool = false
     
     private let API = APIClient()
     private(set) var isAutologinEnabled = true
     
     private var loginProcess: AnyCancellable?
+    private var updateProfileImageProcess: AnyCancellable?
     
     func logout() {
         self.isAutologinEnabled = false
         self.isAuthenticated = false
+        
+        self.cancelLoginProcess()
+        self.cancelUpdateProfileImageProcess()
     }
     
     func autologin() {
@@ -74,6 +99,11 @@ final class UserDataStore: ObservableObject {
     func cancelLoginProcess() {
         self.loginProcess?.cancel()
         self.loginProcess = nil
+    }
+    
+    func cancelUpdateProfileImageProcess() {
+        self.updateProfileImageProcess?.cancel()
+        self.updateProfileImageProcess = nil
     }
     
     func acquireToken(taskGroup: DispatchGroup? = nil, username: String? = nil, password: String? = nil) {
@@ -100,35 +130,43 @@ final class UserDataStore: ObservableObject {
         let request = API.generateRequest(url: url!, method: .POST, json: nil, bodyData: "username=\(loadedUsername)&password=\(loadedPassword)")
         
         loginProcess = URLSession.shared.dataTaskPublisher(for: request)
-        .map(\.data)
-        .decode(type: Token.self, decoder: self.API.getJSONDecoder())
-        .receive(on: RunLoop.main)
-        .sink(receiveCompletion: { completion in
-            switch completion {
-            case .finished:
-                break
-            case .failure(let error):
-                print("auto login failed")
-                self.isAutologinEnabled = false
-                break
-            }
-            self.cancelLoginProcess()
-            taskGroup?.leave()
-        }, receiveValue: { [unowned self] token in
-            self.isAuthenticated = true
-            _ = KeyChain.save(key: "metagrab.hasLoggedInBefore", data: "true".data(using: String.Encoding.utf8)!)
-            _ = KeyChain.save(key: "metagrab.username", data: loadedUsername.data(using: String.Encoding.utf8)!)
-            _ = KeyChain.save(key: "metagrab.password", data: loadedPassword.data(using: String.Encoding.utf8)!)
-            _ = KeyChain.save(key: "metagrab.tokenaccess", data: token.access.data(using: String.Encoding.utf8)!)
-            _ = KeyChain.save(key: "metagrab.tokenrefresh", data: token.refresh.data(using: String.Encoding.utf8)!)
-            _ = KeyChain.save(key: "metagrab.userid", data: String(token.userId).data(using: String.Encoding.utf8)!)
-            _ = KeyChain.save(key: "metagrab.accessExpDateEpoch", data: String(token.accessExpDateEpoch).data(using: String.Encoding.utf8)!)
-            _ = KeyChain.save(key: "metagrab.refreshExpDateEpoch", data: String(token.refreshExpDateEpoch).data(using: String.Encoding.utf8)!)
-            
-            #if DEBUG
-            print("saved to keychain credentials")
-            #endif
-        })
+            .map(\.data)
+            .decode(type: Token.self, decoder: self.API.getJSONDecoder())
+            .receive(on: RunLoop.main)
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case .finished:
+                    self.cancelLoginProcess()
+                    break
+                case .failure(let error):
+                    self.cancelLoginProcess()
+                    print("auto login failed", error)
+                    self.isAutologinEnabled = false
+                    break
+                }
+                taskGroup?.leave()
+            }, receiveValue: { [unowned self] token in
+                self.isAuthenticated = true
+                _ = KeyChain.save(key: "metagrab.hasLoggedInBefore", data: "true".data(using: String.Encoding.utf8)!)
+                _ = KeyChain.save(key: "metagrab.username", data: loadedUsername.data(using: String.Encoding.utf8)!)
+                _ = KeyChain.save(key: "metagrab.password", data: loadedPassword.data(using: String.Encoding.utf8)!)
+                _ = KeyChain.save(key: "metagrab.tokenaccess", data: token.access.data(using: String.Encoding.utf8)!)
+                _ = KeyChain.save(key: "metagrab.tokenrefresh", data: token.refresh.data(using: String.Encoding.utf8)!)
+                _ = KeyChain.save(key: "metagrab.userid", data: String(token.userId).data(using: String.Encoding.utf8)!)
+                _ = KeyChain.save(key: "metagrab.accessExpDateEpoch", data: String(token.accessExpDateEpoch).data(using: String.Encoding.utf8)!)
+                _ = KeyChain.save(key: "metagrab.refreshExpDateEpoch", data: String(token.refreshExpDateEpoch).data(using: String.Encoding.utf8)!)
+                
+                myUserImage = MyUserImage(profileImageUrl: token.profileImageUrl, profileImageWidth: token.profileImageWidth, profileImageHeight: token.profileImageHeight)
+                
+                if token.profileImageUrl != "" {
+                    self.profileImageLoader = ImageLoader(url: myUserImage!.profileImageUrl, cache: self.cache, whereIsThisFrom: "profile image loader", loadManually: true)
+                    self.profileImageLoaderSub = self.profileImageLoader!.objectWillChange.receive(on: DispatchQueue.main).sink(receiveValue: {[weak self] _ in self?.objectWillChange.send() })
+                }
+                
+                #if DEBUG
+                print("saved to keychain credentials")
+                #endif
+            })
     }
     
     func register(username: String, password: String, email: String) {
@@ -144,5 +182,75 @@ final class UserDataStore: ObservableObject {
                 }
             }
         }.resume()
+    }
+    
+    func uploadProfilePicture(data: Data) {
+        if self.updateProfileImageProcess != nil {
+            #if DEBUG
+            print("Image uploading already in process")
+            #endif
+            return
+        }
+        
+        
+        self.isLoadingPicture = true
+        let cloudinary = CLDCloudinary(configuration: CLDConfiguration(cloudName: "dzengcdn", apiKey: "348513889264333", secure: true))
+        let taskGroup = DispatchGroup()
+        var imageUrl: String = ""
+        var profileImageWidth: String = ""
+        var profileImageHeight: String = ""
+
+        taskGroup.enter()
+        let preprocessChain = CLDImagePreprocessChain()
+            .addStep(CLDPreprocessHelpers.limit(width: 300, height: 300))
+            .addStep(CLDPreprocessHelpers.dimensionsValidator(minWidth: 100, maxWidth: 800, minHeight: 100, maxHeight: 800))
+        _ = cloudinary.createUploader().upload(data: data, uploadPreset: "cyr1nlwn", preprocessChain: preprocessChain)
+            .response({response, error in
+                if error == nil {
+                    imageUrl = response!.secureUrl!
+                    profileImageWidth = String(response!.width!)
+                    profileImageHeight = String(response!.height!)
+                    taskGroup.leave()
+                }
+            })
+        
+        taskGroup.notify(queue: DispatchQueue.global()) {
+            let params = ["user_id": String(keychainService.getUserId())]
+            let json: [String: Any] = ["profile_image_url": imageUrl, "profile_image_width": profileImageWidth, "profile_image_height": profileImageHeight]
+            
+            let url = self.API.generateURL(resource: Resource.usersProfile, endPoint: EndPoint.uploadProfileImage, params: params)
+            let request = self.API.generateRequest(url: url!, method: .POST, json: json)
+            
+            self.API.accessTokenRefreshHandler(request: request)
+            
+            refreshingRequestTaskGroup.notify(queue: .global()) {
+                let session = self.API.generateSession()
+                processingRequestsTaskGroup.enter()
+                self.updateProfileImageProcess = session.dataTaskPublisher(for: request)
+                    .receive(on: RunLoop.main)
+                    .sink(receiveCompletion: { completion in
+                        switch completion {
+                        case .finished:
+                            myUserImage = MyUserImage(profileImageUrl: imageUrl, profileImageWidth: profileImageWidth, profileImageHeight: profileImageHeight)
+                            
+                            self.profileImageLoader = ImageLoader(url: imageUrl, cache: self.cache, whereIsThisFrom: "profile image loader reupload", loadManually: false)
+                            self.profileImageLoaderSub = self.profileImageLoader!.objectWillChange.receive(on: DispatchQueue.main).sink(receiveValue: {[weak self] _ in self?.objectWillChange.send() })
+                            
+                            self.isLoadingPicture = false
+                            self.cancelUpdateProfileImageProcess()
+                            processingRequestsTaskGroup.leave()
+                            break
+                        case .failure(let error):
+                            self.cancelUpdateProfileImageProcess()
+                            #if DEBUG
+                            print("error: ", error)
+                            #endif
+                            processingRequestsTaskGroup.leave()
+                            break
+                        }
+                    }, receiveValue: { [unowned self] _ in
+                    })
+            }
+        }
     }
 }

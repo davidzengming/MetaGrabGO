@@ -38,7 +38,7 @@ struct ThreadView : View {
     @State private var pickedThreadId: Int = -1
     @State private var pickedCommentId: CommentDataStore?
     
-    @State private var pickedUser: User = User(id: -1, username: "placeholder")
+    @State private var pickedUser: User = User(id: -1, username: "placeholder", profileImageUrl: "", profileImageWidth: "", profileImageHeight: "")
     
     // reply bar
     @State private var replyContent = NSTextStorage(string: "")
@@ -187,11 +187,36 @@ struct ThreadView : View {
                             VStack(spacing: 0) {
                                 HStack(spacing: self.avatarPadding) {
                                     VStack(spacing: 0) {
-                                        Image(systemName: "person.circle.fill")
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fit)
-                                            .foregroundColor(Color.orange)
+                                        if self.threadDataStore.authorProfileImageLoader != nil {
+                                            if self.threadDataStore.authorProfileImageLoader!.downloadedImage != nil {
+                                                Image(uiImage: self.threadDataStore.authorProfileImageLoader!.downloadedImage!)
+                                                    .resizable()
+                                                    .aspectRatio(contentMode: .fill)
+                                                    .frame(width: self.avatarWidth, height: self.avatarWidth)
+                                                    .clipShape(Circle())
+                                            } else {
+                                                Circle()
+                                                    .fill(Color(.systemGray5))
+                                                    .frame(width: self.avatarWidth, height: self.avatarWidth)
+                                                    .onAppear() {
+                                                        if self.threadDataStore.authorProfileImageLoader != nil {
+                                                            self.threadDataStore.authorProfileImageLoader!.load()
+                                                    }
+                                                }
+                                            }
+                                        } else {
+                                            Image(systemName: "person.circle.fill")
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fit)
+                                                .foregroundColor(Color.orange)
+                                                .onAppear() {
+                                                    if self.threadDataStore.authorProfileImageLoader != nil {
+                                                        self.threadDataStore.authorProfileImageLoader!.load()
+                                                    }
+                                            }
+                                        }
                                     }
+                                    .animation(.easeIn)
                                     .frame(height: self.avatarWidth)
                                     
                                     VStack(alignment: .leading, spacing: 0) {

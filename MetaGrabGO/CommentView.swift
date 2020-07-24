@@ -21,7 +21,7 @@ struct CommentView : View {
     private var height: CGFloat
     private var leadPadding: CGFloat
     private let level: Int
-    private let leadLineWidth: CGFloat = 3
+    private let leadLineWidth: CGFloat = 5
     private let verticalPadding: CGFloat = 10
     private let outerPadding : CGFloat = 0
     
@@ -47,7 +47,7 @@ struct CommentView : View {
         self.togglePickedUser = togglePickedUser
         self.togglePickedCommentId = togglePickedCommentId
         self.toggleDidBecomeFirstResponder = toggleDidBecomeFirstResponder
-        //        print("comment view was created: ", self.commentDataStore.comment.id)
+//                print("comment view was created: ", self.commentDataStore.comment.id)
     }
     
     private func onClickUser() {
@@ -119,7 +119,9 @@ struct CommentView : View {
                         if self.level > 0 {
                             RoundedRectangle(cornerRadius: 25, style: .continuous)
                                 .fill(appWideAssets.leadingLineColors[self.level % appWideAssets.leadingLineColors.count])
-                                .frame(width: self.leadLineWidth, height: self.commentDataStore.desiredHeight + (self.isEditable ? 20 : 0) + self.height * 0.04 + 10 + 20 + 10 + 5)
+                                .frame(width: self.leadLineWidth, height: self.commentDataStore.desiredHeight + (self.isEditable ? 20 : 0)
+                                    + self.height * 0.04 + 10
+                                    + 20 + 10 + 5)
                                 .padding(.trailing, 10)
                         }
                         
@@ -129,11 +131,37 @@ struct CommentView : View {
                                     HStack(spacing: 0) {
                                         HStack(spacing: avatarPadding) {
                                             VStack(spacing: 0) {
-                                                Image(systemName: "person.circle.fill")
-                                                    .resizable()
-                                                    .aspectRatio(contentMode: .fit)
-                                                    .foregroundColor(Color.orange)
+                                                if self.commentDataStore.authorProfileImageLoader != nil {
+                                                    if self.commentDataStore.authorProfileImageLoader!.downloadedImage != nil {
+                                                        Image(uiImage: self.commentDataStore.authorProfileImageLoader!.downloadedImage!)
+                                                            .resizable()
+                                                            .aspectRatio(contentMode: .fill)
+                                                            .frame(width: avatarWidth, height: avatarWidth)
+                                                            .clipShape(Circle())
+                                                    } else {
+                                                        Circle()
+                                                            .fill(Color(.systemGray5))
+                                                            .frame(width: avatarWidth, height: avatarWidth)
+                                                            .onAppear() {
+                                                                if self.commentDataStore.authorProfileImageLoader != nil {
+                                                                    self.commentDataStore.authorProfileImageLoader!.load()
+                                                            }
+                                                        }
+                                                    }
+                                                } else {
+                                                    Image(systemName: "person.circle.fill")
+                                                        .resizable()
+                                                        .aspectRatio(contentMode: .fit)
+                                                        .foregroundColor(Color.orange)
+                                                        .onAppear() {
+                                                            if self.commentDataStore.authorProfileImageLoader != nil {
+                                                                self.commentDataStore.authorProfileImageLoader!.load()
+                                                            }
+                                                            
+                                                    }
+                                                }
                                             }
+                                            .animation(.easeIn)
                                             .frame(height: self.avatarWidth)
                                             
                                             VStack(alignment: .leading, spacing: 0) {
@@ -225,6 +253,9 @@ struct CommentView : View {
                                         if self.commentDataStore.comment.numChilds > 0 || self.commentDataStore.childCommentList.count > 0 {
                                             HStack {
                                                 Image(systemName: "arrowtriangle.down.fill")
+                                                .resizable()
+                                                .scaledToFit()
+                                                    .frame(height: 12)
                                                     .onTapGesture {
                                                         if self.commentDataStore.showChildComments {
                                                             self.rotation = -90

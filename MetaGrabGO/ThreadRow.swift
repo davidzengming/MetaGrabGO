@@ -35,7 +35,7 @@ struct ThreadRow : View {
         self.width = width
         self.height = height
         self.toggleImageModal = toggleImageModal
-//        print("remaking thread row: ", threadDataStore.thread.id)
+        //        print("remaking thread row: ", threadDataStore.thread.id)
     }
     
     private func onClickUser() {
@@ -53,11 +53,33 @@ struct ThreadRow : View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: self.avatarPadding) {
                 VStack(spacing: 0) {
-                    Image(systemName: "person.circle.fill")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .foregroundColor(Color.orange)
+                    if self.threadDataStore.authorProfileImageLoader != nil {
+                        if self.threadDataStore.authorProfileImageLoader!.downloadedImage != nil {
+                            Image(uiImage: self.threadDataStore.authorProfileImageLoader!.downloadedImage!)
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: avatarWidth, height: avatarWidth)
+                                .clipShape(Circle())
+                        } else {
+                            Circle()
+                                .fill(Color(.systemGray5))
+                                .frame(width: avatarWidth, height: avatarWidth)
+                                .onAppear() {
+                                    if self.threadDataStore.authorProfileImageLoader != nil {
+                                        self.threadDataStore.authorProfileImageLoader!.load()
+                                }
+                            }
+                        }
+                        
+                    } else {
+                        Image(systemName: "person.circle.fill")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .foregroundColor(Color.orange)
+                        
+                    }
                 }
+                .animation(.easeIn)
                 
                 VStack(alignment: .leading, spacing: 0) {
                     Text(self.threadDataStore.author.username)
@@ -179,7 +201,7 @@ struct ThreadRow : View {
                 + CGFloat(self.threadDataStore.emojis.emojiArr.count) * 25
                 + (self.threadDataStore.emojis.emojiArr.count == 2 ? 5 : 0) // spacing from second row
                 + 60
-                )
+            )
             //        .background(Color.white)
             , alignment: .center)
             .buttonStyle(PlainButtonStyle())

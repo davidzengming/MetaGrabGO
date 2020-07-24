@@ -12,5 +12,9 @@ import SwiftUI
 struct User: Hashable, Codable, Identifiable {
     var id: Int
     var username: String
+    
+    var profileImageUrl: String
+    var profileImageWidth: String
+    var profileImageHeight: String
 //    var created: Date
 }

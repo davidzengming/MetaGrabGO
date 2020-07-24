@@ -182,7 +182,7 @@ struct ForumView: View {
     @State private var isBottomPopupOn = false
     @State private var bottomBarState: BottomBarState = .addEmoji
     @State private var pickedThreadId: Int = -1
-    @State private var pickedUser: User = User(id: -1, username: "placeholder")
+    @State private var pickedUser: User = User(id: -1, username: "placeholder", profileImageUrl: "", profileImageWidth: "", profileImageHeight: "")
     
     @State private var isImageModalOn = false
     @State private var currentImageModalIndex: Int = -1

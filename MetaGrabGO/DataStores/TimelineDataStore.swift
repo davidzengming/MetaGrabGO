@@ -11,6 +11,7 @@ import SwiftUI
 import Combine
 
 final class TimelineDataStore: ObservableObject {
+    @Environment(\.imageCache) private var cache: ImageCache
     let monthDict = [
         1: "January",
         2: "February",
@@ -46,11 +47,21 @@ final class TimelineDataStore: ObservableObject {
     private var prevLoadProcess: AnyCancellable?
     private var nextLoadProcess: AnyCancellable?
     
+    private(set) var imageLoaders: [Int: ImageLoader] = [:]
+    private var imageLoaderSubs = [Int: AnyCancellable]()
+    
     init() {
         self.gamesCalendars = [:]
         let currDate = Date()
         self.startTime = currDate.secondsSince1970
         self.endTime = currDate.secondsSince1970
+    }
+    
+    deinit {
+        for (_, sub) in imageLoaderSubs {
+            sub.cancel()
+        }
+        imageLoaderSubs = [:]
     }
     
     func cancelFirstLoadProcess() {
@@ -120,6 +131,9 @@ final class TimelineDataStore: ObservableObject {
                         
                         let newGameCalendar = GameCalendarDataStore(epochTimeInSeconds: Int(tempGamesTimelineResponse.timeScores[i]))
                         
+                        self.imageLoaders[game.id] = ImageLoader(url: game.icon, cache: self.cache, whereIsThisFrom: "game image loader", loadManually: true)
+                        self.imageLoaderSubs[game.id] = self.imageLoaders[game.id]!.objectWillChange.receive(on: DispatchQueue.main).sink(receiveValue: {[weak self] _ in self?.objectWillChange.send() })
+                        
                         if lastGameId != nil {
                             let lastGameCalendar = self.gamesCalendars[lastGameId!]!
                             
@@ -180,6 +194,8 @@ final class TimelineDataStore: ObservableObject {
                         break
                     case .failure(let error):
                         #if DEBUG
+                        self.cancelPrevLoadProcess()
+                        self.isLoadingPrev = false
                         print("error: ", error)
                         #endif
                         processingRequestsTaskGroup.leave()
@@ -195,6 +211,9 @@ final class TimelineDataStore: ObservableObject {
                         addedTimelineArr.append(game.id)
                         
                         let newGameCalendar = GameCalendarDataStore(epochTimeInSeconds: Int(tempGamesTimelineResponse.timeScores[i]))
+                        self.imageLoaders[game.id] = ImageLoader(url: game.icon, cache: self.cache, whereIsThisFrom: "game image loader", loadManually: true)
+                        self.imageLoaderSubs[game.id] = self.imageLoaders[game.id]!.objectWillChange.receive(on: DispatchQueue.main).sink(receiveValue: {[weak self] _ in self?.objectWillChange.send() })
+                        
                         
                         if lastGameId != nil {
                             let lastGameCalendar = self.gamesCalendars[lastGameId!]!
@@ -273,6 +292,8 @@ final class TimelineDataStore: ObservableObject {
                         addedTimelineArr.append(game.id)
                         
                         let newGameCalendar = GameCalendarDataStore(epochTimeInSeconds: Int(tempGamesTimelineResponse.timeScores[i]))
+                        self.imageLoaders[game.id] = ImageLoader(url: game.icon, cache: self.cache, whereIsThisFrom: "game image loader", loadManually: true)
+                        self.imageLoaderSubs[game.id] = self.imageLoaders[game.id]!.objectWillChange.receive(on: DispatchQueue.main).sink(receiveValue: {[weak self] _ in self?.objectWillChange.send() })
                         
                         if lastGameId != nil {
                             let lastGameCalendar = self.gamesCalendars[lastGameId!]!
@@ -309,7 +330,6 @@ class GameCalendarDataStore: ObservableObject {
     @Published var isShowingYear: Bool = true
     @Published var isShowingMonth: Bool = true
     @Published var isShowingDay: Bool = true
-    
     @Published var isLastDayInMonth: Bool = true
     
     var year: Int

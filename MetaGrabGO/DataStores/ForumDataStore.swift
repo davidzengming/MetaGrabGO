@@ -290,7 +290,7 @@ class ForumDataStore: ObservableObject {
                         }
                         
                         let author = thread.users[0]
-                        
+
                         let threadDataStore = ThreadDataStore(gameId: self.game.id, thread: thread, vote: myVote, author: author, emojiArr: thread.emojis!.emojisIdArr, emojiReactionCount: thread.emojis!.emojiReactionCountDict, userArrPerEmoji: thread.emojis!.userArrPerEmojiDict, didReactToEmojiDict: thread.emojis!.didReactToEmojiDict, containerWidth: containerWidth, maxImageHeight: maxImageHeight)
                         
                         self.threadDataStores[thread.id] = threadDataStore
@@ -467,6 +467,9 @@ class ThreadDataStore: ObservableObject {
     private(set) var maxImageHeight: CGFloat = 0
     private(set) var imageDimensions: [(width: CGFloat, height: CGFloat)] = []
     
+    private(set) var authorProfileImageLoader: ImageLoader?
+    private var authorProfileImageLoaderSub: AnyCancellable?
+    
     init(gameId: Int, thread: Thread, vote: Vote?, author: User, emojiArr: [Int], emojiReactionCount: [Int: Int], userArrPerEmoji: [Int: [User]], didReactToEmojiDict: [Int: Bool], containerWidth: CGFloat, maxImageHeight: CGFloat) {
         
         let currDate = Date()
@@ -497,8 +500,9 @@ class ThreadDataStore: ObservableObject {
         })
         
         self.calculateImagesDimensions(imageWidths: thread.imageWidths, imageHeights: thread.imageHeights, maxImageHeightLimit: maxImageHeight)
-        
+
         self.mountImages()
+        self.mountAuthorProfileImage()
         //        self.loadImages()
     }
     
@@ -589,6 +593,15 @@ class ThreadDataStore: ObservableObject {
         }
     }
     
+    func mountAuthorProfileImage() {
+        if author.profileImageUrl != "" {
+            self.authorProfileImageLoader = ImageLoader(url: author.profileImageUrl, cache: cache, whereIsThisFrom: "thread image loader", loadManually: true)
+            self.authorProfileImageLoaderSub = authorProfileImageLoader!.objectWillChange.receive(on: DispatchQueue.main).sink(receiveValue: {[weak self] _ in self?.objectWillChange.send() })
+        } else {
+            print("no profile picture to mount")
+        }
+    }
+    
     //    func getCopyDataStore() -> ThreadDataStore {
     //        var emojiArr: [Int] = []
     //
@@ -634,7 +647,7 @@ class ThreadDataStore: ObservableObject {
                     case .finished:
                         self.thread.upvotes += 1
                         self.vote!.direction = 1
-                        self.emojis.addEmojiToStore(emojiId: 0, user: User(id: keychainService.getUserId(), username: keychainService.getUserName()), newEmojiCount: self.thread.upvotes)
+                        self.emojis.addEmojiToStore(emojiId: 0, user: User(id: keychainService.getUserId(), username: keychainService.getUserName(), profileImageUrl: myUserImage!.profileImageUrl, profileImageWidth: myUserImage!.profileImageWidth, profileImageHeight: myUserImage!.profileImageHeight), newEmojiCount: self.thread.upvotes)
                         self.emojis.isLoading = false
                         self.cancelEmojiLoadingProcess()
                         processingRequestsTaskGroup.leave()
@@ -673,7 +686,7 @@ class ThreadDataStore: ObservableObject {
                     case .finished:
                         self.thread.downvotes += 1
                         self.vote!.direction = -1
-                        self.emojis.addEmojiToStore(emojiId: 1, user: User(id: keychainService.getUserId(), username: keychainService.getUserName()), newEmojiCount: self.thread.downvotes)
+                        self.emojis.addEmojiToStore(emojiId: 1, user: User(id: keychainService.getUserId(), username: keychainService.getUserName(), profileImageUrl: myUserImage!.profileImageUrl, profileImageWidth: myUserImage!.profileImageWidth, profileImageHeight: myUserImage!.profileImageHeight), newEmojiCount: self.thread.downvotes)
                         self.emojis.isLoading = false
                         self.cancelEmojiLoadingProcess()
                         processingRequestsTaskGroup.leave()
@@ -727,7 +740,7 @@ class ThreadDataStore: ObservableObject {
                 }, receiveValue: { [unowned self] vote in
                     self.vote = vote
                     self.thread.upvotes += 1
-                    self.emojis.addEmojiToStore(emojiId: 0, user: User(id: keychainService.getUserId(), username: keychainService.getUserName()), newEmojiCount: self.thread.upvotes)
+                    self.emojis.addEmojiToStore(emojiId: 0, user: User(id: keychainService.getUserId(), username: keychainService.getUserName(), profileImageUrl: myUserImage!.profileImageUrl, profileImageWidth: myUserImage!.profileImageWidth, profileImageHeight: myUserImage!.profileImageHeight), newEmojiCount: self.thread.upvotes)
                     self.emojis.isLoading = false
                 })
         }
@@ -756,8 +769,8 @@ class ThreadDataStore: ObservableObject {
                         self.thread.upvotes += 1
                         self.thread.downvotes -= 1
                         
-                        self.emojis.removeEmojiFromStore(emojiId: 1, user: User(id: keychainService.getUserId(), username: keychainService.getUserName()), newEmojiCount: self.thread.downvotes)
-                        self.emojis.addEmojiToStore(emojiId: 0, user: User(id: keychainService.getUserId(), username: keychainService.getUserName()), newEmojiCount: self.thread.upvotes)
+                        self.emojis.removeEmojiFromStore(emojiId: 1, user: User(id: keychainService.getUserId(), username: keychainService.getUserName(), profileImageUrl: myUserImage!.profileImageUrl, profileImageWidth: myUserImage!.profileImageWidth, profileImageHeight: myUserImage!.profileImageHeight), newEmojiCount: self.thread.downvotes)
+                        self.emojis.addEmojiToStore(emojiId: 0, user: User(id: keychainService.getUserId(), username: keychainService.getUserName(), profileImageUrl: myUserImage!.profileImageUrl, profileImageWidth: myUserImage!.profileImageWidth, profileImageHeight: myUserImage!.profileImageHeight), newEmojiCount: self.thread.upvotes)
                         self.emojis.isLoading = false
                         
                         self.cancelEmojiLoadingProcess()
@@ -812,7 +825,7 @@ class ThreadDataStore: ObservableObject {
                 }, receiveValue: { [unowned self] vote in
                     self.vote = vote
                     self.thread.downvotes += 1
-                    self.emojis.addEmojiToStore(emojiId: 1, user: User(id: keychainService.getUserId(), username: keychainService.getUserName()), newEmojiCount: self.thread.downvotes)
+                    self.emojis.addEmojiToStore(emojiId: 1, user: User(id: keychainService.getUserId(), username: keychainService.getUserName(), profileImageUrl: myUserImage!.profileImageUrl, profileImageWidth: myUserImage!.profileImageWidth, profileImageHeight: myUserImage!.profileImageHeight), newEmojiCount: self.thread.downvotes)
                     self.emojis.isLoading = false
                 })
         }
@@ -841,8 +854,8 @@ class ThreadDataStore: ObservableObject {
                         self.thread.upvotes -= 1
                         self.thread.downvotes += 1
                         
-                        self.emojis.removeEmojiFromStore(emojiId: 0, user: User(id: keychainService.getUserId(), username: keychainService.getUserName()), newEmojiCount: self.thread.upvotes)
-                        self.emojis.addEmojiToStore(emojiId: 1, user: User(id: keychainService.getUserId(), username: keychainService.getUserName()), newEmojiCount: self.thread.downvotes)
+                        self.emojis.removeEmojiFromStore(emojiId: 0, user: User(id: keychainService.getUserId(), username: keychainService.getUserName(), profileImageUrl: myUserImage!.profileImageUrl, profileImageWidth: myUserImage!.profileImageWidth, profileImageHeight: myUserImage!.profileImageHeight), newEmojiCount: self.thread.upvotes)
+                        self.emojis.addEmojiToStore(emojiId: 1, user: User(id: keychainService.getUserId(), username: keychainService.getUserName(), profileImageUrl: myUserImage!.profileImageUrl, profileImageWidth: myUserImage!.profileImageWidth, profileImageHeight: myUserImage!.profileImageHeight), newEmojiCount: self.thread.downvotes)
                         self.emojis.isLoading = false
                         self.cancelEmojiLoadingProcess()
                         processingRequestsTaskGroup.leave()
@@ -896,7 +909,7 @@ class ThreadDataStore: ObservableObject {
                         break
                     }
                 }, receiveValue: { [unowned self] emojiResponse in
-                    self.emojis.addEmojiToStore(emojiId: emojiId, user: User(id: keychainService.getUserId(), username: keychainService.getUserName()), newEmojiCount: emojiResponse.newEmojiCount)
+                    self.emojis.addEmojiToStore(emojiId: emojiId, user: User(id: keychainService.getUserId(), username: keychainService.getUserName(), profileImageUrl: myUserImage!.profileImageUrl, profileImageWidth: myUserImage!.profileImageWidth, profileImageHeight: myUserImage!.profileImageHeight), newEmojiCount: emojiResponse.newEmojiCount)
                 })
         }
     }
@@ -936,7 +949,7 @@ class ThreadDataStore: ObservableObject {
                         break
                     }
                 }, receiveValue: { [unowned self] emojiResponse in
-                    self.emojis.removeEmojiFromStore(emojiId: emojiId, user: User(id: keychainService.getUserId(), username: keychainService.getUserName()), newEmojiCount: emojiResponse.newEmojiCount)
+                    self.emojis.removeEmojiFromStore(emojiId: emojiId, user: User(id: keychainService.getUserId(), username: keychainService.getUserName(), profileImageUrl: myUserImage!.profileImageUrl, profileImageWidth: myUserImage!.profileImageWidth, profileImageHeight: myUserImage!.profileImageHeight), newEmojiCount: emojiResponse.newEmojiCount)
                 })
         }
     }
@@ -968,7 +981,7 @@ class ThreadDataStore: ObservableObject {
                         let originalVoteDirection = self.vote!.direction
                         self.vote!.direction = 0
                         
-                        self.emojis.removeEmojiFromStore(emojiId: originalVoteDirection == 1 ? 0 : 1, user: User(id: keychainService.getUserId(), username: keychainService.getUserName()), newEmojiCount: originalVoteDirection == 1 ? self.thread.upvotes : self.thread.downvotes)
+                        self.emojis.removeEmojiFromStore(emojiId: originalVoteDirection == 1 ? 0 : 1, user: User(id: keychainService.getUserId(), username: keychainService.getUserName(), profileImageUrl: myUserImage!.profileImageUrl, profileImageWidth: myUserImage!.profileImageWidth, profileImageHeight: myUserImage!.profileImageHeight), newEmojiCount: originalVoteDirection == 1 ? self.thread.upvotes : self.thread.downvotes)
                         
                         self.emojis.isLoading = false
                         self.cancelEmojiLoadingProcess()
@@ -1140,7 +1153,7 @@ class ThreadDataStore: ObservableObject {
                     let tempVote = tempNewCommentResponse.voteResponse
 //                    let user = tempNewCommentResponse.userResponse
                     
-                    let commentDataStore = CommentDataStore(ancestorThreadId: self.thread.id, gameId: self.gameId, comment: tempMainComment, vote: tempVote, author: User(id: keychainService.getUserId(), username: keychainService.getUserName()), containerWidth: containerWidth, hasNextPage: false)
+                    let commentDataStore = CommentDataStore(ancestorThreadId: self.thread.id, gameId: self.gameId, comment: tempMainComment, vote: tempVote, author: User(id: keychainService.getUserId(), username: keychainService.getUserName(), profileImageUrl: myUserImage!.profileImageUrl, profileImageWidth: myUserImage!.profileImageWidth, profileImageHeight: myUserImage!.profileImageHeight), containerWidth: containerWidth, hasNextPage: false)
                     
                     self.childComments[tempMainComment.id] = commentDataStore
                     self.childCommentList!.insert(tempMainComment.id, at: 0)
@@ -1306,6 +1319,10 @@ class CommentDataStore: ObservableObject {
     private var hideProcess: AnyCancellable?
     private var reportProcess: AnyCancellable?
     
+    private(set) var authorProfileImageLoader: ImageLoader?
+    private var authorProfileImageLoaderSub: AnyCancellable?
+    @Environment(\.imageCache) private var cache: ImageCache
+    
     init(ancestorThreadId: Int, gameId: Int, comment: Comment, vote: Vote?, author: User, containerWidth: CGFloat, hasNextPage: Bool) {
         self.hasNextPage = hasNextPage
         self.ancestorThreadId = ancestorThreadId
@@ -1330,6 +1347,8 @@ class CommentDataStore: ObservableObject {
         
         self.childCommentList = []
         self.childComments = [:]
+        
+        self.mountAuthorProfileImage()
     }
     
     deinit {
@@ -1368,6 +1387,15 @@ class CommentDataStore: ObservableObject {
     
     func toggleShowChildComments() {
         self.showChildComments.toggle()
+    }
+    
+    func mountAuthorProfileImage() {
+        if author.profileImageUrl != "" {
+            self.authorProfileImageLoader = ImageLoader(url: author.profileImageUrl, cache: cache, whereIsThisFrom: "comment profile image loader", loadManually: true)
+            self.authorProfileImageLoaderSub = authorProfileImageLoader!.objectWillChange.receive(on: DispatchQueue.main).sink(receiveValue: {[weak self] _ in self?.objectWillChange.send() })
+        } else {
+            print("no profile picture to mount")
+        }
     }
     
     func upvoteByExistingVoteId() {

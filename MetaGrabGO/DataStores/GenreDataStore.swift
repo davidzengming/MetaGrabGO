@@ -8,6 +8,7 @@
 
 import Foundation
 import Combine
+import SwiftUI
 
 final class PopularListDataStore: ObservableObject {
     @Published private(set) var genresIdArr: [Int]
@@ -95,12 +96,38 @@ final class GenreDataStore: ObservableObject {
     private let API = APIClient()
     private var genrePageLoadingProcess: AnyCancellable?
     
+    private(set) var imageLoaders: [Int: ImageLoader] = [:]
+    private var imageLoaderSubs = [Int: AnyCancellable]()
+    @Environment(\.imageCache) private var cache: ImageCache
+    
     init(genre: Genre, globalGamesDataStore: GlobalGamesDataStore) {
         self.genre = genre
         self.gamesArr = []
         self.nextPageStartIndex = -1
         
         self.fetchGamesByGenrePage(globalGamesDataStore: globalGamesDataStore)
+    }
+    
+    func addImageLoader(gameId: Int, url: String, cache: ImageCache, whereIsThisFrom: String, loadManually: Bool) {
+        self.imageLoaders[gameId] = ImageLoader(url: url, cache: cache, whereIsThisFrom: whereIsThisFrom, loadManually: true)
+        self.addImageLoaderSub(gameId: gameId)
+    }
+    
+    func addImageLoaderSub(gameId: Int) {
+        self.imageLoaderSubs[gameId] = self.imageLoaders[gameId]!.objectWillChange.receive(on: DispatchQueue.main).sink(receiveValue: {[weak self] _ in self?.objectWillChange.send() })
+    }
+    
+    func removeImageLoader(gameId: Int) {
+        self.imageLoaders[gameId]!.cancelProcess()
+        self.imageLoaders.removeValue(forKey: gameId)
+        self.imageLoaderSubs.removeValue(forKey: gameId)
+    }
+    
+    deinit {
+        for (_, sub) in imageLoaderSubs {
+            sub.cancel()
+        }
+        imageLoaderSubs = [:]
     }
     
     func cancelGenrePageLoadingProcess() {
@@ -149,6 +176,8 @@ final class GenreDataStore: ObservableObject {
                     for game in gamesPageResponse.gamesArr {
                         globalGamesDataStore.addGame(game: game)
                         gamesIdArr.append(game.id)
+                        
+                        self.addImageLoader(gameId: game.id, url: globalGamesDataStore.games[game.id]!.icon, cache: self.cache, whereIsThisFrom: "genre data store", loadManually: true)
                     }
                     
                     self.gamesArr += gamesIdArr

@@ -16,7 +16,7 @@ final class ImageLoader: ObservableObject {
     private var cache: ImageCache?
     private var url: URL
     private var cancellable: AnyCancellable?
-    private var whereIsThisFrom: String
+    var whereIsThisFrom: String
     private var imageHeight: CGFloat?
     
     init(url: String, cache: ImageCache?, whereIsThisFrom: String, loadManually: Bool = false) {
@@ -40,11 +40,10 @@ final class ImageLoader: ObservableObject {
     }
     
     func load() {
-        if cancellable != nil {
+        if cancellable != nil {    
             return
         }
-        
-//        print("loading", self.whereIsThisFrom)
+
         //
         if let image = cache?[self.url] {
             DispatchQueue.main.async {
@@ -58,13 +57,14 @@ final class ImageLoader: ObservableObject {
             .map { UIImage(data: $0.data) }
             .replaceError(with: nil)
             .handleEvents(receiveOutput: { [weak self] in self?.cache($0) })
-            .receive(on: DispatchQueue.main)
+            .receive(on: RunLoop.main)
             .sink(receiveCompletion: { completion in
                 switch completion {
                 case .finished:
                     self.cancelProcess()
                     break
                 case .failure(let error):
+                    print("failed")
                     self.cancelProcess()
                     print("received error: ", error)
                 }

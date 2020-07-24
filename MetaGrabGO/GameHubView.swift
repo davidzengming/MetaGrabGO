@@ -46,7 +46,7 @@ struct GameHubView: View {
                         Image(systemName: "square.stack.3d.up.fill")
                         Text("Home")
                     }
-                        .tag(0)
+                    .tag(0)
                     .background(appWideAssets.colors["darkButNotBlack"])
                     
                     NavigationView {

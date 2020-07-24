@@ -151,7 +151,6 @@ struct NewThreadView: View {
             .KeyboardAwarePadding()
             .sheet(isPresented: self.$showImagePicker) {
                 ImagePicker(isImagePickerShown: self.$showImagePicker, image: self.$imagesDict[self.imagesArray[self.clickedImageIndex!]], data: self.$dataDict[self.imagesArray[self.clickedImageIndex!]], currentImages: self.$imagesArray, imagesDict: self.$imagesDict, dataDict: self.$dataDict)
-                    .frame(width: a.size.width)
                     .background(appWideAssets.colors["darkButNotBlack"]!)
                     .cornerRadius(5, corners: [.topLeft, .topRight])
                     .transition(.move(edge: .bottom))
