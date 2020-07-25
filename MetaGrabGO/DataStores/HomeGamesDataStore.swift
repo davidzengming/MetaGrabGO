@@ -73,7 +73,10 @@ final class HomeGamesDataStore: ObservableObject {
         
         var numOfNewGames = 0
         
+        var recentGamesSet = Set<Int>()
+        
         for gameId in recentFollowDataStore.recentVisitGames {
+            recentGamesSet.insert(gameId)
             if visitedGamesDataStore.imageLoaders[gameId] == nil {
                 visitedGamesDataStore.addImageLoader(gameId: gameId, url: globalGamesDataStore.games[gameId]!.icon, cache: cache, whereIsThisFrom: "update game history image loader", loadManually: true)
                 numOfNewGames += 1
@@ -89,11 +92,17 @@ final class HomeGamesDataStore: ObservableObject {
         
         if recentFollowDataStore.recentVisitGames != visitedGamesDataStore.visitedGamesId {
             DispatchQueue.main.async {
+//                print("old: ", visitedGamesDataStore.visitedGamesId)
+//                print("new: ", recentFollowDataStore.recentVisitGames)
+//                print("remove: ", gamesAboutToBeRemoved)
                 withAnimation {
                     visitedGamesDataStore.visitedGamesId = recentFollowDataStore.recentVisitGames
                 }
                 
                 for gameId in gamesAboutToBeRemoved {
+                    if recentGamesSet.contains(gameId) {
+                        continue
+                    }
                     visitedGamesDataStore.removeImageLoader(gameId: gameId)
                 }
             }

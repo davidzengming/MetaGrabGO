@@ -172,6 +172,7 @@ struct FollowerStatsView: View {
 }
 
 struct ForumView: View {
+    @Environment(\.colorScheme) var colorScheme
     @EnvironmentObject var blockHiddenDataStore: BlockHiddenDataStore
     @EnvironmentObject var recentFollowDataStore: RecentFollowDataStore
     
@@ -267,8 +268,14 @@ struct ForumView: View {
     
     var body: some View {
         ZStack {
-            Image("background").resizable(resizingMode: .tile)
+            if colorScheme == .dark {
+                Image("backgroundDarkMode").resizable(resizingMode: .tile)
                 .edgesIgnoringSafeArea(.all)
+            } else {
+                Image("background").resizable(resizingMode: .tile)
+                .edgesIgnoringSafeArea(.all)
+            }
+            
             
             GeometryReader { a in
                 ZStack(alignment: .bottom) {

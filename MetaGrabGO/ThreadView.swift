@@ -329,7 +329,7 @@ struct ThreadView : View {
                                 }
                                 .frame(width: a.size.width * 0.9)
                                 .padding(.bottom, 10)
-                                .foregroundColor(.gray)
+                                .foregroundColor(Color(.systemGray2))
                                 .modifier(CenterModifier())
                                 
                                 EmojiBarThreadView(threadDataStore: self.threadDataStore, turnBottomPopup: { state in self.turnBottomPopup(state: state) }, toggleBottomBarState: { state in self.toggleBottomBarState(state: state)}, togglePickedUser: { user in self.togglePickedUser(user: user)}, togglePickedThreadId: { (threadId, futureContainerWidth) in self.togglePickedThreadId(threadId: threadId, futureContainerWidth: futureContainerWidth) })
@@ -390,7 +390,6 @@ struct ThreadView : View {
                                             .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
                                     }
                                 }
-
                             }
                             .animation(nil)
                         }

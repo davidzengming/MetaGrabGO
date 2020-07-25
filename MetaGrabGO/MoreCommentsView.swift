@@ -40,10 +40,10 @@ struct MoreCommentsView: View {
                     .padding(.trailing, 10)
                 
                 HStack(spacing: 0) {
-                    Image(systemName: "arrowtriangle.down.fill")
-                    .resizable()
-                    .frame(width: 10, height: 10)
-                    
+//                    Image(systemName: "arrowtriangle.down.fill")
+//                    .resizable()
+//                    .frame(width: 10, height: 10)
+//                    
                     Text("See \(self.getNumChildCommentsNotLoaded()) more \(self.getReplyPlurality())")
                         .padding(.leading, 10)
                 }

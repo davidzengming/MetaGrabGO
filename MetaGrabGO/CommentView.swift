@@ -186,7 +186,7 @@ struct CommentView : View {
                                                     .resizable()
                                                     .frame(width: self.width * 0.025, height: self.width * 0.025)
                                                     .padding(5)
-                                                    .background(self.commentDataStore.vote != nil && self.commentDataStore.vote!.direction == 1 ? Color(.darkGray) : Color(UIColor(named: "emojiBackgroundColor")!))
+                                                    .background(self.commentDataStore.vote != nil && self.commentDataStore.vote!.direction == 1 ? Color(UIColor(named: "emojiPressedBackgroundColor")!) : Color(UIColor(named: "emojiUnpressedBackgroundColor")!))
                                                     
                                                     .cornerRadius(5)
                                                     .onTapGesture {
@@ -202,7 +202,7 @@ struct CommentView : View {
                                                     .frame(width: self.width * 0.025, height: self.width * 0.025)
                                                     .padding(5)
                                                     
-                                                    .background(self.commentDataStore.vote != nil && self.commentDataStore.vote!.direction == -1 ? Color(.darkGray) : Color(UIColor(named: "emojiBackgroundColor")!))
+                                                    .background(self.commentDataStore.vote != nil && self.commentDataStore.vote!.direction == -1 ? Color(UIColor(named: "emojiPressedBackgroundColor")!) : Color(UIColor(named: "emojiUnpressedBackgroundColor")!))
                                                     .cornerRadius(5)
                                                     .onTapGesture {
                                                         self.onClickDownvoteButton()
@@ -252,27 +252,34 @@ struct CommentView : View {
                                         
                                         if self.commentDataStore.comment.numChilds > 0 || self.commentDataStore.childCommentList.count > 0 {
                                             HStack {
+                                                Text(String(self.commentDataStore.childCommentList.count))
+                                                    .bold()
+                                                
                                                 Image(systemName: "arrowtriangle.down.fill")
                                                 .resizable()
                                                 .scaledToFit()
                                                     .frame(height: 12)
-                                                    .onTapGesture {
-                                                        if self.commentDataStore.showChildComments {
-                                                            self.rotation = -90
-                                                        } else {
-                                                            self.rotation = 0
-                                                        }
-                                                        self.commentDataStore.toggleShowChildComments()
-                                                }
                                                 .rotationEffect(.degrees(rotation))
-                                                .animation(.easeIn)
-                                                Text(String(self.commentDataStore.childCommentList.count))
+                                                
+                                            }
+                                            .onAppear() {
+                                                if self.rotation == 0 && self.commentDataStore.showChildComments == false {
+                                                    self.rotation = -90
+                                                }
+                                            }
+                                            .onTapGesture {
+                                                    self.commentDataStore.toggleShowChildComments()
+                                                    if self.commentDataStore.showChildComments {
+                                                        self.rotation = 0
+                                                    } else {
+                                                        self.rotation = -90
+                                                    }
                                             }
                                         }
                                         
                                         Spacer()
                                     }
-                                    .foregroundColor(.gray)
+                                    .foregroundColor(Color(.systemGray2))
                                     .frame(width: self.width - self.leadPadding - (self.level > 0 ? self.leadLineWidth + 10: 0) - self.avatarWidth - self.avatarPadding, height: 20)
                                 }
                             }

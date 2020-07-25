@@ -100,11 +100,11 @@ struct EmojiBarThreadView: View {
 
                                         Text(String(self.threadDataStore.emojis.emojiCount[emojiId]!))
                                         .bold()
-                                            .foregroundColor(self.threadDataStore.emojis.didReactToEmoji[emojiId]! == true ?  Color(.lightGray) : Color(UIColor(named: "EmojiCountUnpressedColor")!))
+                                        .foregroundColor(self.threadDataStore.emojis.didReactToEmoji[emojiId]! == true ? Color(UIColor(named: "emojiCountPressedColor")!) : Color(UIColor(named: "emojiCountUnpressedColor")!))
                                     }
                                     .frame(width: 40, height: 15)
                                     .padding(5)
-                                    .background(self.threadDataStore.emojis.didReactToEmoji[emojiId]! == true ? Color(.darkGray) : Color(UIColor(named: "emojiBackgroundColor")!))
+                                    .background(self.threadDataStore.emojis.didReactToEmoji[emojiId]! == true ? Color(UIColor(named: "emojiPressedBackgroundColor")!) : Color(UIColor(named: "emojiUnpressedBackgroundColor")!))
                                     .cornerRadius(5)
                                     .onTapGesture {
                                         self.onClickEmoji(emojiId: emojiId)

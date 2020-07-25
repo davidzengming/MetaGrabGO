@@ -185,7 +185,7 @@ struct ThreadRow : View {
                 
                 Spacer()
             }
-            .foregroundColor(Color(.secondaryLabel))
+            .foregroundColor(Color(.systemGray2))
             .frame(width: self.width * 0.9, height: self.height * 0.025)
             .padding(.bottom, 10)
             
