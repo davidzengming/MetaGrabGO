@@ -555,7 +555,7 @@ class ThreadDataStore: ObservableObject {
             maximumHeight = max(maximumHeight, cgHeight)
         }
         
-        let availableWidth = self.containerWidth - CGFloat(numImages) * spacingBetweenImages
+        let availableWidth = self.containerWidth - (CGFloat(numImages) - 1) * spacingBetweenImages
         
         var scaleFactorDueToWidthConstraint: CGFloat = 1
         if availableWidth < totalScaledWidth {

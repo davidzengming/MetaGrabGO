@@ -127,7 +127,7 @@ struct APIClient {
     
     //134.122.31.85
     //127.0.0.1
-    private let baseUrl: URL? = URL(string: "http://127.0.0.1:8000/")
+    private let baseUrl: URL? = URL(string: "http://134.122.31.85:8000/")
     
     private let accessTokenExpireTimeInSeconds = 3600
     private let secondsRemainWhenRefreshToken = 300

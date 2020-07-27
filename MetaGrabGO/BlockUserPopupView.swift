@@ -43,7 +43,7 @@ struct BlockUserPopupView: View {
                     }
                     Spacer()
                 }
-                .frame(width: a.size.width * 0.9, height: a.size.height * 0.1, alignment: .leading)
+                .frame(width: a.size.width * 0.93, height: a.size.height * 0.1, alignment: .leading)
                 .padding(.horizontal, a.size.width * 0.05)
                 .padding(.vertical, a.size.height * 0.1)
 

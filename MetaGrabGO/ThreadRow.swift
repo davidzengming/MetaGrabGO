@@ -97,20 +97,28 @@ struct ThreadRow : View {
             .frame(width: self.width, height: self.avatarWidth, alignment: .leading)
             .padding(.bottom, 20)
             
-            NavigationLink(destination: LazyView{ ThreadView(threadDataStore: self.threadDataStore)}) {
+            ZStack {
                 VStack(alignment: .leading, spacing: 0) {
                     if self.threadDataStore.thread.title.count > 0 {
                         Text(self.threadDataStore.thread.title)
                             .fontWeight(.medium)
-                            .frame(width: self.width * 0.9, height: self.height * 0.05, alignment: .leading)
+                            .frame(width: self.width, height: self.height * 0.05, alignment: .leading)
                     }
                     
                     FancyPantsEditorView(existedTextStorage: self.$threadDataStore.textStorage, desiredHeight: self.$threadDataStore.desiredHeight,  newTextStorage: .constant(NSTextStorage(string: "")), isEditable: .constant(false), isFirstResponder: .constant(false), didBecomeFirstResponder: .constant(false), showFancyPantsEditorBar: .constant(false), isNewContent: false, isThread: true, threadId: self.threadDataStore.thread.id, isOmniBar: false, width: self.width, height: self.height)
-                        .frame(width: self.width * 0.9, height: min(self.threadDataStore.desiredHeight, 200), alignment: .leading)
+                        .frame(width: self.width, height: min(self.threadDataStore.desiredHeight, 200), alignment: .leading)
                 }
+                
+                NavigationLink(destination: LazyView{ ThreadView(threadDataStore: self.threadDataStore)}) {
+                    EmptyView()
+                }
+                    .frame(width: 0)
+                    .opacity(0)
+                .buttonStyle(PlainButtonStyle())
+                
             }
-            .buttonStyle(PlainButtonStyle())
             .padding(.bottom, 20)
+            
             
             if self.threadDataStore.imageArr.count > 0 {
                 HStack(spacing: 10) { // spacingBetweenImages
@@ -142,7 +150,7 @@ struct ThreadRow : View {
                         .animation(.easeIn(duration: 0.25))
                     }
                 }
-                .frame(width: self.width * 0.9, height: self.threadDataStore.maxImageHeight, alignment: .leading)
+                .frame(width: self.width, height: self.threadDataStore.maxImageHeight, alignment: .leading)
                 .padding(.bottom, 20)
             }
             
@@ -186,7 +194,7 @@ struct ThreadRow : View {
                 Spacer()
             }
             .foregroundColor(Color(.systemGray2))
-            .frame(width: self.width * 0.9, height: self.height * 0.025)
+            .frame(width: self.width, height: self.height * 0.025)
             .padding(.bottom, 10)
             
             EmojiBarThreadView(threadDataStore: self.threadDataStore, turnBottomPopup: { state in self.turnBottomPopup(state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state)}, togglePickedUser: { pickedUser in self.togglePickedUser(pickedUser)}, togglePickedThreadId: { (pickedThreadId, futureContainerWidth) in self.togglePickedThreadId(pickedThreadId, futureContainerWidth) })

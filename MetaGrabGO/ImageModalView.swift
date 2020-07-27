@@ -93,7 +93,7 @@ struct ImageModalView: View {
                             .padding(.leading, 10)
                             Spacer()
                         }
-                        .frame(width: geometry.size.width * 0.9, height: geometry.size.height * 0.05, alignment: .leading)
+                        .frame(width: geometry.size.width * 0.93, height: geometry.size.height * 0.05, alignment: .leading)
                         .padding(.top, geometry.size.height * 0.02)
                         Spacer()
                     }

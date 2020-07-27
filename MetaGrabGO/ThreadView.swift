@@ -58,6 +58,8 @@ struct ThreadView : View {
     private let avatarWidth = UIFont.preferredFont(forTextStyle: .body).pointSize * 2
     private let avatarPadding: CGFloat = 10
     
+    private let widthContentRatio: CGFloat = 0.93
+    
     
     init(threadDataStore: ThreadDataStore) {
         self.threadDataStore = threadDataStore
@@ -232,7 +234,7 @@ struct ThreadView : View {
                                     
                                     Spacer()
                                 }
-                                .frame(width: a.size.width * 0.9, height: self.avatarWidth)
+                                .frame(width: a.size.width * self.widthContentRatio, height: self.avatarWidth)
                                 .padding(.top, 20)
                                 .padding(.bottom, 20)
                                 .modifier(CenterModifier())
@@ -240,14 +242,14 @@ struct ThreadView : View {
                                 if self.threadDataStore.thread.title.count > 0 {
                                     Text(self.threadDataStore.thread.title)
                                         .fontWeight(.medium)
-                                        .frame(width: a.size.width * 0.9, alignment: .leading)
+                                        .frame(width: a.size.width * self.widthContentRatio, alignment: .leading)
                                         .modifier(CenterModifier())
                                 }
                                 
                                 Button(action: {self.togglePickedThreadId(threadId: self.threadDataStore.thread.id, futureContainerWidth: 0)
                                     self.toggleDidBecomeFirstResponder()}) {
-                                        FancyPantsEditorView(existedTextStorage: self.$threadDataStore.textStorage, desiredHeight: self.$threadDataStore.desiredHeight,  newTextStorage: .constant(NSTextStorage(string: "")), isEditable: .constant(false), isFirstResponder: .constant(false), didBecomeFirstResponder: .constant(false), showFancyPantsEditorBar: .constant(false), isNewContent: false, isThread: true, threadId: self.threadDataStore.thread.id, isOmniBar: false, width: a.size.width * 0.9, height: a.size.height)
-                                            .frame(width: a.size.width * 0.9, height: self.threadDataStore.desiredHeight + (self.isEditable ? 20 : 0))
+                                        FancyPantsEditorView(existedTextStorage: self.$threadDataStore.textStorage, desiredHeight: self.$threadDataStore.desiredHeight,  newTextStorage: .constant(NSTextStorage(string: "")), isEditable: .constant(false), isFirstResponder: .constant(false), didBecomeFirstResponder: .constant(false), showFancyPantsEditorBar: .constant(false), isNewContent: false, isThread: true, threadId: self.threadDataStore.thread.id, isOmniBar: false, width: a.size.width * self.widthContentRatio, height: a.size.height)
+                                            .frame(width: a.size.width * self.widthContentRatio, height: self.threadDataStore.desiredHeight + (self.isEditable ? 20 : 0))
                                             
                                 }
                                 .modifier(CenterModifier())
@@ -281,9 +283,9 @@ struct ThreadView : View {
                                                 .animation(.easeIn(duration: 0.25))
                                             }
                                         }
-                                        .frame(width: a.size.width * 0.81, height: self.threadDataStore.maxImageHeight, alignment: .leading)
+                                        .frame(width: a.size.width * self.widthContentRatio, height: self.threadDataStore.maxImageHeight, alignment: .leading)
                                     }
-                                    .frame(width: a.size.width * 0.9, alignment: .leading)
+                                    .frame(width: a.size.width * self.widthContentRatio, alignment: .leading)
                                     .modifier(CenterModifier())
                                     .padding(.bottom, 20)
 
@@ -327,13 +329,13 @@ struct ThreadView : View {
                                     
                                     Spacer()
                                 }
-                                .frame(width: a.size.width * 0.9)
+                                .frame(width: a.size.width * self.widthContentRatio)
                                 .padding(.bottom, 10)
                                 .foregroundColor(Color(.systemGray2))
                                 .modifier(CenterModifier())
                                 
                                 EmojiBarThreadView(threadDataStore: self.threadDataStore, turnBottomPopup: { state in self.turnBottomPopup(state: state) }, toggleBottomBarState: { state in self.toggleBottomBarState(state: state)}, togglePickedUser: { user in self.togglePickedUser(user: user)}, togglePickedThreadId: { (threadId, futureContainerWidth) in self.togglePickedThreadId(threadId: threadId, futureContainerWidth: futureContainerWidth) })
-                                    .frame(width: a.size.width * 0.9)
+                                    .frame(width: a.size.width * self.widthContentRatio)
                                     .modifier(CenterModifier())
                             }
                             .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
@@ -341,11 +343,11 @@ struct ThreadView : View {
                             if self.threadDataStore.childCommentList != nil && self.threadDataStore.childCommentList!.count > 0 {
                                 Divider()
                                 ForEach(self.threadDataStore.childCommentList!, id: \.self) { commentId in
-                                    CommentView(commentDataStore: self.threadDataStore.childComments[commentId]!, ancestorThreadId: self.threadDataStore.thread.id, width: a.size.width * 0.9, height: a.size.height, leadPadding: 0, level: 0, turnBottomPopup: { state in self.turnBottomPopup(state: state) }, toggleBottomBarState: { state in self.toggleBottomBarState(state: state) }, togglePickedUser: { user in self.togglePickedUser(user: user) }, togglePickedCommentId: { (commentId, futureContainerWidth) in self.togglePickedCommentId(commentId: commentId, futureContainerWidth: futureContainerWidth) }, toggleDidBecomeFirstResponder: self.toggleDidBecomeFirstResponder)
+                                    CommentView(commentDataStore: self.threadDataStore.childComments[commentId]!, ancestorThreadId: self.threadDataStore.thread.id, width: a.size.width * self.widthContentRatio, height: a.size.height, leadPadding: 0, level: 0, turnBottomPopup: { state in self.turnBottomPopup(state: state) }, toggleBottomBarState: { state in self.toggleBottomBarState(state: state) }, togglePickedUser: { user in self.togglePickedUser(user: user) }, togglePickedCommentId: { (commentId, futureContainerWidth) in self.togglePickedCommentId(commentId: commentId, futureContainerWidth: futureContainerWidth) }, toggleDidBecomeFirstResponder: self.toggleDidBecomeFirstResponder)
                                         .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
                                         .onAppear() {
                                             if commentId == self.threadDataStore.childCommentList!.last! {
-                                                self.fetchNextPage(containerWidth: a.size.width * 0.9)
+                                                self.fetchNextPage(containerWidth: a.size.width * self.widthContentRatio)
                                             }
                                     }
                                 }
@@ -396,7 +398,7 @@ struct ThreadView : View {
                         .frame(width: a.size.width, height: a.size.height - (20 + 20 + 40))
                         .onAppear() {
                             if self.threadDataStore.childCommentList == nil {
-                                self.threadDataStore.fetchCommentTreeByThreadId(refresh: true, containerWidth: a.size.width * 0.9, leadPadding: self.leadPadding)
+                                self.threadDataStore.fetchCommentTreeByThreadId(refresh: true, containerWidth: a.size.width * self.widthContentRatio, leadPadding: self.leadPadding)
                             }
                         }
                         Spacer()

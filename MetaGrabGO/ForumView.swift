@@ -189,6 +189,9 @@ struct ForumView: View {
     @State private var currentImageModalIndex: Int = -1
     @State private var imageModalSelectedThreadStore: ThreadDataStore? = nil
     
+    private let widthContentRatio: CGFloat = 0.93
+    private let maxImageHeightRatio: CGFloat = 0.25
+    
     init(forumDataStore: ForumDataStore, forumOtherDataStore: ForumOtherDataStore, gameIconLoader: ImageLoader) {
         self.forumDataStore = forumDataStore
         self.forumOtherDataStore = forumOtherDataStore
@@ -296,7 +299,7 @@ struct ForumView: View {
                                 
                                 FollowerStatsView(forumOtherDataStore: self.forumOtherDataStore, gameName: self.forumDataStore.game.name, width: a.size.width, followGame: self.followGame, unfollowGame: self.unfollowGame)
                             }
-                            .frame(width: a.size.width * 0.9)
+                            .frame(width: a.size.width * self.widthContentRatio)
                         }
                         .frame(width: a.size.width, height: a.size.width * 0.3)
                         .padding(.top, 30)
@@ -331,7 +334,7 @@ struct ForumView: View {
                             ForEach(self.forumDataStore.threadsList!, id: \.self) { threadId in
                                 VStack(spacing: 0) {
                                     Divider()
-                                    ThreadRow(threadDataStore: self.forumDataStore.threadDataStores[threadId]!, turnBottomPopup: { state in self.turnBottomPopup(state: state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state: state)}, togglePickedUser: { pickedUser in self.togglePickedUser(user: pickedUser)}, togglePickedThreadId: { (pickedThreadId, futureContainerWidth) in self.togglePickedThreadId(threadId: pickedThreadId, futureContainerWidth: futureContainerWidth)}, width: a.size.width * 0.9, height: a.size.height, toggleImageModal : { (threadDataStore, currentImageModalIndex) in self.toggleImageModal(threadDataStore: threadDataStore, currentImageModalIndex: currentImageModalIndex) })
+                                    ThreadRow(threadDataStore: self.forumDataStore.threadDataStores[threadId]!, turnBottomPopup: { state in self.turnBottomPopup(state: state)}, toggleBottomBarState: {state in self.toggleBottomBarState(state: state)}, togglePickedUser: { pickedUser in self.togglePickedUser(user: pickedUser)}, togglePickedThreadId: { (pickedThreadId, futureContainerWidth) in self.togglePickedThreadId(threadId: pickedThreadId, futureContainerWidth: futureContainerWidth)}, width: a.size.width * self.widthContentRatio, height: a.size.height, toggleImageModal : { (threadDataStore, currentImageModalIndex) in self.toggleImageModal(threadDataStore: threadDataStore, currentImageModalIndex: currentImageModalIndex) })
                                 }
                                 .frame(width: a.size.width, alignment: .center)
                                 .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
@@ -359,7 +362,7 @@ struct ForumView: View {
                                 .cornerRadius(15, corners: [.bottomLeft, .bottomRight])
                                 .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
                             } else {
-                                ForumLoadMoreView(forumDataStore: self.forumDataStore, forumOtherDataStore: self.forumOtherDataStore, containerWidth: a.size.width * 0.81, maxImageHeight: a.size.height * 0.15)
+                                ForumLoadMoreView(forumDataStore: self.forumDataStore, forumOtherDataStore: self.forumOtherDataStore, containerWidth: a.size.width * self.widthContentRatio, maxImageHeight: a.size.height * self.maxImageHeightRatio)
                                 .frame(width: a.size.width, height: a.size.height * 0.1)
                                 .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
                                 // hacky bug fix for rounded corner creating a tiny black line between 2 views
@@ -371,14 +374,14 @@ struct ForumView: View {
                     .navigationBarTitle(Text(self.forumDataStore.game.name), displayMode: .inline)
                     .onAppear() {
                         if self.forumDataStore.threadsList == nil {
-                            self.forumDataStore.fetchThreads(containerWidth: a.size.width * 0.81, forumOtherDataStore: self.forumOtherDataStore, maxImageHeight: a.size.height * 0.15)
+                            self.forumDataStore.fetchThreads(containerWidth: a.size.width * self.widthContentRatio, forumOtherDataStore: self.forumOtherDataStore, maxImageHeight: a.size.height * self.maxImageHeightRatio)
                             self.forumDataStore.insertGameHistory()
                         }
                         
                         self.recentFollowDataStore.insertVisitGame(gameId: self.forumDataStore.game.id)
                     }
                     
-                    NavigationLink(destination: NewThreadView(forumDataStore: self.forumDataStore, forumOtherDataStore: self.forumOtherDataStore, containerWidth: a.size.width * 0.81, maxImageHeight: a.size.height * 0.15)
+                    NavigationLink(destination: NewThreadView(forumDataStore: self.forumDataStore, forumOtherDataStore: self.forumOtherDataStore, containerWidth: a.size.width * self.widthContentRatio, maxImageHeight: a.size.height * self.maxImageHeightRatio)
                     ) {
                         NewThreadButton()
                             .frame(width: min(a.size.width, a.size.height) * 0.12, height: min(a.size.width, a.size.height) * 0.12, alignment: .center)

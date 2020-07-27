@@ -10,7 +10,6 @@ import SwiftUI
 
 struct ReportPopupView: View {
     @ObservedObject var forumDataStore: ForumDataStore
-    
     @Binding var pickedThreadId: Int
     var turnBottomPopup: (Bool) -> Void
     var toggleBottomBarState: (BottomBarState) -> Void
@@ -56,16 +55,23 @@ struct ReportPopupView: View {
                         
                         HStack {
                             Spacer()
-                            Text("Submit report")
+                            
+                            if self.pickedThreadId != -1 {
+                                Text("Report thread from user " + self.forumDataStore.threadDataStores[self.pickedThreadId]!.author.username)
                                 .foregroundColor(Color.white)
+                            } else {
+                                Text("Report thread")
+                                .foregroundColor(Color.white)
+                            }
+                            
                             Spacer()
                         }
                     }
                 }
                  
-                TextField("Please enter the reason", text: self.$reportReason)
-                    .frame(width: a.size.width * 0.9)
-                    .padding(10)
+                TextField("  Please enter the reason", text: self.$reportReason)
+                    .frame(width: a.size.width * 0.93)
+                    .padding(.vertical, 10)
                     .background(Color.white)
                     .cornerRadius(10)
                 
@@ -145,16 +151,16 @@ struct ReportPopupViewThreadVer: View {
                         
                         HStack {
                             Spacer()
-                            Text("Submit a report")
+                            Text("Report thread/comment")
                                 .foregroundColor(Color.white)
                             Spacer()
                         }
                     }
                 }
                  
-                TextField("Enter the reason", text: self.$reportReason)
-                    .frame(width: a.size.width * 0.9)
-                    .padding(10)
+                TextField("  Please enter the reason", text: self.$reportReason)
+                    .frame(width: a.size.width * 0.93)
+                    .padding(.vertical, 10)
                     .background(Color.white)
                     .cornerRadius(10)
                 
