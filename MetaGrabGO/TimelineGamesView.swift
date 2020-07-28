@@ -184,10 +184,10 @@ struct TimelineGamesView: View {
                                         .padding(.vertical, 10)
                                         .shadow(radius: 5)
                                         .onAppear() {
-                                            if self.timelineDataStore.gamesArr!.first == gameId && self.timelineDataStore.hasPrevPage {
-                                                self.loadPrevPage()
-                                            }
-                                            
+//                                            if self.timelineDataStore.gamesArr!.first == gameId && self.timelineDataStore.hasPrevPage {
+//                                                self.loadPrevPage()
+//                                            }
+//                                            
                                             if self.timelineDataStore.gamesArr!.last == gameId && self.timelineDataStore.hasNextPage {
                                                 self.loadNextPage()
                                             }
@@ -210,7 +210,6 @@ struct TimelineGamesView: View {
         }
         .onAppear() {
             Global.tabBar!.isHidden = false
-            
             if self.timelineDataStore.gamesArr == nil {
                 self.timelineDataStore.fetchFirstLoadAtEpochTime(globalGamesDataStore: self.globalGamesDataStore)
             }

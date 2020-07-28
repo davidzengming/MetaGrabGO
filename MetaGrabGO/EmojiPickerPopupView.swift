@@ -105,7 +105,7 @@ struct EmojiPickerPopupView: View {
                     }
                     Spacer()
                 }
-                .frame(width: a.size.width * 0.93, height: a.size.height * 0.1, alignment: .leading)
+                .frame(width: a.size.width * 0.95, height: a.size.height * 0.1, alignment: .leading)
                 .padding(.horizontal, a.size.width * 0.05)
                 .padding(.vertical, a.size.height * 0.1)
                 
@@ -232,7 +232,7 @@ struct EmojiPickerPopupViewThreadVer: View {
                     }
                     Spacer()
                 }
-                .frame(width: a.size.width * 0.93, height: a.size.height * 0.1, alignment: .leading)
+                .frame(width: a.size.width * 0.95, height: a.size.height * 0.1, alignment: .leading)
                 .padding(.horizontal, a.size.width * 0.05)
                 .padding(.vertical, a.size.height * 0.1)
                 

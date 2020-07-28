@@ -70,7 +70,7 @@ struct ReportPopupView: View {
                 }
                  
                 TextField("  Please enter the reason", text: self.$reportReason)
-                    .frame(width: a.size.width * 0.93)
+                    .frame(width: a.size.width * 0.95)
                     .padding(.vertical, 10)
                     .background(Color.white)
                     .cornerRadius(10)
@@ -159,7 +159,7 @@ struct ReportPopupViewThreadVer: View {
                 }
                  
                 TextField("  Please enter the reason", text: self.$reportReason)
-                    .frame(width: a.size.width * 0.93)
+                    .frame(width: a.size.width * 0.95)
                     .padding(.vertical, 10)
                     .background(Color.white)
                     .cornerRadius(10)

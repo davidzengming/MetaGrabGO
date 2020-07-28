@@ -133,7 +133,7 @@ struct UserProfileView: View {
                                 .foregroundColor(Color.white)
                         }
                     }
-                    .frame(width: a.size.width * 0.9)
+                    .frame(width: a.size.width * 0.95)
                     
                     Spacer()
                     VStack {
@@ -143,7 +143,7 @@ struct UserProfileView: View {
                                         Text("BLACKLISTED USERS")
                                             .tracking(1)
                                             .padding()
-                                            .frame(width: a.size.width * 0.9, height: a.size.height * 0.05, alignment: .leading)
+                                            .frame(width: a.size.width * 0.95, height: a.size.height * 0.05, alignment: .leading)
                                             .background(appWideAssets.colors["teal"]!)
                                         
                                         if self.loadedBlacklist == false {
@@ -177,7 +177,7 @@ struct UserProfileView: View {
                                             .padding()
                                         }
                                     }
-                                    .frame(width: a.size.width * 0.9)
+                                    .frame(width: a.size.width * 0.95)
                                     .background(appWideAssets.colors["notQuiteBlack"])
                                     .padding()
                                     
@@ -185,7 +185,7 @@ struct UserProfileView: View {
                                         Text("HIDDEN THREADS")
                                             .tracking(1)
                                             .padding()
-                                            .frame(width: a.size.width * 0.9, height: a.size.height * 0.05, alignment: .leading)
+                                            .frame(width: a.size.width * 0.95, height: a.size.height * 0.05, alignment: .leading)
                                             .background(appWideAssets.colors["teal"]!)
                                         
                                         if self.loadedHiddenThreads == false {
@@ -216,7 +216,7 @@ struct UserProfileView: View {
                                             }.padding()
                                         }
                                     }
-                                    .frame(width: a.size.width * 0.9)
+                                    .frame(width: a.size.width * 0.95)
                                     .background(appWideAssets.colors["notQuiteBlack"])
                                     .padding()
                                     
@@ -224,7 +224,7 @@ struct UserProfileView: View {
                                         Text("HIDDEN COMMENTS")
                                             .tracking(1)
                                             .padding()
-                                            .frame(width: a.size.width * 0.9, height: a.size.height * 0.05, alignment: .leading)
+                                            .frame(width: a.size.width * 0.95, height: a.size.height * 0.05, alignment: .leading)
                                             .background(appWideAssets.colors["teal"]!)
                                         
                                         if self.loadedHiddenComments == false {
@@ -254,7 +254,7 @@ struct UserProfileView: View {
                                             }.padding()
                                         }
                                     }
-                                    .frame(width: a.size.width * 0.9)
+                                    .frame(width: a.size.width * 0.95)
                                     .background(appWideAssets.colors["notQuiteBlack"])
                                     .padding()
                                 }

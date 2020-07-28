@@ -95,9 +95,7 @@ final class HomeGamesDataStore: ObservableObject {
 //                print("old: ", visitedGamesDataStore.visitedGamesId)
 //                print("new: ", recentFollowDataStore.recentVisitGames)
 //                print("remove: ", gamesAboutToBeRemoved)
-                withAnimation {
-                    visitedGamesDataStore.visitedGamesId = recentFollowDataStore.recentVisitGames
-                }
+                visitedGamesDataStore.visitedGamesId = recentFollowDataStore.recentVisitGames
                 
                 for gameId in gamesAboutToBeRemoved {
                     if recentGamesSet.contains(gameId) {
@@ -133,10 +131,7 @@ final class HomeGamesDataStore: ObservableObject {
             }
             
             DispatchQueue.main.async {
-                withAnimation {
-                    followGamesDataStore.followedGamesId = newFollowGamesList
-                }
-                
+                followGamesDataStore.followedGamesId = newFollowGamesList
                 for gameId in gamesAboutToBeRemoved {
                     followGamesDataStore.removeImageLoader(gameId: gameId)
                 }

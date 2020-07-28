@@ -31,16 +31,19 @@ struct PopularGamesView: View {
             
             GeometryReader { a in
                 List {
-                    VStack {
-                        Text("POPULAR TITLES")
-                            .font(.system(size: a.size.width * 0.05, weight: .regular, design: .rounded))
-                            .tracking(2)
-                            .foregroundColor(Color.white)
-                            .shadow(radius: 5)
+                    HStack {
+                        Spacer()
+                        VStack {
+                            Text("POPULAR TITLES")
+                                .font(.system(size: a.size.width * 0.05, weight: .regular, design: .rounded))
+                                .tracking(2)
+                                .foregroundColor(Color.white)
+                                .shadow(radius: 5)
+                        }
+                        .frame(width: a.size.width * 0.95, alignment: .leading)
+                        .padding(.bottom, 10)
+                        Spacer()
                     }
-                    .frame(width: a.size.width * 0.95, alignment: .leading)
-                    .padding(.bottom, 10)
-                        .padding(.horizontal, 10)
                     .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
                     
                     ForEach(self.popularListDataStore.genresIdArr, id: \.self) { genreId in

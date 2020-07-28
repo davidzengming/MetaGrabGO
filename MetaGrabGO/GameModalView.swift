@@ -34,7 +34,7 @@ struct GameModalView: View {
                         }
                         Spacer()
                     }
-                    .frame(width: a.size.width * 0.9, height: a.size.height * 0.05, alignment: .leading)
+                    .frame(width: a.size.width * 0.95, height: a.size.height * 0.05, alignment: .leading)
                     .padding(.top, a.size.height * 0.01)
                     
                     ScrollView {
@@ -60,7 +60,7 @@ struct GameModalView: View {
                                             .shadow(radius: 5)
                                     }
                                 }
-                                .frame(width: a.size.width * 0.9, height: a.size.width * 0.7 * 0.5)
+                                .frame(width: a.size.width * 0.95, height: a.size.width * 0.7 * 0.5)
                                 .background(appWideAssets.colors["notQuiteBlack"]!)
                                 Spacer()
                             }
@@ -76,7 +76,7 @@ struct GameModalView: View {
                                 .padding(.horizontal)
                             
                             Rectangle()
-                                .frame(width: a.size.width * 0.9, height: 1)
+                                .frame(width: a.size.width * 0.95, height: 1)
                                 .foregroundColor(.clear)
                                 .background(LinearGradient(gradient: Gradient(colors: [.blue, appWideAssets.colors["notQuiteBlack"]!]), startPoint: .leading, endPoint: .trailing))
                                 .padding(.horizontal)
@@ -146,14 +146,14 @@ struct GameModalView: View {
                                 }
                                 .padding()
                             }
-                            .frame(width: a.size.width * 0.9, alignment: .leading)
+                            .frame(width: a.size.width * 0.95, alignment: .leading)
                             .background(appWideAssets.colors["notQuiteBlack"]!)
                             .padding()
                             
                             Spacer()
                         }
                     }
-                    .frame(width: a.size.width * 0.9)
+                    .frame(width: a.size.width * 0.95)
                 }
             }
             .navigationBarTitle("")

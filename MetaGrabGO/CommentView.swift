@@ -21,7 +21,7 @@ struct CommentView : View {
     private var height: CGFloat
     private var leadPadding: CGFloat
     private let level: Int
-    private let leadLineWidth: CGFloat = 5
+    private let leadLineWidth: CGFloat = 4
     private let verticalPadding: CGFloat = 10
     private let outerPadding : CGFloat = 0
     
@@ -47,7 +47,7 @@ struct CommentView : View {
         self.togglePickedUser = togglePickedUser
         self.togglePickedCommentId = togglePickedCommentId
         self.toggleDidBecomeFirstResponder = toggleDidBecomeFirstResponder
-//                print("comment view was created: ", self.commentDataStore.comment.id)
+        //                print("comment view was created: ", self.commentDataStore.comment.id)
     }
     
     private func onClickUser() {
@@ -145,7 +145,7 @@ struct CommentView : View {
                                                             .onAppear() {
                                                                 if self.commentDataStore.authorProfileImageLoader != nil {
                                                                     self.commentDataStore.authorProfileImageLoader!.load()
-                                                            }
+                                                                }
                                                         }
                                                     }
                                                 } else {
@@ -166,10 +166,12 @@ struct CommentView : View {
                                             
                                             VStack(alignment: .leading, spacing: 0) {
                                                 HStack {
-                                                    Text(self.commentDataStore.author.username)
-                                                        .onTapGesture {
-                                                            self.onClickUser()
+                                                    Button(action: {
+                                                        self.onClickUser()
+                                                    }) {
+                                                        Text(self.commentDataStore.author.username)
                                                     }
+                                                    .buttonStyle(PlainButtonStyle())
                                                     
                                                     Spacer()
                                                 }
@@ -182,31 +184,35 @@ struct CommentView : View {
                                             Spacer()
                                             
                                             HStack {
-                                                Image(":thumbs_up:")
-                                                    .resizable()
-                                                    .frame(width: self.width * 0.025, height: self.width * 0.025)
-                                                    .padding(5)
-                                                    .background(self.commentDataStore.vote != nil && self.commentDataStore.vote!.direction == 1 ? Color(UIColor(named: "emojiPressedBackgroundColor")!) : Color(UIColor(named: "emojiUnpressedBackgroundColor")!))
-                                                    
-                                                    .cornerRadius(5)
-                                                    .onTapGesture {
-                                                        self.onClickUpvoteButton()
+                                                Button(action: {
+                                                    self.onClickUpvoteButton()
+                                                }) {
+                                                    Image(":thumbs_up:")
+                                                        .resizable()
+                                                        .frame(width: self.width * 0.025, height: self.width * 0.025)
+                                                        .padding(5)
+                                                        .background(self.commentDataStore.vote != nil && self.commentDataStore.vote!.direction == 1 ? Color(UIColor(named: "emojiPressedBackgroundColor")!) : Color(UIColor(named: "emojiUnpressedBackgroundColor")!))
+                                                        
+                                                        .cornerRadius(5)
                                                 }
+                                                .buttonStyle(PlainButtonStyle())
                                                 
                                                 Text(String(self.commentDataStore.comment.upvotes - self.commentDataStore.comment.downvotes))
                                                     .font(.body)
                                                     .frame(width: 20)
                                                 
-                                                Image(":thumbs_down:")
-                                                    .resizable()
-                                                    .frame(width: self.width * 0.025, height: self.width * 0.025)
-                                                    .padding(5)
-                                                    
-                                                    .background(self.commentDataStore.vote != nil && self.commentDataStore.vote!.direction == -1 ? Color(UIColor(named: "emojiPressedBackgroundColor")!) : Color(UIColor(named: "emojiUnpressedBackgroundColor")!))
-                                                    .cornerRadius(5)
-                                                    .onTapGesture {
-                                                        self.onClickDownvoteButton()
+                                                Button(action: {
+                                                    self.onClickDownvoteButton()
+                                                }) {
+                                                    Image(":thumbs_down:")
+                                                        .resizable()
+                                                        .frame(width: self.width * 0.025, height: self.width * 0.025)
+                                                        .padding(5)
+                                                        
+                                                        .background(self.commentDataStore.vote != nil && self.commentDataStore.vote!.direction == -1 ? Color(UIColor(named: "emojiPressedBackgroundColor")!) : Color(UIColor(named: "emojiUnpressedBackgroundColor")!))
+                                                        .cornerRadius(5)
                                                 }
+                                                .buttonStyle(PlainButtonStyle())
                                             }
                                             .frame(height: self.height * 0.04, alignment: .top)
                                         }
@@ -226,55 +232,63 @@ struct CommentView : View {
                                     HStack {
                                         HStack {
                                             if self.commentDataStore.isHidden == true {
-                                                Text("Unhide")
-                                                    .bold()
-                                                    .onTapGesture {
-                                                        self.commentDataStore.unhideComment()
+                                                Button(action: {
+                                                    self.commentDataStore.unhideComment()
+                                                }) {
+                                                    Text("Unhide")
+                                                        .bold()
                                                 }
+                                                .buttonStyle(PlainButtonStyle())
                                             } else {
-                                                Text("Hide")
-                                                    .bold()
-                                                    .onTapGesture {
-                                                        self.commentDataStore.hideComment()
+                                                Button(action: {
+                                                    self.commentDataStore.hideComment()
+                                                }) {
+                                                    Text("Hide")
+                                                        .bold()
                                                 }
+                                                .buttonStyle(PlainButtonStyle())
                                             }
                                         }
                                         
                                         HStack {
-                                            Text("Report")
-                                                .bold()
-                                                .onTapGesture {
-                                                    self.togglePickedCommentId(self.commentDataStore, self.width - self.leadPadding - 10 - self.leadLineWidth - 20)
-                                                    self.toggleBottomBarState(.reportThread)
-                                                    self.turnBottomPopup(true)
+                                            Button(action: {
+                                                self.togglePickedCommentId(self.commentDataStore, self.width - self.leadPadding - 10 - self.leadLineWidth - 20)
+                                                self.toggleBottomBarState(.reportThread)
+                                                self.turnBottomPopup(true)
+                                            }) {
+                                                Text("Report")
+                                                    .bold()
                                             }
+                                            .buttonStyle(PlainButtonStyle())
                                         }
                                         
                                         if self.commentDataStore.comment.numChilds > 0 || self.commentDataStore.childCommentList.count > 0 {
-                                            HStack {
-                                                Text(String(self.commentDataStore.childCommentList.count))
-                                                    .bold()
-                                                
-                                                Image(systemName: "arrowtriangle.down.fill")
-                                                .resizable()
-                                                .scaledToFit()
-                                                    .frame(height: 12)
-                                                .rotationEffect(.degrees(rotation))
-                                                
-                                            }
-                                            .onAppear() {
-                                                if self.rotation == 0 && self.commentDataStore.showChildComments == false {
+                                            Button(action: {
+                                                self.commentDataStore.toggleShowChildComments()
+                                                if self.commentDataStore.showChildComments {
+                                                    self.rotation = 0
+                                                } else {
                                                     self.rotation = -90
                                                 }
-                                            }
-                                            .onTapGesture {
-                                                    self.commentDataStore.toggleShowChildComments()
-                                                    if self.commentDataStore.showChildComments {
-                                                        self.rotation = 0
-                                                    } else {
+                                            }) {
+                                                HStack {
+                                                    Text(String(self.commentDataStore.childCommentList.count))
+                                                        .bold()
+                                                    
+                                                    Image(systemName: "arrowtriangle.down.fill")
+                                                        .resizable()
+                                                        .scaledToFit()
+                                                        .frame(height: 12)
+                                                        .rotationEffect(.degrees(rotation))
+                                                    
+                                                }
+                                                .onAppear() {
+                                                    if self.rotation == 0 && self.commentDataStore.showChildComments == false {
                                                         self.rotation = -90
                                                     }
+                                                }
                                             }
+                                            .buttonStyle(PlainButtonStyle())
                                         }
                                         
                                         Spacer()

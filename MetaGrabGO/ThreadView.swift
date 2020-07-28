@@ -58,7 +58,7 @@ struct ThreadView : View {
     private let avatarWidth = UIFont.preferredFont(forTextStyle: .body).pointSize * 2
     private let avatarPadding: CGFloat = 10
     
-    private let widthContentRatio: CGFloat = 0.93
+    private let widthContentRatio: CGFloat = 0.95
     
     
     init(threadDataStore: ThreadDataStore) {
@@ -203,7 +203,7 @@ struct ThreadView : View {
                                                     .onAppear() {
                                                         if self.threadDataStore.authorProfileImageLoader != nil {
                                                             self.threadDataStore.authorProfileImageLoader!.load()
-                                                    }
+                                                        }
                                                 }
                                             }
                                         } else {
@@ -222,10 +222,12 @@ struct ThreadView : View {
                                     .frame(height: self.avatarWidth)
                                     
                                     VStack(alignment: .leading, spacing: 0) {
-                                        Text(self.threadDataStore.author.username)
-                                            .onTapGesture {
-                                                self.onClickUser()
+                                        Button(action: {
+                                            self.onClickUser()
+                                        }) {
+                                            Text(self.threadDataStore.author.username)
                                         }
+                                        .buttonStyle(PlainButtonStyle())
                                         
                                         Text(self.threadDataStore.relativeDateString!)
                                             .font(.subheadline)
@@ -242,7 +244,7 @@ struct ThreadView : View {
                                 if self.threadDataStore.thread.title.count > 0 {
                                     Text(self.threadDataStore.thread.title)
                                         .fontWeight(.medium)
-                                        .frame(width: a.size.width * self.widthContentRatio, alignment: .leading)
+                                        .frame(width: a.size.width * self.widthContentRatio, height: a.size.height * 0.05, alignment: .leading)
                                         .modifier(CenterModifier())
                                 }
                                 
@@ -250,7 +252,7 @@ struct ThreadView : View {
                                     self.toggleDidBecomeFirstResponder()}) {
                                         FancyPantsEditorView(existedTextStorage: self.$threadDataStore.textStorage, desiredHeight: self.$threadDataStore.desiredHeight,  newTextStorage: .constant(NSTextStorage(string: "")), isEditable: .constant(false), isFirstResponder: .constant(false), didBecomeFirstResponder: .constant(false), showFancyPantsEditorBar: .constant(false), isNewContent: false, isThread: true, threadId: self.threadDataStore.thread.id, isOmniBar: false, width: a.size.width * self.widthContentRatio, height: a.size.height)
                                             .frame(width: a.size.width * self.widthContentRatio, height: self.threadDataStore.desiredHeight + (self.isEditable ? 20 : 0))
-                                            
+                                        
                                 }
                                 .modifier(CenterModifier())
                                 .padding(.bottom, 20)
@@ -261,23 +263,27 @@ struct ThreadView : View {
                                             ForEach(self.threadDataStore.imageArr, id: \.self) { index in
                                                 VStack {
                                                     if self.threadDataStore.imageLoaders[index]!.downloadedImage != nil {
-                                                        Image(uiImage: self.threadDataStore.imageLoaders[index]!.downloadedImage!)
-                                                            .resizable()
-                                                            .frame(width: self.threadDataStore.imageDimensions[index].width, height: self.threadDataStore.imageDimensions[index].height)
-                                                            .aspectRatio(contentMode: .fit)
-                                                            .cornerRadius(5)
-                                                            .onTapGesture {
-                                                                self.toggleImageModal(threadDataStore: self.threadDataStore, currentImageModalIndex: index)
+                                                        Button(action: {
+                                                            self.toggleImageModal(threadDataStore: self.threadDataStore, currentImageModalIndex: index)
+                                                        }) {
+                                                            Image(uiImage: self.threadDataStore.imageLoaders[index]!.downloadedImage!)
+                                                                .resizable()
+                                                                .frame(width: self.threadDataStore.imageDimensions[index].width, height: self.threadDataStore.imageDimensions[index].height)
+                                                                .aspectRatio(contentMode: .fit)
+                                                                .cornerRadius(5)
                                                         }
+                                                        .buttonStyle(PlainButtonStyle())
                                                     } else {
-                                                        Rectangle()
-                                                            .fill(Color(.systemGray3))
-                                                            .frame(width: self.threadDataStore.imageDimensions[index].width, height: self.threadDataStore.imageDimensions[index].height)
-                                                            .aspectRatio(contentMode: .fit)
-                                                            .cornerRadius(5)
-                                                            .onTapGesture {
-                                                                self.toggleImageModal(threadDataStore: self.threadDataStore, currentImageModalIndex: index)
+                                                        Button(action: {
+                                                            self.toggleImageModal(threadDataStore: self.threadDataStore, currentImageModalIndex: index)
+                                                        }) {
+                                                            Rectangle()
+                                                                .fill(Color(.systemGray3))
+                                                                .frame(width: self.threadDataStore.imageDimensions[index].width, height: self.threadDataStore.imageDimensions[index].height)
+                                                                .aspectRatio(contentMode: .fit)
+                                                                .cornerRadius(5)
                                                         }
+                                                        .buttonStyle(PlainButtonStyle())
                                                     }
                                                 }
                                                 .animation(.easeIn(duration: 0.25))
@@ -288,7 +294,7 @@ struct ThreadView : View {
                                     .frame(width: a.size.width * self.widthContentRatio, alignment: .leading)
                                     .modifier(CenterModifier())
                                     .padding(.bottom, 20)
-
+                                    
                                 }
                                 
                                 HStack(spacing: 10) {
@@ -303,28 +309,34 @@ struct ThreadView : View {
                                     
                                     HStack {
                                         if self.threadDataStore.isHidden == true {
-                                            Text("Unhide")
-                                                .bold()
-                                                .onTapGesture {
-                                                    self.threadDataStore.unhideThread( threadId: self.threadDataStore.thread.id)
+                                            Button(action: {
+                                                self.threadDataStore.unhideThread( threadId: self.threadDataStore.thread.id)
+                                            }) {
+                                                Text("Unhide")
+                                                    .bold()
                                             }
+                                            .buttonStyle(PlainButtonStyle())
                                         } else {
-                                            Text("Hide")
-                                                .bold()
-                                                .onTapGesture {
-                                                    self.threadDataStore.hideThread(threadId: self.threadDataStore.thread.id)
+                                            Button(action: {
+                                                self.threadDataStore.hideThread(threadId: self.threadDataStore.thread.id)
+                                            }) {
+                                                Text("Hide")
+                                                    .bold()
                                             }
+                                            .buttonStyle(PlainButtonStyle())
                                         }
                                     }
                                     
                                     HStack {
-                                        Text("Report")
-                                            .bold()
-                                            .onTapGesture {
-                                                self.togglePickedThreadId(threadId: self.threadDataStore.thread.id, futureContainerWidth: CGFloat(0))
-                                                self.toggleBottomBarState(state: .reportThread)
-                                                self.turnBottomPopup(state: true)
+                                        Button(action: {
+                                            self.togglePickedThreadId(threadId: self.threadDataStore.thread.id, futureContainerWidth: CGFloat(0))
+                                            self.toggleBottomBarState(state: .reportThread)
+                                            self.turnBottomPopup(state: true)
+                                        }) {
+                                            Text("Report")
+                                                .bold()
                                         }
+                                        .buttonStyle(PlainButtonStyle())
                                     }
                                     
                                     Spacer()
@@ -395,7 +407,7 @@ struct ThreadView : View {
                             }
                             .animation(nil)
                         }
-                        .frame(width: a.size.width, height: a.size.height - (20 + 20 + 40))
+                        .frame(width: a.size.width, height: a.size.height - (20 + 20))
                         .onAppear() {
                             if self.threadDataStore.childCommentList == nil {
                                 self.threadDataStore.fetchCommentTreeByThreadId(refresh: true, containerWidth: a.size.width * self.widthContentRatio, leadPadding: self.leadPadding)

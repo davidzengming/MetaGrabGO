@@ -140,8 +140,8 @@ struct FollowerStatsView: View {
                             .font(.subheadline)
                             .foregroundColor(Color.white)
                         Text("Followers " + String(self.forumOtherDataStore.followerCount!))
-                        .foregroundColor(Color.white)
-                        .font(.subheadline)
+                            .foregroundColor(Color.white)
+                            .font(.subheadline)
                     }
                     .font(.system(size: self.width * 0.04))
                 }
@@ -151,21 +151,23 @@ struct FollowerStatsView: View {
             Spacer()
             
             if self.forumOtherDataStore.isFollowed != nil {
-                Text("SUB")
-                    .font(.system(size: self.width * 0.04))
-                    .padding(.horizontal, self.width * 0.05)
-                    .padding(.vertical, self.width * 0.025)
-                    .foregroundColor(self.forumOtherDataStore.isFollowed == true ? Color.white : Color.black)
-                    .background(self.forumOtherDataStore.isFollowed == true ? Color.black : Color(UIColor(named: "subBackgroundColor")!))
-                    .cornerRadius(self.width * 0.5)
-                    .shadow(radius: self.width * 0.05)
-                    .onTapGesture {
-                        if self.forumOtherDataStore.isFollowed! == true {
-                            self.unfollowGame()
-                        } else {
-                            self.followGame()
-                        }
+                Button(action: {
+                    if self.forumOtherDataStore.isFollowed! == true {
+                        self.unfollowGame()
+                    } else {
+                        self.followGame()
+                    }
+                }) {
+                    Text("SUB")
+                        .font(.system(size: self.width * 0.04))
+                        .padding(.horizontal, self.width * 0.05)
+                        .padding(.vertical, self.width * 0.025)
+                        .foregroundColor(self.forumOtherDataStore.isFollowed == true ? Color.white : Color.black)
+                        .background(self.forumOtherDataStore.isFollowed == true ? Color.black : Color(UIColor(named: "subBackgroundColor")!))
+                        .cornerRadius(self.width * 0.5)
+                        .shadow(radius: self.width * 0.05)
                 }
+                .buttonStyle(PlainButtonStyle())
             }
         }
     }
@@ -189,7 +191,7 @@ struct ForumView: View {
     @State private var currentImageModalIndex: Int = -1
     @State private var imageModalSelectedThreadStore: ThreadDataStore? = nil
     
-    private let widthContentRatio: CGFloat = 0.93
+    private let widthContentRatio: CGFloat = 0.95
     private let maxImageHeightRatio: CGFloat = 0.25
     
     init(forumDataStore: ForumDataStore, forumOtherDataStore: ForumOtherDataStore, gameIconLoader: ImageLoader) {
@@ -273,12 +275,11 @@ struct ForumView: View {
         ZStack {
             if colorScheme == .dark {
                 Image("backgroundDarkMode").resizable(resizingMode: .tile)
-                .edgesIgnoringSafeArea(.all)
+                    .edgesIgnoringSafeArea(.all)
             } else {
                 Image("background").resizable(resizingMode: .tile)
-                .edgesIgnoringSafeArea(.all)
+                    .edgesIgnoringSafeArea(.all)
             }
-            
             
             GeometryReader { a in
                 ZStack(alignment: .bottom) {
@@ -363,10 +364,10 @@ struct ForumView: View {
                                 .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
                             } else {
                                 ForumLoadMoreView(forumDataStore: self.forumDataStore, forumOtherDataStore: self.forumOtherDataStore, containerWidth: a.size.width * self.widthContentRatio, maxImageHeight: a.size.height * self.maxImageHeightRatio)
-                                .frame(width: a.size.width, height: a.size.height * 0.1)
-                                .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
-                                // hacky bug fix for rounded corner creating a tiny black line between 2 views
-                                .padding(.top, -10)
+                                    .frame(width: a.size.width, height: a.size.height * 0.1)
+                                    .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
+                                    // hacky bug fix for rounded corner creating a tiny black line between 2 views
+                                    .padding(.top, -10)
                             }
                         }
                     }

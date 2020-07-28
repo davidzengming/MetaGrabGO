@@ -79,7 +79,7 @@ struct NewThreadView: View {
         GeometryReader { a in
             VStack {
                 TextField("Add a title! (Optional)", text: self.$title)
-                    .frame(width: a.size.width * 0.93, alignment: .leading)
+                    .frame(width: a.size.width * 0.95, alignment: .leading)
                     .autocapitalization(.none)
                     .cornerRadius(5, corners: [.bottomLeft, .bottomRight, .topLeft, .topRight])
                     .padding(.top, 20)
@@ -131,11 +131,11 @@ struct NewThreadView: View {
                         }
                     }
                 }
-                .frame(width: a.size.width * 0.93, height: a.size.height * 0.15, alignment: .leading)
+                .frame(width: a.size.width * 0.95, height: a.size.height * 0.15, alignment: .leading)
                 .padding()
                 
                 FancyPantsEditorView(existedTextStorage: .constant(NSTextStorage(string: "")), desiredHeight: .constant(0), newTextStorage: self.$content, isEditable: .constant(true), isFirstResponder: self.$isFirstResponder, didBecomeFirstResponder: self.$didBecomeFirstResponder, showFancyPantsEditorBar: .constant(false), isNewContent: true, isThread: true, isOmniBar: false, width: a.size.width, height: a.size.height)
-                    .frame(minWidth: a.size.width * 0.93, maxWidth: a.size.width * 0.93, minHeight: 0, maxHeight: a.size.height * 0.5, alignment: .leading)
+                    .frame(minWidth: a.size.width * 0.95, maxWidth: a.size.width * 0.95, minHeight: 0, maxHeight: a.size.height * 0.5, alignment: .leading)
                     .background(Color(.tertiarySystemBackground))
                     .cornerRadius(5, corners: [.bottomLeft, .bottomRight, .topLeft, .topRight])
                     .overlay(

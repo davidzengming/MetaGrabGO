@@ -79,36 +79,41 @@ struct EmojiBarThreadView: View {
                         ForEach(self.threadDataStore.emojis.emojiArr[row], id: \.self) { emojiId in
                             VStack(alignment: .leading, spacing: 0) {
                                 if emojiId == 999 {
-                                    HStack {
-                                        Image(systemName: "plus.bubble.fill")
-                                            .resizable()
-                                            .foregroundColor(Color(.secondaryLabel))
-                                            .frame(width: 20, height: 20)
-                                            .buttonStyle(PlainButtonStyle())
-                                            .cornerRadius(5)
-                                            .onTapGesture {
-                                                self.onClickAddEmojiBubble()
+                                    Button(action: {
+                                        self.onClickAddEmojiBubble()
+                                    }) {
+                                        HStack {
+                                            Image(systemName: "plus.bubble.fill")
+                                                .resizable()
+                                                .foregroundColor(Color(.secondaryLabel))
+                                                .frame(width: 20, height: 20)
+                                                .buttonStyle(PlainButtonStyle())
+                                                .cornerRadius(5)
                                         }
+                                        .frame(alignment: .leading)
+                                        .padding(2.5)
                                     }
-                                    .frame(alignment: .leading)
-                                    .padding(2.5)
+                                .buttonStyle(PlainButtonStyle())
                                 } else {
-                                    HStack {
-                                        Image(uiImage: appWideAssets.emojis[emojiId]!!)
-                                            .resizable()
-                                            .frame(width: 15, height: 15)
-
-                                        Text(String(self.threadDataStore.emojis.emojiCount[emojiId]!))
-                                        .bold()
-                                        .foregroundColor(self.threadDataStore.emojis.didReactToEmoji[emojiId]! == true ? Color(UIColor(named: "emojiCountPressedColor")!) : Color(UIColor(named: "emojiCountUnpressedColor")!))
-                                    }
-                                    .frame(width: 40, height: 15)
-                                    .padding(5)
-                                    .background(self.threadDataStore.emojis.didReactToEmoji[emojiId]! == true ? Color(UIColor(named: "emojiPressedBackgroundColor")!) : Color(UIColor(named: "emojiUnpressedBackgroundColor")!))
-                                    .cornerRadius(5)
-                                    .onTapGesture {
+                                    Button(action: {
                                         self.onClickEmoji(emojiId: emojiId)
+                                    }) {
+                                        HStack {
+                                            Image(uiImage: appWideAssets.emojis[emojiId]!!)
+                                                .resizable()
+                                                .frame(width: 15, height: 15)
+
+                                            Text(String(self.threadDataStore.emojis.emojiCount[emojiId]!))
+                                            .bold()
+                                            .foregroundColor(self.threadDataStore.emojis.didReactToEmoji[emojiId]! == true ? Color(UIColor(named: "emojiCountPressedColor")!) : Color(UIColor(named: "emojiCountUnpressedColor")!))
+                                        }
+                                        .frame(width: 40, height: 15)
+                                        .padding(5)
+                                        .background(self.threadDataStore.emojis.didReactToEmoji[emojiId]! == true ? Color(UIColor(named: "emojiPressedBackgroundColor")!) : Color(UIColor(named: "emojiUnpressedBackgroundColor")!))
+                                        .cornerRadius(5)
                                     }
+                                .buttonStyle(PlainButtonStyle())
+
                                 }
                             }
                         }
@@ -117,11 +122,12 @@ struct EmojiBarThreadView: View {
             }
             
             if self.threadDataStore.emojis.emojiArr.count == 1 && self.threadDataStore.emojis.emojiArr[0][0] == 999 {
-                Text("Add reactions")
-                .foregroundColor(Color.gray)
-                .bold()
-                .onTapGesture {
-                        self.onClickAddEmojiBubble()
+                Button(action: {
+                    self.onClickAddEmojiBubble()
+                }) {
+                    Text("Add reactions")
+                    .foregroundColor(Color.gray)
+                    .bold()
                 }
             }
             

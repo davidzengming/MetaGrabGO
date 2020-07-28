@@ -26,7 +26,6 @@ struct GameHubView: View {
         //        navBarAppearance.largeTitleTextAttributes = [.foregroundColor: UIColor.white, NSAttributedString.Key.kern: kern]
         //        navBarAppearance.titleTextAttributes = [.foregroundColor: UIColor.white, NSAttributedString.Key.kern: kern]
         //
-        
 //        print("game hub view created")
     }
     
