@@ -49,12 +49,14 @@ struct PopularGamesView: View {
                     ForEach(self.popularListDataStore.genresIdArr, id: \.self) { genreId in
                         Group {
                             HStack {
+                                Spacer()
                                 Text(self.popularListDataStore.genres[genreId]!.name)
                                     .foregroundColor(Color.white)
                                     .font(.system(size: a.size.width * 0.04, weight: .regular, design: .rounded))
                                     .tracking(2)
                                     .padding(.top, 10)
                                     .shadow(radius: 5)
+                                .frame(width: a.size.width * 0.95, alignment: .leading)
                                 
 //                                Text("(" + self.popularListDataStore.genres[genreId]!.longName + ")")
 //                                    .foregroundColor(Color.white)
@@ -62,19 +64,26 @@ struct PopularGamesView: View {
 //                                    .tracking(2)
 //                                    .padding(.top, 10)
 //                                    .shadow(radius: 5)
+                                Spacer()
                             }
+                            
                             
                             .onAppear() {
                                 if self.popularListDataStore.genresIdArr.last! == genreId {
                                     self.popularListDataStore.fetchGenresByPage(start: self.popularListDataStore.nextPageStartIndex, globalGamesDataStore: self.globalGamesDataStore)
                                 }
                             }
-
-                            GenreRowView(genre: self.popularListDataStore.genres[genreId]!, genreDataStore: self.popularListDataStore.genresDataStore[genreId]!, globalGamesDataStore: self.globalGamesDataStore, width: a.size.width - 10)
+                            
+                            HStack {
+                                Spacer()
+                                GenreRowView(genre: self.popularListDataStore.genres[genreId]!, genreDataStore: self.popularListDataStore.genresDataStore[genreId]!, globalGamesDataStore: self.globalGamesDataStore, width: a.size.width - 10)
+                                .frame(width: a.size.width * 0.95, alignment: .leading)
+                                Spacer()
+                            }
+                            
                             
                         }
                         .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
-                        .padding(.horizontal, 10)
                     }
                 }
                 .padding(.vertical, a.size.height * 0.01)
