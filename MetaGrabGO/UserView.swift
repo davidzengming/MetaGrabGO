@@ -96,6 +96,7 @@ struct LoginUserView: View {
                     }
                 }
             }
+            .KeyboardAwarePadding()
         }
         
 //    .KeyboardAwarePadding()
@@ -188,6 +189,7 @@ struct RegisterUserView : View {
                 }
             }
             .foregroundColor(Color(.lightText))
+            .KeyboardAwarePadding()
         }
     }
     

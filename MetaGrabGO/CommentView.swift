@@ -170,6 +170,7 @@ struct CommentView : View {
                                                         self.onClickUser()
                                                     }) {
                                                         Text(self.commentDataStore.author.username)
+                                                        .fontWeight(.medium)
                                                     }
                                                     .buttonStyle(PlainButtonStyle())
                                                     

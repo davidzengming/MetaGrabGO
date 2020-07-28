@@ -117,22 +117,24 @@ struct FollowerStatsView: View {
     var followGame: () -> Void
     var unfollowGame: () -> Void
     
-    init(forumOtherDataStore: ForumOtherDataStore, gameName: String, width: CGFloat, followGame: @escaping () -> Void, unfollowGame: @escaping () -> Void) {
+    var bannerHeight: CGFloat
+    
+    init(forumOtherDataStore: ForumOtherDataStore, gameName: String, width: CGFloat, followGame: @escaping () -> Void, unfollowGame: @escaping () -> Void, bannerHeight: CGFloat) {
         self.forumOtherDataStore = forumOtherDataStore
         self.gameName = gameName
         self.width = width
         self.followGame = followGame
         self.unfollowGame = unfollowGame
+        self.bannerHeight = bannerHeight
     }
     
     var body: some View {
         Group {
             VStack(alignment: .leading, spacing: 0) {
                 Text(self.gameName)
-                    .font(.system(size: self.width * 0.06))
+                    .font(.system(size: self.width * 0.05))
                     .foregroundColor(Color.white)
                     .bold()
-                    .lineLimit(2)
                 
                 if self.forumOtherDataStore.threadCount != nil {
                     HStack(spacing: 10) {
@@ -145,8 +147,10 @@ struct FollowerStatsView: View {
                     }
                     .font(.system(size: self.width * 0.04))
                 }
+                Spacer()
             }
-            .padding()
+            .frame(height: self.bannerHeight)
+            .padding(.horizontal)
             
             Spacer()
             
@@ -298,13 +302,12 @@ struct ForumView: View {
                                     )
                                 }
                                 
-                                FollowerStatsView(forumOtherDataStore: self.forumOtherDataStore, gameName: self.forumDataStore.game.name, width: a.size.width, followGame: self.followGame, unfollowGame: self.unfollowGame)
+                                FollowerStatsView(forumOtherDataStore: self.forumOtherDataStore, gameName: self.forumDataStore.game.name, width: a.size.width, followGame: self.followGame, unfollowGame: self.unfollowGame, bannerHeight: a.size.width * 0.15)
                             }
                             .frame(width: a.size.width * self.widthContentRatio)
                         }
                         .frame(width: a.size.width, height: a.size.width * 0.3)
                         .padding(.top, 30)
-                        .padding(.bottom, 10)
                         .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
                         
                         VStack(spacing: 0) {

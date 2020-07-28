@@ -112,17 +112,17 @@ struct GameModalView: View {
                                     }
                                     .padding(.vertical, 5)
                                     
-                                    HStack {
-                                        Text("PUBLISHER: ")
-                                            .font(.headline)
-                                            .foregroundColor(Color.gray)
-                                        
-                                        Text(self.game.developer.name)
-                                            .font(.headline)
-                                            .foregroundColor(Color(UIColor.systemTeal))
-                                    }
-                                    .padding(.vertical, 5)
-                                    
+//                                    HStack {
+//                                        Text("PUBLISHER: ")
+//                                            .font(.headline)
+//                                            .foregroundColor(Color.gray)
+//                                        
+//                                        Text(self.game.developer.name)
+//                                            .font(.headline)
+//                                            .foregroundColor(Color(UIColor.systemTeal))
+//                                    }
+//                                    .padding(.vertical, 5)
+//                                    
                                     Spacer()
                                     HStack {
                                         NavigationLink(destination: LazyView { ForumView(forumDataStore: ForumDataStore(game: self.game), forumOtherDataStore: ForumOtherDataStore(gameId: self.game.id) , gameIconLoader: ImageLoader(url: self.game.icon, cache: self.cache, whereIsThisFrom: "modal to forum view, game:" + String(self.game.id)))

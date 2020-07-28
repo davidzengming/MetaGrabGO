@@ -226,6 +226,7 @@ struct ThreadView : View {
                                             self.onClickUser()
                                         }) {
                                             Text(self.threadDataStore.author.username)
+                                                .fontWeight(.medium)
                                         }
                                         .buttonStyle(PlainButtonStyle())
                                         
