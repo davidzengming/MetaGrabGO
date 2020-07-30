@@ -278,11 +278,11 @@ struct ForumView: View {
     var body: some View {
         ZStack {
             if colorScheme == .dark {
-                Image("backgroundDarkMode").resizable(resizingMode: .tile)
-                    .edgesIgnoringSafeArea(.all)
+                appWideAssets.colors["veryDarkGray"]!
+                .edgesIgnoringSafeArea(.all)
             } else {
-                Image("background").resizable(resizingMode: .tile)
-                    .edgesIgnoringSafeArea(.all)
+                appWideAssets.colors["kindaDarkGray"]!
+                .edgesIgnoringSafeArea(.all)
             }
             
             GeometryReader { a in

@@ -27,13 +27,15 @@ struct AppWideAssets {
         11: UIImage(named: ":lemon:")
     ]
 
-    let notQuiteBlack = hexStringToUIColor(hex: "#23272a")
-    let darkButNotBlack = hexStringToUIColor(hex: "#2C2F33")
-    let blurple = hexStringToUIColor(hex: "#7289DA")
-    let teal = hexStringToUIColor(hex: "#0297cf")
-    
-    var colors = ["notQuiteBlack": Color(hexStringToUIColor(hex: "#23272a")), "darkButNotBlack": Color(hexStringToUIColor(hex: "#2C2F33")), "blurple": Color(hexStringToUIColor(hex: "#7289DA")), "teal": Color(hexStringToUIColor(hex: "#0297cf"))]
-    var uiColors = ["notQuiteBlack": hexStringToUIColor(hex: "#23272a"), "darkButNotBlack": hexStringToUIColor(hex: "#2C2F33"), "blurple": hexStringToUIColor(hex: "#7289DA"), "teal":hexStringToUIColor(hex: "#0297cf")]
+//    let notQuiteBlack = hexStringToUIColor(hex: "#23272a")
+//    let darkButNotBlack = hexStringToUIColor(hex: "#2C2F33")
+//    let blurple = hexStringToUIColor(hex: "#7289DA")
+//    let teal = hexStringToUIColor(hex: "#0297cf")
+//    let kindaDarkGray = hexStringToUIColor(hex: "#232424")
+//    let veryDarkGray = hexStringToUIColor(hex: "#0c0c0c")
+//
+    var colors = ["notQuiteBlack": Color(hexStringToUIColor(hex: "#23272a")), "darkButNotBlack": Color(hexStringToUIColor(hex: "#2C2F33")), "blurple": Color(hexStringToUIColor(hex: "#7289DA")), "teal": Color(hexStringToUIColor(hex: "#0297cf")), "kindaDarkGray": Color(hexStringToUIColor(hex: "#232424")), "veryDarkGray": Color(hexStringToUIColor(hex: "#0c0c0c"))]
+    var uiColors = ["notQuiteBlack": hexStringToUIColor(hex: "#23272a"), "darkButNotBlack": hexStringToUIColor(hex: "#2C2F33"), "blurple": hexStringToUIColor(hex: "#7289DA"), "teal": hexStringToUIColor(hex: "#0297cf"), "kindaDarkGray": hexStringToUIColor(hex: "#232424"), "veryDarkGray": hexStringToUIColor(hex: "#0c0c0c")]
     
     var leadingLineColors = [Color.purple, Color.red, Color.orange, Color.yellow, Color.green]
 }
