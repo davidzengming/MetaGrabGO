@@ -9,12 +9,16 @@
 import SwiftUI
 
 struct UserView: View {
+    @EnvironmentObject var userDataStore: UserDataStore
     @State private var isRegisterPage = false
     
     var body: some View {
         VStack {
             if self.isRegisterPage == true {
                 RegisterUserView(isRegisterPage: self.$isRegisterPage)
+                    .onAppear() {
+                        self.userDataStore.loginError = nil
+                }
             } else {
                 LoginUserView(isRegisterPage: self.$isRegisterPage)
             }
@@ -29,7 +33,7 @@ struct LoginUserView: View {
     @EnvironmentObject private var userDataStore: UserDataStore
     
     private func submit() {
-        userDataStore.acquireToken(username: name, password: password)
+        userDataStore.login(username: name, password: password)
     }
     
     var body: some View {
@@ -70,6 +74,16 @@ struct LoginUserView: View {
                     .accentColor(Color.white)
                     .foregroundColor(Color.white)
                 .padding(.bottom, 20)
+                
+                if self.userDataStore.loginError != nil {
+                    HStack {
+                        Text(self.userDataStore.loginError!)
+                        .foregroundColor(Color.red)
+                        .fixedSize(horizontal: false, vertical: true)
+                        Spacer()
+                    }.frame(width: a.size.width * 0.6)
+                    .padding(.bottom)
+                }
 
                 Button(action: self.submit) {
                     Text("Login")

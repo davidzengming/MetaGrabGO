@@ -15,7 +15,7 @@ private let globalGamesQueue = DispatchQueue(label: "com.domain.app.blocks")
 final class RecentFollowDataStore: ObservableObject {
     var recentVisitGames: [Int]
     var followGames: Set<Int>
-    var shouldRefreshDataStore = false
+    var shouldRefreshDataStore = true
     
     init() {
         self.recentVisitGames = []

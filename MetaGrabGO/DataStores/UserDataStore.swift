@@ -47,6 +47,11 @@ struct KeyChainService {
         let refreshExpDateEpoch = KeyChain.load(key: "metagrab.refreshExpDateEpoch")!
         return Int(String(data: refreshExpDateEpoch, encoding: String.Encoding.utf8)!)!
     }
+    
+    func getEmail() -> String {
+        let email = KeyChain.load(key: "metagrab.email")!
+        return String(data: email, encoding: String.Encoding.utf8)!
+    }
 }
 
 final class MyUserImage {
@@ -69,9 +74,10 @@ final class UserDataStore: ObservableObject {
     var profileImageLoaderSub: AnyCancellable?
     
     @Published private(set) var isAuthenticated: Bool = false
-    
     @Environment(\.imageCache) private var cache: ImageCache
     @Published private(set) var isLoadingPicture: Bool = false
+    
+    @Published var loginError: String? = nil
     
     private let API = APIClient()
     private(set) var isAutologinEnabled = true
@@ -79,10 +85,18 @@ final class UserDataStore: ObservableObject {
     private var loginProcess: AnyCancellable?
     private var updateProfileImageProcess: AnyCancellable?
     
+    deinit {
+        cancelUpdateProfileImageProcess()
+    }
+    
     func logout() {
         self.isAutologinEnabled = false
-        self.isAuthenticated = false
         
+        withAnimation(.easeIn) {
+            self.isAuthenticated = false
+        }
+        
+        self.profileImageLoader = nil
         self.cancelLoginProcess()
         self.cancelUpdateProfileImageProcess()
     }
@@ -92,7 +106,7 @@ final class UserDataStore: ObservableObject {
             if KeyChain.load(key: "metagrab.hasLoggedInBefore") == nil {
                 return
             }
-            acquireToken()
+            login()
         }
     }
     
@@ -106,7 +120,11 @@ final class UserDataStore: ObservableObject {
         self.updateProfileImageProcess = nil
     }
     
-    func acquireToken(taskGroup: DispatchGroup? = nil, username: String? = nil, password: String? = nil) {
+    enum HTTPError: LocalizedError {
+        case statusCode
+    }
+
+    func login(taskGroup: DispatchGroup? = nil, username: String? = nil, password: String? = nil) {
         if loginProcess != nil {
             return
         }
@@ -129,7 +147,10 @@ final class UserDataStore: ObservableObject {
         
         let request = API.generateRequest(url: url!, method: .POST, json: nil, bodyData: "username=\(loadedUsername)&password=\(loadedPassword)")
         
-        loginProcess = URLSession.shared.dataTaskPublisher(for: request)
+        self.loginProcess = URLSession.shared.dataTaskPublisher(for: request)
+            .mapError({ (error) -> Error in
+                return error
+            })
             .map(\.data)
             .decode(type: Token.self, decoder: self.API.getJSONDecoder())
             .receive(on: RunLoop.main)
@@ -137,15 +158,21 @@ final class UserDataStore: ObservableObject {
                 switch completion {
                 case .finished:
                     self.cancelLoginProcess()
+                    
                     break
                 case .failure(let error):
                     self.cancelLoginProcess()
-                    print("auto login failed", error)
                     self.isAutologinEnabled = false
+                    #if DEBUG
+                    print("auto login failed", error)
+                    #endif
+                    
+                    self.loginError = "Invalid credentials. Please check username and password."
                     break
                 }
                 taskGroup?.leave()
             }, receiveValue: { [unowned self] token in
+                self.loginError = nil
                 self.isAuthenticated = true
                 _ = KeyChain.save(key: "metagrab.hasLoggedInBefore", data: "true".data(using: String.Encoding.utf8)!)
                 _ = KeyChain.save(key: "metagrab.username", data: loadedUsername.data(using: String.Encoding.utf8)!)
@@ -155,6 +182,7 @@ final class UserDataStore: ObservableObject {
                 _ = KeyChain.save(key: "metagrab.userid", data: String(token.userId).data(using: String.Encoding.utf8)!)
                 _ = KeyChain.save(key: "metagrab.accessExpDateEpoch", data: String(token.accessExpDateEpoch).data(using: String.Encoding.utf8)!)
                 _ = KeyChain.save(key: "metagrab.refreshExpDateEpoch", data: String(token.refreshExpDateEpoch).data(using: String.Encoding.utf8)!)
+                _ = KeyChain.save(key: "metagrab.email", data: token.email.data(using: String.Encoding.utf8)!)
                 
                 myUserImage = MyUserImage(profileImageUrl: token.profileImageUrl, profileImageWidth: token.profileImageWidth, profileImageHeight: token.profileImageHeight)
                 
@@ -177,7 +205,7 @@ final class UserDataStore: ObservableObject {
             if let data = data {
                 if String(data: data, encoding: .utf8) != nil {
                     DispatchQueue.main.async {
-                        self.acquireToken(username: username, password: password)
+                        self.login(username: username, password: password)
                     }
                 }
             }
@@ -248,7 +276,7 @@ final class UserDataStore: ObservableObject {
                             processingRequestsTaskGroup.leave()
                             break
                         }
-                    }, receiveValue: { [unowned self] _ in
+                    }, receiveValue: { _ in
                     })
             }
         }

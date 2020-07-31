@@ -133,7 +133,6 @@ struct APIClient {
     private let secondsRemainWhenRefreshToken = 300
     
     func generateURL(resource: Resource, endPoint: EndPoint, detail: String? = nil, params: [String: String]? = nil) -> URL? {
-        
         var detailStr = ""
         if detail != nil {
             detailStr = detail! + "/"

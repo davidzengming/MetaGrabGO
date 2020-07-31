@@ -9,9 +9,8 @@ struct MainView: View {
             
             VStack {
                 GameHubView()
-                    .environmentObject(UserDataStore())
-                    .environmentObject(RecentFollowDataStore())
-                    .environmentObject(GlobalGamesDataStore())
+                .environmentObject(UserDataStore())
+                .environmentObject(GlobalGamesDataStore())
             }
         }
     }

@@ -15,6 +15,7 @@ struct Token: Hashable, Codable {
     var userId: Int
     var refreshExpDateEpoch: Int
     var accessExpDateEpoch: Int
+    var email: String
     
     var profileImageUrl: String
     var profileImageWidth: String

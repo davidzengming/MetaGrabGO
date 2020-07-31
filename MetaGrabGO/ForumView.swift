@@ -210,7 +210,7 @@ struct ForumView: View {
         // for navigation bar title color
         UINavigationBar.appearance().titleTextAttributes = [NSAttributedString.Key.foregroundColor:UIColor.white]
         // For navigation bar background color
-        UINavigationBar.appearance().barTintColor = hexStringToUIColor(hex: "#2C2F33")
+        UINavigationBar.appearance().barTintColor = appWideAssets.uiColors["darkButNotBlack"]!
         //        UINavigationBar.appearance().setBackgroundImage(UIImage(), for: .default) //makes status bar translucent
         UINavigationBar.appearance().tintColor = .white
         //                UINavigationBar.appearance().backgroundColor = .clear

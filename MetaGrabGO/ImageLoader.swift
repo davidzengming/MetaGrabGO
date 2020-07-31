@@ -68,7 +68,11 @@ final class ImageLoader: ObservableObject {
                     self.cancelProcess()
                     print("received error: ", error)
                 }
-            }, receiveValue: { image in
+            }, receiveValue: {[unowned self] image in
+                if image == nil {
+                    return
+                }
+                
                 self.imageHeight = image!.size.height
                 self.downloadedImage = image
             })

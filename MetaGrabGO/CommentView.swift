@@ -282,6 +282,8 @@ struct CommentView : View {
                                                         .frame(height: 12)
                                                         .rotationEffect(.degrees(rotation))
                                                     
+                                                    Text(self.rotation == 0 ? "Collapse" : "Show")
+                                                    .bold()
                                                 }
                                                 .onAppear() {
                                                     if self.rotation == 0 && self.commentDataStore.showChildComments == false {

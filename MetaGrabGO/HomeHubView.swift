@@ -188,7 +188,6 @@ struct FrontHubView: View {
                             }
                         }
                     }
-                    
                     .padding(.vertical, a.size.height * 0.01)
                     Spacer()
                 }

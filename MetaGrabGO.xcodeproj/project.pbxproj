@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		3E14B76E24A6395D005B4E29 /* TimelineDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E14B76D24A6395D005B4E29 /* TimelineDataStore.swift */; };
+		3E2D5D2024D44B3000613E72 /* PersonalInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E2D5D1F24D44B3000613E72 /* PersonalInfoView.swift */; };
+		3E2D5D2224D4648400613E72 /* TabbedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E2D5D2124D4648400613E72 /* TabbedView.swift */; };
 		3E2FCF3E247E9C8A00CF37FE /* HideTabViewBarFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E2FCF3D247E9C8A00CF37FE /* HideTabViewBarFunctions.swift */; };
 		3E3610E924760CF2004C70B4 /* UserDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E3610E824760CF2004C70B4 /* UserDataStore.swift */; };
 		3E36113324760DAB004C70B4 /* Attributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E36111C24760DAA004C70B4 /* Attributes.swift */; };
@@ -85,6 +87,8 @@
 		3EE4921424A3DD050075C7B7 /* GamesPageResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EE4921324A3DD050075C7B7 /* GamesPageResponse.swift */; };
 		3EE4921624A3DD460075C7B7 /* GenresPageResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EE4921524A3DD460075C7B7 /* GenresPageResponse.swift */; };
 		3EE4921824A3E2700075C7B7 /* GenreRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EE4921724A3E2700075C7B7 /* GenreRowView.swift */; };
+		3EE6F40324D361880062DEB4 /* UnblockContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EE6F40224D361880062DEB4 /* UnblockContentView.swift */; };
+		3EE6F40524D3720F0062DEB4 /* AcknowledgementsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EE6F40424D3720F0062DEB4 /* AcknowledgementsView.swift */; };
 		3EF1BF4C249D3B8D00E7EAC5 /* HomeGamesDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EF1BF4B249D3B8D00E7EAC5 /* HomeGamesDataStore.swift */; };
 		3EFC6384247EF68B008D9F05 /* EmojiBarThreadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EFC6383247EF68B008D9F05 /* EmojiBarThreadView.swift */; };
 		3EFC6386247F0592008D9F05 /* NewThreadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EFC6385247F0592008D9F05 /* NewThreadView.swift */; };
@@ -94,6 +98,8 @@
 /* Begin PBXFileReference section */
 		0DEB128B1F9768004E8194CD /* Pods-MetaGrabGO.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MetaGrabGO.debug.xcconfig"; path = "Target Support Files/Pods-MetaGrabGO/Pods-MetaGrabGO.debug.xcconfig"; sourceTree = "<group>"; };
 		3E14B76D24A6395D005B4E29 /* TimelineDataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineDataStore.swift; sourceTree = "<group>"; };
+		3E2D5D1F24D44B3000613E72 /* PersonalInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonalInfoView.swift; sourceTree = "<group>"; };
+		3E2D5D2124D4648400613E72 /* TabbedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabbedView.swift; sourceTree = "<group>"; };
 		3E2FCF3D247E9C8A00CF37FE /* HideTabViewBarFunctions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HideTabViewBarFunctions.swift; sourceTree = "<group>"; };
 		3E3610E824760CF2004C70B4 /* UserDataStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserDataStore.swift; sourceTree = "<group>"; };
 		3E36111C24760DAA004C70B4 /* Attributes.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Attributes.swift; sourceTree = "<group>"; };
@@ -173,6 +179,8 @@
 		3EE4921324A3DD050075C7B7 /* GamesPageResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamesPageResponse.swift; sourceTree = "<group>"; };
 		3EE4921524A3DD460075C7B7 /* GenresPageResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenresPageResponse.swift; sourceTree = "<group>"; };
 		3EE4921724A3E2700075C7B7 /* GenreRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenreRowView.swift; sourceTree = "<group>"; };
+		3EE6F40224D361880062DEB4 /* UnblockContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnblockContentView.swift; sourceTree = "<group>"; };
+		3EE6F40424D3720F0062DEB4 /* AcknowledgementsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AcknowledgementsView.swift; sourceTree = "<group>"; };
 		3EF1BF4B249D3B8D00E7EAC5 /* HomeGamesDataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeGamesDataStore.swift; sourceTree = "<group>"; };
 		3EFC6383247EF68B008D9F05 /* EmojiBarThreadView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EmojiBarThreadView.swift; sourceTree = "<group>"; };
 		3EFC6385247F0592008D9F05 /* NewThreadView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NewThreadView.swift; sourceTree = "<group>"; };
@@ -259,11 +267,15 @@
 				3EE38C6D2475CDF6007E9F32 /* MainView.swift */,
 				3EE38C6F2475CE35007E9F32 /* UserView.swift */,
 				3E36115C24760EB1004C70B4 /* GameHubView.swift */,
+				3E2D5D2124D4648400613E72 /* TabbedView.swift */,
 				3E36115E24760EBD004C70B4 /* HomeHubView.swift */,
 				3E36116024760EE9004C70B4 /* PopularGamesView.swift */,
 				3EE4921724A3E2700075C7B7 /* GenreRowView.swift */,
 				3E36116224760EF5004C70B4 /* TimelineGamesView.swift */,
 				3E36116424760F05004C70B4 /* UserProfileView.swift */,
+				3E2D5D1F24D44B3000613E72 /* PersonalInfoView.swift */,
+				3EE6F40224D361880062DEB4 /* UnblockContentView.swift */,
+				3EE6F40424D3720F0062DEB4 /* AcknowledgementsView.swift */,
 				3E7ACE182476A5AF00873BC8 /* GameFeedIcon.swift */,
 				3E7ACE1C2476AF8800873BC8 /* GameModalView.swift */,
 				3E7ACE222476B0FA00873BC8 /* ForumView.swift */,
@@ -464,8 +476,10 @@
 				3EB25B482475CA6C00C465D1 /* AppDelegate.swift in Sources */,
 				3EFC6384247EF68B008D9F05 /* EmojiBarThreadView.swift in Sources */,
 				3E7ACE232476B0FA00873BC8 /* ForumView.swift in Sources */,
+				3E2D5D2024D44B3000613E72 /* PersonalInfoView.swift in Sources */,
 				3E36114324760DAB004C70B4 /* BlacklistedUsersResponse.swift in Sources */,
 				3E36114024760DAB004C70B4 /* Genre.swift in Sources */,
+				3EE6F40524D3720F0062DEB4 /* AcknowledgementsView.swift in Sources */,
 				3EE38C6E2475CDF6007E9F32 /* MainView.swift in Sources */,
 				3E2FCF3E247E9C8A00CF37FE /* HideTabViewBarFunctions.swift in Sources */,
 				3EE38C6C2475CB8B007E9F32 /* DarkHostingController.swift in Sources */,
@@ -496,6 +510,7 @@
 				3E36115324760DFF004C70B4 /* NewThreadButton.swift in Sources */,
 				3E36113F24760DAB004C70B4 /* Vote.swift in Sources */,
 				3E7ACE1524769E1200873BC8 /* AppWideAssets.swift in Sources */,
+				3EE6F40324D361880062DEB4 /* UnblockContentView.swift in Sources */,
 				3E4AB0C22481A6E4009E5BDB /* BlockUserPopupView.swift in Sources */,
 				3E36114524760DAB004C70B4 /* ThreadsResponse.swift in Sources */,
 				3E6815EE248053E600E68860 /* EmojiDataStore.swift in Sources */,
@@ -532,6 +547,7 @@
 				3E36115724760E19004C70B4 /* TextViewHelper.swift in Sources */,
 				3E7ACE1D2476AF8800873BC8 /* GameModalView.swift in Sources */,
 				3ED7815E2478271A00C5EE96 /* ThreadRow.swift in Sources */,
+				3E2D5D2224D4648400613E72 /* TabbedView.swift in Sources */,
 				3E9994E3248564F600BD1BD7 /* CommentView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -670,6 +686,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_ASSET_PATHS = "\"MetaGrabGO/Preview Content\"";
 				DEVELOPMENT_TEAM = 4Z2YGQNYQH;
 				ENABLE_PREVIEWS = YES;
@@ -691,6 +708,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_ASSET_PATHS = "\"MetaGrabGO/Preview Content\"";
 				DEVELOPMENT_TEAM = 4Z2YGQNYQH;
 				ENABLE_PREVIEWS = YES;

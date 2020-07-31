@@ -290,7 +290,7 @@ class ForumDataStore: ObservableObject {
                         }
                         
                         let author = thread.users[0]
-
+                        
                         let threadDataStore = ThreadDataStore(gameId: self.game.id, thread: thread, vote: myVote, author: author, emojiArr: thread.emojis!.emojisIdArr, emojiReactionCount: thread.emojis!.emojiReactionCountDict, userArrPerEmoji: thread.emojis!.userArrPerEmojiDict, didReactToEmojiDict: thread.emojis!.didReactToEmojiDict, containerWidth: containerWidth, maxImageHeight: maxImageHeight)
                         
                         self.threadDataStores[thread.id] = threadDataStore
@@ -500,7 +500,7 @@ class ThreadDataStore: ObservableObject {
         })
         
         self.calculateImagesDimensions(imageWidths: thread.imageWidths, imageHeights: thread.imageHeights, maxImageHeightLimit: maxImageHeight)
-
+        
         self.mountImages()
         self.mountAuthorProfileImage()
         //        self.loadImages()
@@ -598,7 +598,9 @@ class ThreadDataStore: ObservableObject {
             self.authorProfileImageLoader = ImageLoader(url: author.profileImageUrl, cache: cache, whereIsThisFrom: "thread image loader", loadManually: true)
             self.authorProfileImageLoaderSub = authorProfileImageLoader!.objectWillChange.receive(on: DispatchQueue.main).sink(receiveValue: {[weak self] _ in self?.objectWillChange.send() })
         } else {
+            #if DEBUG
             print("no profile picture to mount")
+            #endif
         }
     }
     
@@ -630,7 +632,7 @@ class ThreadDataStore: ObservableObject {
         if self.emojiLoadingProcess != nil {
             return
         }
-
+        
         let url = self.API.generateURL(resource: Resource.votes, endPoint: EndPoint.upvoteByExistingVoteId)
         let json: [String: Any] = ["vote_id": self.vote!.id]
         let request = self.API.generateRequest(url: url!, method: .POST, json: json)
@@ -656,7 +658,7 @@ class ThreadDataStore: ObservableObject {
                         #if DEBUG
                         print("error: ", error)
                         #endif
-                         self.cancelEmojiLoadingProcess()
+                        self.cancelEmojiLoadingProcess()
                         processingRequestsTaskGroup.leave()
                         break
                     }
@@ -785,7 +787,6 @@ class ThreadDataStore: ObservableObject {
                         break
                     }
                 }, receiveValue: { _ in
-                    
                 })
         }
     }
@@ -869,7 +870,6 @@ class ThreadDataStore: ObservableObject {
                         break
                     }
                 }, receiveValue: { _ in
-                    
                 })
         }
     }
@@ -996,7 +996,6 @@ class ThreadDataStore: ObservableObject {
                         break
                     }
                 }, receiveValue: { _ in
-                    
                 })
         }
     }
@@ -1036,7 +1035,6 @@ class ThreadDataStore: ObservableObject {
                         break
                     }
                 }, receiveValue: { _ in
-                    
                 })
         }
         
@@ -1074,7 +1072,6 @@ class ThreadDataStore: ObservableObject {
                         break
                     }
                 }, receiveValue: { _ in
-                    
                 })
         }
     }
@@ -1111,7 +1108,6 @@ class ThreadDataStore: ObservableObject {
                         break
                     }
                 }, receiveValue: { _ in
-                    
                 })
         }    }
     
@@ -1151,7 +1147,7 @@ class ThreadDataStore: ObservableObject {
                 }, receiveValue: { [unowned self] tempNewCommentResponse in
                     let tempMainComment = tempNewCommentResponse.commentResponse
                     let tempVote = tempNewCommentResponse.voteResponse
-//                    let user = tempNewCommentResponse.userResponse
+                    //                    let user = tempNewCommentResponse.userResponse
                     
                     let commentDataStore = CommentDataStore(ancestorThreadId: self.thread.id, gameId: self.gameId, comment: tempMainComment, vote: tempVote, author: User(id: keychainService.getUserId(), username: keychainService.getUserName(), profileImageUrl: myUserImage!.profileImageUrl, profileImageWidth: myUserImage!.profileImageWidth, profileImageHeight: myUserImage!.profileImageHeight), containerWidth: containerWidth, hasNextPage: false)
                     
@@ -1394,7 +1390,9 @@ class CommentDataStore: ObservableObject {
             self.authorProfileImageLoader = ImageLoader(url: author.profileImageUrl, cache: cache, whereIsThisFrom: "comment profile image loader", loadManually: true)
             self.authorProfileImageLoaderSub = authorProfileImageLoader!.objectWillChange.receive(on: DispatchQueue.main).sink(receiveValue: {[weak self] _ in self?.objectWillChange.send() })
         } else {
+            #if DEBUG
             print("no profile picture to mount")
+            #endif
         }
     }
     
@@ -1432,7 +1430,6 @@ class CommentDataStore: ObservableObject {
                         break
                     }
                 }, receiveValue: { _ in
-                    
                 })
         }
     }
@@ -1471,7 +1468,6 @@ class CommentDataStore: ObservableObject {
                         break
                     }
                 }, receiveValue: { _ in
-                    
                 })
         }
     }
@@ -1637,7 +1633,6 @@ class CommentDataStore: ObservableObject {
                         break
                     }
                 }, receiveValue: { _ in
-                    
                 })
         }
     }
@@ -1680,7 +1675,6 @@ class CommentDataStore: ObservableObject {
                         break
                     }
                 }, receiveValue: { _ in
-                    
                 })
         }
         
@@ -1706,7 +1700,9 @@ class CommentDataStore: ObservableObject {
                 .sink(receiveCompletion: { completion in
                     switch completion {
                     case .finished:
+                        #if DEBUG
                         print("Report has been sent for thread: ", self.comment.id)
+                        #endif
                         self.cancelReportProcess()
                         taskGroup?.leave()
                         processingRequestsTaskGroup.leave()
@@ -1721,7 +1717,6 @@ class CommentDataStore: ObservableObject {
                         break
                     }
                 }, receiveValue: { _ in
-                    
                 })
         }
     }
@@ -1758,7 +1753,6 @@ class CommentDataStore: ObservableObject {
                         break
                     }
                 }, receiveValue: { _ in
-                    
                 })
         }
     }
@@ -1795,7 +1789,6 @@ class CommentDataStore: ObservableObject {
                         break
                     }
                 }, receiveValue: { _ in
-                    
                 })
         }
     }

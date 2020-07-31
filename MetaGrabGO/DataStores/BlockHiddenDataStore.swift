@@ -21,9 +21,41 @@ final class BlockHiddenDataStore: ObservableObject {
     @Published private(set) var blacklistedUserIdArr = [Int]()
     
     private let API = APIClient()
-    private var cancellableSet: Set<AnyCancellable> = []
+
+    private var threadProcess: AnyCancellable?
+    private var commentProcess: AnyCancellable?
+    private var blockUserProcess: AnyCancellable?
+    
+    @Published private(set) var isLoadingThreads = false
+    @Published private(set) var isLoadingComments = false
+    @Published private(set) var isLoadingBlockUsers = false
+    
+    deinit {
+        cancelThreadProcess()
+        cancelCommentProcess()
+        cancelBlockUserProcess()
+    }
+    
+    func cancelThreadProcess() {
+        self.threadProcess?.cancel()
+        self.threadProcess = nil
+    }
+    
+    func cancelCommentProcess() {
+        self.commentProcess?.cancel()
+        self.commentProcess = nil
+    }
+    
+    func cancelBlockUserProcess() {
+        self.blockUserProcess?.cancel()
+        self.blockUserProcess = nil
+    }
     
     func hideThread(threadId: Int) {
+        if threadProcess != nil {
+            return
+        }
+        
         let json: [String: Any] = ["hide_thread_id": threadId]
         let url = API.generateURL(resource: Resource.usersProfile, endPoint: EndPoint.hideThreadByUserId)
         let request = API.generateRequest(url: url!, method: .POST, json: json)
@@ -32,7 +64,7 @@ final class BlockHiddenDataStore: ObservableObject {
         refreshingRequestTaskGroup.notify(queue: .global()) {
             let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
-            session.dataTaskPublisher(for: request)
+            self.threadProcess = session.dataTaskPublisher(for: request)
             .map(\.data)
             .receive(on: RunLoop.main)
             .sink(receiveCompletion: { completion in
@@ -41,21 +73,26 @@ final class BlockHiddenDataStore: ObservableObject {
                     self.hiddenThreadIdArr.append(threadId)
                     self.isThreadHiddenByThreadId[threadId] = true
                     processingRequestsTaskGroup.leave()
+                    self.cancelThreadProcess()
                     break
                 case .failure(let error):
                     #if DEBUG
                     print("error: ", error)
                     #endif
                     processingRequestsTaskGroup.leave()
+                    self.cancelThreadProcess()
                     break
                 }
             }, receiveValue: { _ in
             })
-            .store(in: &self.cancellableSet)
         }
     }
     
     func unhideThread(threadId: Int) {
+        if threadProcess != nil {
+            return
+        }
+        
         let json: [String: Any] = ["unhide_thread_id": threadId]
         let url = API.generateURL(resource: Resource.usersProfile, endPoint: EndPoint.unhideThreadByUserId)
         let request = API.generateRequest(url: url!, method: .POST, json: json)
@@ -65,7 +102,7 @@ final class BlockHiddenDataStore: ObservableObject {
         refreshingRequestTaskGroup.notify(queue: .global()) {
             let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
-            session.dataTaskPublisher(for: request)
+            self.threadProcess = session.dataTaskPublisher(for: request)
             .map(\.data)
             .receive(on: RunLoop.main)
             .sink(receiveCompletion: { completion in
@@ -76,21 +113,26 @@ final class BlockHiddenDataStore: ObservableObject {
                     self.hiddenThreadsById.removeValue(forKey: threadId)
                     self.isThreadHiddenByThreadId[threadId] = false
                     processingRequestsTaskGroup.leave()
+                    self.cancelThreadProcess()
                     break
                 case .failure(let error):
                     #if DEBUG
                     print("error: ", error)
                     #endif
                     processingRequestsTaskGroup.leave()
+                    self.cancelThreadProcess()
                     break
                 }
             }, receiveValue: { _ in
             })
-            .store(in: &self.cancellableSet)
         }
     }
     
     func hideComment(commentId: Int) {
+        if commentProcess != nil {
+            return
+        }
+        
         let json: [String: Any] = ["hide_comment_id": commentId]
         let url = API.generateURL(resource: Resource.usersProfile, endPoint: EndPoint.hideCommentByUserId)
         let request = API.generateRequest(url: url!, method: .POST, json: json)
@@ -100,7 +142,7 @@ final class BlockHiddenDataStore: ObservableObject {
         refreshingRequestTaskGroup.notify(queue: .global()) {
             let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
-            session.dataTaskPublisher(for: request)
+            self.commentProcess = session.dataTaskPublisher(for: request)
             .map(\.data)
             .receive(on: RunLoop.main)
             .sink(receiveCompletion: { completion in
@@ -109,21 +151,26 @@ final class BlockHiddenDataStore: ObservableObject {
                     self.hiddenCommentIdArr.append(commentId)
                     self.isCommentHiddenByCommentId[commentId] = true
                     processingRequestsTaskGroup.leave()
+                    self.cancelCommentProcess()
                     break
                 case .failure(let error):
                     #if DEBUG
                     print("error: ", error)
                     #endif
                     processingRequestsTaskGroup.leave()
+                    self.cancelCommentProcess()
                     break
                 }
             }, receiveValue: { _ in
             })
-            .store(in: &self.cancellableSet)
         }
     }
     
     func unhideComment(commentId: Int) {
+        if commentProcess != nil {
+            return
+        }
+        
         let json: [String: Any] = ["unhide_comment_id": commentId]
         let url = API.generateURL(resource: Resource.usersProfile, endPoint: EndPoint.unhideCommentByUserId)
         let request = API.generateRequest(url: url!, method: .POST, json: json)
@@ -133,7 +180,7 @@ final class BlockHiddenDataStore: ObservableObject {
         refreshingRequestTaskGroup.notify(queue: .global()) {
             let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
-            session.dataTaskPublisher(for: request)
+            self.commentProcess = session.dataTaskPublisher(for: request)
             .map(\.data)
             .receive(on: RunLoop.main)
             .sink(receiveCompletion: { completion in
@@ -144,21 +191,26 @@ final class BlockHiddenDataStore: ObservableObject {
                     self.hiddenCommentsById.removeValue(forKey: commentId)
                     self.isCommentHiddenByCommentId[commentId] = false
                     processingRequestsTaskGroup.leave()
+                    self.cancelCommentProcess()
                     break
                 case .failure(let error):
                     #if DEBUG
                     print("error: ", error)
                     #endif
                     processingRequestsTaskGroup.leave()
+                    self.cancelCommentProcess()
                     break
                 }
             }, receiveValue: { _ in
             })
-            .store(in: &self.cancellableSet)
         }
     }
     
     func blockUser(targetBlockUser: User, taskGroup: DispatchGroup? = nil) {
+        if blockUserProcess != nil {
+            return
+        }
+        
         let json: [String: Any] = ["blacklist_user_id": targetBlockUser.id]
         let url = API.generateURL(resource: Resource.usersProfile, endPoint: EndPoint.blockUser)
         let request = API.generateRequest(url: url!, method: .POST, json: json)
@@ -168,7 +220,7 @@ final class BlockHiddenDataStore: ObservableObject {
         refreshingRequestTaskGroup.notify(queue: .global()) {
             let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
-            session.dataTaskPublisher(for: request)
+            self.blockUserProcess = session.dataTaskPublisher(for: request)
             .map(\.data)
             .receive(on: RunLoop.main)
             .sink(receiveCompletion: { completion in
@@ -177,21 +229,26 @@ final class BlockHiddenDataStore: ObservableObject {
                     self.blacklistedUsersById[targetBlockUser.id] = targetBlockUser
                     self.blacklistedUserIdArr.append(targetBlockUser.id)
                     processingRequestsTaskGroup.leave()
+                    self.cancelBlockUserProcess()
                     break
                 case .failure(let error):
                     #if DEBUG
                     print("error: ", error)
                     #endif
                     processingRequestsTaskGroup.leave()
+                    self.cancelBlockUserProcess()
                     break
                 }
             }, receiveValue: { _ in
             })
-            .store(in: &self.cancellableSet)
         }
     }
     
     func unblockUser(targetUnblockUser: User, taskGroup: DispatchGroup? = nil) {
+        if self.blockUserProcess != nil {
+            return
+        }
+        
         let json: [String: Any] = ["unblacklist_user_id": targetUnblockUser.id]
         let url = API.generateURL(resource: Resource.usersProfile, endPoint: EndPoint.unblockUser)
         let request = API.generateRequest(url: url!, method: .POST, json: json)
@@ -201,7 +258,7 @@ final class BlockHiddenDataStore: ObservableObject {
         refreshingRequestTaskGroup.notify(queue: .global()) {
             let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
-            session.dataTaskPublisher(for: request)
+            self.blockUserProcess = session.dataTaskPublisher(for: request)
             .map(\.data)
             .receive(on: RunLoop.main)
             .sink(receiveCompletion: { completion in
@@ -211,21 +268,28 @@ final class BlockHiddenDataStore: ObservableObject {
                     self.blacklistedUserIdArr.remove(at: indexToBeRemoved!)
                     self.blacklistedUsersById.removeValue(forKey: targetUnblockUser.id)
                     processingRequestsTaskGroup.leave()
+                    self.cancelBlockUserProcess()
                     break
                 case .failure(let error):
                     #if DEBUG
                     print("error: ", error)
                     #endif
                     processingRequestsTaskGroup.leave()
+                    self.cancelBlockUserProcess()
                     break
                 }
             }, receiveValue: { _ in
             })
-            .store(in: &self.cancellableSet)
         }
     }
     
     func fetchBlacklistedUsers() {
+        if self.blockUserProcess != nil {
+            return
+        }
+        
+        self.isLoadingBlockUsers = true
+        
         let url = API.generateURL(resource: Resource.usersProfile, endPoint: EndPoint.getBlacklist)
         let request = API.generateRequest(url: url!, method: .GET, json: nil)
         
@@ -234,7 +298,7 @@ final class BlockHiddenDataStore: ObservableObject {
         refreshingRequestTaskGroup.notify(queue: .global()) {
             let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
-            session.dataTaskPublisher(for: request)
+            self.blockUserProcess = session.dataTaskPublisher(for: request)
             .map(\.data)
             .decode(type: BlacklistedUsersResponse.self, decoder: self.API.getJSONDecoder())
             .receive(on: RunLoop.main)
@@ -242,14 +306,17 @@ final class BlockHiddenDataStore: ObservableObject {
                 switch completion {
                 case .finished:
                     processingRequestsTaskGroup.leave()
+                    self.cancelBlockUserProcess()
                     break
                 case .failure(let error):
                     #if DEBUG
                     print("error: ", error)
                     #endif
                     processingRequestsTaskGroup.leave()
+                    self.cancelBlockUserProcess()
                     break
                 }
+                self.isLoadingBlockUsers = false
             }, receiveValue: { [unowned self] blacklistedUsersResponse in
                for blacklistedUser in blacklistedUsersResponse.blacklistedUsers {
                    if self.isUserBlockedByUserId[blacklistedUser.id] != nil && self.isUserBlockedByUserId[blacklistedUser.id]! == true {
@@ -260,11 +327,16 @@ final class BlockHiddenDataStore: ObservableObject {
                    self.blacklistedUserIdArr.append(blacklistedUser.id)
                }
             })
-            .store(in: &self.cancellableSet)
         }
     }
     
     func fetchHiddenThreads() {
+        if self.threadProcess != nil {
+            return
+        }
+        
+        self.isLoadingThreads = true
+        
         let url = API.generateURL(resource: Resource.usersProfile, endPoint: EndPoint.getHiddenThreads)
         let request = API.generateRequest(url: url!, method: .GET, json: nil)
         
@@ -273,7 +345,7 @@ final class BlockHiddenDataStore: ObservableObject {
         refreshingRequestTaskGroup.notify(queue: .global()) {
             let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
-            session.dataTaskPublisher(for: request)
+            self.threadProcess = session.dataTaskPublisher(for: request)
             .map(\.data)
             .decode(type: HiddenThreadsResponse.self, decoder: self.API.getJSONDecoder())
             .receive(on: RunLoop.main)
@@ -281,14 +353,17 @@ final class BlockHiddenDataStore: ObservableObject {
                 switch completion {
                 case .finished:
                     processingRequestsTaskGroup.leave()
+                    self.cancelThreadProcess()
                     break
                 case .failure(let error):
                     #if DEBUG
                     print("error: ", error)
                     #endif
                     processingRequestsTaskGroup.leave()
+                    self.cancelThreadProcess()
                     break
                 }
+                self.isLoadingThreads = false
             }, receiveValue: { [unowned self] hiddenThreadsResponse in
                for hiddenThread in hiddenThreadsResponse.hiddenThreads {
                    if self.isThreadHiddenByThreadId[hiddenThread.id] != nil && self.isThreadHiddenByThreadId[hiddenThread.id]! == true {
@@ -300,11 +375,16 @@ final class BlockHiddenDataStore: ObservableObject {
                    self.isThreadHiddenByThreadId[hiddenThread.id] = true
                }
             })
-            .store(in: &self.cancellableSet)
         }
     }
     
     func fetchHiddenComments() {
+        if self.commentProcess != nil {
+            return
+        }
+        
+        self.isLoadingComments = true
+        
         let url = API.generateURL(resource: Resource.usersProfile, endPoint: EndPoint.getHiddenComments)
         let request = API.generateRequest(url: url!, method: .GET, json: nil)
         
@@ -313,7 +393,7 @@ final class BlockHiddenDataStore: ObservableObject {
         refreshingRequestTaskGroup.notify(queue: .global()) {
             let session = self.API.generateSession()
             processingRequestsTaskGroup.enter()
-            session.dataTaskPublisher(for: request)
+            self.commentProcess = session.dataTaskPublisher(for: request)
             .map(\.data)
             .decode(type: HiddenCommentsResponse.self, decoder: self.API.getJSONDecoder())
             .receive(on: RunLoop.main)
@@ -321,14 +401,17 @@ final class BlockHiddenDataStore: ObservableObject {
                 switch completion {
                 case .finished:
                     processingRequestsTaskGroup.leave()
+                    self.cancelCommentProcess()
                     break
                 case .failure(let error):
                     #if DEBUG
                     print("error: ", error)
                     #endif
                     processingRequestsTaskGroup.leave()
+                    self.cancelCommentProcess()
                     break
                 }
+                self.isLoadingComments = false
             }, receiveValue: { [unowned self] hiddenCommentsResponse in
                for hiddenComment in hiddenCommentsResponse.hiddenComments {
                    if self.isCommentHiddenByCommentId[hiddenComment.id] != nil && self.isCommentHiddenByCommentId[hiddenComment.id]! == true {
@@ -339,7 +422,6 @@ final class BlockHiddenDataStore: ObservableObject {
                    self.isCommentHiddenByCommentId[hiddenComment.id] = true
                }
             })
-            .store(in: &self.cancellableSet)
         }
     }
 }
